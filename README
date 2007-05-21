@@ -104,7 +104,7 @@ All PHP-Sugar code is put with the tags <% and %>.  For example:
   <% if $count > 10 %>
     <ul>
     <% foreach $key,$value in $list %>
-      <li><% $key %>: <b><% $value$></b></li>
+      <li><% $key %>: <b><% $value %></b></li>
     <% end %>
     </ul>
   <% end %>
@@ -206,6 +206,31 @@ second parameter is the value to assign to the variable.
 	$sugar->set('results', getDatabaseResults());
 	$sugar->set('name', $user->name);
 
+Registering new function requires the register() method.  The first
+parameter is the name of the function as used within templates.  The
+second optional parameter is the callback to use when invoking the
+function; if ommitted, the PHP function of the same name as the first
+argument will be invoked.  The final optional argument is a list of
+flags: SUGAR_FUNC_SIMPLE, SUGAR_FUNC_NO_CACHE, or
+SUGAR_FUNC_SUPPRESS_RETURN.
+
+  $sugar->register('myFunc');
+	$sugar->register('foo', 'some_function');
+	$sugar->register('getCost', array($cart, 'get_cost'));
+	$sugar->register('size, 'count', SUGAR_FUNC_SIMPLE);
+	$sugar->register('dynamic', 'dynamic', SUGAR_FUNC_NO_CACHE);
+
+Normal functions receive two arguments: the Sugar object and a keyed
+array with the parameters.  Functions registered with
+SUGAR_FUNC_SIMPLE will instead receive a list of parameters like a
+regular PHP function.
+
+Functions can display data by using echo or print like normal, and
+they can return a value as normal.  Function return values will be
+displayed like a regular expression by Sugar, so functions should
+not both return a value and display output.  Returned values are
+escaped when displayed by default, but output is not altered.
+
 To render a template, you can use either the display() or the
 displayString() method.  The display() method will look up the file
 given it using the storage engine and render the result.  The
@@ -225,9 +250,5 @@ is compiled as push 3, negate; should just be push -3).
 * HTML caching is not supported.  When added, also need a way to mark a
 function as no-cache, so that dynamic content can be inserted into
 pages still.
-
-* All function calls need the name=value parameter form, which is
-overkill for simple functions - need support for alternate one-param
-function calls with no parameter name.
 
 * No way to include files.
