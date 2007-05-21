@@ -127,6 +127,11 @@ class SugarParser {
 		return array_pop($this->output);
 	}
 
+	private function isExprNext () {
+		$token = $this->tokens->peek();
+		return in_array($token[0], array('(', '-', '!', 'name', 'var', 'string', 'int'));
+	}
+
 	private function compileStmt () {
 		$token = $this->tokens->peek();	
 
@@ -138,21 +143,19 @@ class SugarParser {
 
 			// parse out parameters
 			$params = array();
-			while (($token = $this->tokens->peek()) && $token[0] == 'name') {
-				// see if we have the equal sign
-				$eq  = $this->tokens->peek(1);
-				if ($eq[0] != '=')
-					throw new SugarParseException($eq[2], $eq[3], 'unexpected '.SugarTokenizer::tokenName($eq).'; expected =');
-
-				// store name, pop
-				$name = $token[1];
-				$this->tokens->pop(2);
+			while (($token = $this->tokens->peek()) && $token[0] == 'name' &&
+					($eq = $this->tokens->peek(1)) && $eq[0] == '=') {
 
 				// parse the expression
-				$ops = $this->compileExpr($this->tokens);
+				$this->tokens->pop(2);
+				$params[$token[1]] = $this->compileExpr($this->tokens);
+			}
 
-				// store parameter, set param
-				$params[$name] = $ops;
+			// if we have no parameters, but we have an expression pending,
+			// compile as a simple call
+			if (empty($params)) {
+				while ($this->isExprNext())
+					$params []= $this->compileExpr($this->tokens);
 			}
 
 			return array('call', $func, $params);;

@@ -4,6 +4,11 @@ require_once dirname(__FILE__).'/Sugar/Parser.php';
 require_once dirname(__FILE__).'/Sugar/Storage.php';
 require_once dirname(__FILE__).'/Sugar/Tokenizer.php';
 
+// function registration flags
+define('SUGAR_FUNC_SIMPLE', 1);
+define('SUGAR_FUNC_NO_CACHE', 2);
+define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
+
 class Sugar {
 	private $vars = array();
 	private $funcs = array();
@@ -145,8 +150,24 @@ class Sugar {
 							$params = array();
 							foreach($args as $name=>$pcode)
 								$params[$name] = $this->execute($pcode);
-							// call function
-							$stack []= call_user_func($invoke, $params);
+
+							// exception net
+							try {
+								// call function, using appropriate method
+								if ($invoke[1] & SUGAR_FUNC_SIMPLE)
+									$ret = call_user_func_array($invoke[0], $params);
+								else
+									$ret = call_user_func($invoke[0], $this, $params);
+
+								// suppress return value if flag is set
+								if ($invoke[1] & SUGAR_FUNC_SUPPRESS_RETURN)
+									$ret = null;
+
+								// store return value
+								$stack []= $ret;
+							} catch (Exception $e) {
+								throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
+							}
 						} else {
 							throw new SugarRuntimeException ('unknown function: '.$func);
 						}
@@ -199,10 +220,10 @@ class Sugar {
 	}
 
 	// register a function; second parameter is optional real name
-	function register ($name, $invoke=false) {
+	function register ($name, $invoke=false, $flags=0) {
 		if ($invoke === false)
 			$invoke = $name;
-		$this->funcs [strtolower($name)]= $invoke;
+		$this->funcs [strtolower($name)]= array($invoke, $flags);
 	}
 
 	// compile and display given source

@@ -16,20 +16,20 @@ $sugar->set('s', $_GET['s']);
 $sugar->set('templates', $templates);
 
 // various test functions
-function showHtml($args) {
+function showHtml(&$sugar, $args) {
 	echo $args['html'];
 }
 $sugar->register('showHtml');
 
-function showText($args) {
+function showText(&$sugar, $args) {
 	echo $args['text'];
 }
 $sugar->register('showText');
 
-function one() {
-	return 'Uno';
+function one($str='') {
+	return 'Uno'.$str;
 }
-$sugar->register('one');
+$sugar->register('one', 'one', SUGAR_FUNC_SIMPLE);
 
 // set source variable is s is on
 if ($_GET['s'])
