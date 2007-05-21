@@ -9,7 +9,8 @@ class SugarParser {
 		'.' => 0,
 		'*' => 1, '/' => 1, '%' => 1,
 		'+' => 2, '-' => 2,
-		'=' => 3, '!=' => 3, '<' => 3, '>' => 3, '<=' => 3, '>=' => 3, 'in' => 3,
+		'==' => 3, '=' => 3, '<' => 3, '>' => 3,
+		'!=' => 3, '<=' => 3, '>=' => 3, 'in' => 3,
 		'||' => 4, '&&' => 4,
 		'(' => 10,
 	);
@@ -55,7 +56,7 @@ class SugarParser {
 			$this->stack []= '(';
 
 			// compile sub-expression
-			$this->E();
+			$this->output []= $this->compileStmt();
 
 			// pop (
 			array_pop($this->stack);
@@ -69,13 +70,10 @@ class SugarParser {
 
 		// ints
 		elseif ($t[0] == 'int')
-			$this->output []= array('push-int', $t[1]);
-		// strings
-		elseif ($t[0] == 'string')
-			$this->output []= array('push-string', $t[1]);
-		// name (treat as strings)
-		elseif ($t[0] == 'name')
-			$this->output []= array('push-string', $t[1]);
+			$this->output []= array('push', intval($t[1]));
+		// strings and names(treat as strings)
+		elseif ($t[0] == 'string' || $t[0] == 'name')
+			$this->output []= array('push', $t[1]);
 		// vars
 		elseif ($t[0] == 'var')
 			$this->output []= array('lookup', $t[1]);
@@ -99,6 +97,9 @@ class SugarParser {
 			$this->output []= array_merge($left, $right, array($this->stack[count($this->stack)-1]));
 			array_pop($this->stack);
 		}
+
+		// merge = to ==
+		if ($op == '=') $op = '==';
 
 		// push op
 		$this->stack []= $op;
@@ -136,7 +137,7 @@ class SugarParser {
 			$this->tokens->pop();
 
 			// parse out parameters
-			$bc = array();
+			$params = array();
 			while (($token = $this->tokens->peek()) && $token[0] == 'name') {
 				// see if we have the equal sign
 				$eq  = $this->tokens->peek(1);
@@ -151,19 +152,14 @@ class SugarParser {
 				$ops = $this->compileExpr($this->tokens);
 
 				// store parameter, set param
-				$bc = array_merge($bc, $ops, array('param', $name));
+				$params[$name] = $ops;
 			}
-			
-			// function call
-			$bc []= 'call';
-			$bc []= $func;
 
-			return $bc;
+			return array('call', $func, $params);;
 
 		// normal expression
 		} else {
-			$ops = $this->compileExpr($this->tokens);
-			return $ops;
+			return $this->compileExpr($this->tokens);
 		}
 	}
 
@@ -192,7 +188,7 @@ class SugarParser {
 					continue;
 
 				// if the command is empty, ignore
-				} elseif ($token[0] == '%>') {
+				} elseif ($token[0] == '%>' || $token[0] == ';') {
 					// do nothing
 
 				// print raw value
@@ -315,7 +311,7 @@ class SugarParser {
 
 				// we should have the end token now
 				$end = $this->tokens->get();
-				if ($end[0] != '%>')
+				if ($end[0] != '%>' && $end[0] != ';')
 					throw new SugarParseException($end[2], $end[3], 'unexpected '.SugarTokenizer::tokenName($end).'; expected %>');
 			}
 

@@ -21,7 +21,6 @@ class Sugar {
 
 	private function execute ($code) {
 		$stack = array();
-		$params = array();
 
 		try {
 			for ($i = 0; $i < count($code); ++$i) {
@@ -42,11 +41,7 @@ class Sugar {
 						$val = array_pop($stack);
 						echo $val;
 						break;
-					case 'push-int':
-						$int = $code[++$i];
-						$stack []= intval($int);
-						break;
-					case 'push-string':
+					case 'push':
 						$str = $code[++$i];
 						$stack []= $str;
 						break;
@@ -58,11 +53,6 @@ class Sugar {
 						$name = $code[++$i];
 						$value = array_pop($stack);
 						$this->set($name, $value);
-						break;
-					case 'param':
-						$name = strtolower($code[++$i]);
-						$value = array_pop($stack);
-						$params [$name]= $value;
 						break;
 					case 'negate':
 						$v = array_pop($stack);
@@ -76,9 +66,9 @@ class Sugar {
 						$v2 = array_pop($stack);
 						$v1 = array_pop($stack);
 						if (is_string($v1))
-							$stack []= $v1 . $v2;
+							$stack []= $v1.$v2;
 						elseif (is_array($v1))
-							$stack []= array_merge($v1, $v2);
+							$stack []= array_merge($v1, is_array($v2)?$v2:array($v2));
 						else
 							$stack []= $v1+$v2;
 						break;
@@ -102,7 +92,7 @@ class Sugar {
 						$v1 = array_pop($stack);
 						$stack []= intval($v1 % $v2);
 						break;
-					case '=':
+					case '==':
 						$v2 = array_pop($stack);
 						$v1 = array_pop($stack);
 						$stack []= ($v1 == $v2);
@@ -147,11 +137,16 @@ class Sugar {
 						$stack []= (is_array($v2) && in_array($v1, $v2));
 						break;
 					case 'call':
-						$func = strtolower($code[++$i]);
-						if (array_key_exists($func, $this->funcs)) {
-							$ret = call_user_func($this->funcs[$func], $params);
+						$func = $code[++$i];
+						$args = $code[++$i];
+						$invoke = $this->funcs[strtolower($func)];
+						if ($invoke) {
+							// compile args
 							$params = array();
-							$stack []= $ret;
+							foreach($args as $name=>$pcode)
+								$params[$name] = $this->execute($pcode);
+							// call function
+							$stack []= call_user_func($invoke, $params);
 						} else {
 							throw new SugarRuntimeException ('unknown function: '.$func);
 						}
@@ -193,6 +188,8 @@ class Sugar {
 		} catch (SugarRuntimeException $e) {
 			echo '<b>'.htmlentities($e->__toString()).'</b>';
 		}
+
+		return $stack[0];
 	}
 
 	// set a variable
@@ -202,12 +199,10 @@ class Sugar {
 	}
 
 	// register a function; second parameter is optional real name
-	function register ($name, $value=false) {
-		$name = strtolower($name);
-		if ($value !== false)
-			$this->funcs [$name]= $value;
-		else
-			$this->funcs [$name]= $name;
+	function register ($name, $invoke=false) {
+		if ($invoke === false)
+			$invoke = $name;
+		$this->funcs [strtolower($name)]= $invoke;
 	}
 
 	// compile and display given source

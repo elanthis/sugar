@@ -16,44 +16,30 @@ $sugar->set('s', $_GET['s']);
 $sugar->set('templates', $templates);
 
 // various test functions
-function funcFoo($args) {
-	echo 'foo is here [['.$args['bar'].','.$args['baz'].','.$args['gra'].']]';
+function showHtml($args) {
+	echo $args['html'];
 }
-$sugar->register('foo', 'funcFoo');
+$sugar->register('showHtml');
 
-function test($args) {
-	return 'test('.$args['test'].')';
+function showText($args) {
+	echo $args['text'];
 }
-$sugar->register('test', 'test');
+$sugar->register('showText');
+
+function one() {
+	return 'Uno';
+}
+$sugar->register('one');
 
 // set source variable is s is on
 if ($_GET['s'])
 	$sugar->set('source', '<div style="white-space: pre; border: 1px solid #000; padding: 4px; background: #eee;"><b>Source</b><br/>'.htmlentities($sugar->getSource($file)).'</div>');
-
-// test class
-class Test {
-	var $one = '1-one-1';
-	var $two = '2-two-2';
-
-	function getOne () {
-		return $this->one;
-	}
-	
-	function getTwo () {
-		return $this->two;
-	}
-
-	function setOne ($one) {
-		$this->one = $one;
-	}
-}
 
 // test variables
 $sugar->set('i', 10);
 $sugar->set('test', 'dancing mice');
 $sugar->set('html', '<b>bold</b>');
 $sugar->set('list', array('one','two','three','foo'=>'bar'));
-$sugar->set('obj', new Test());
 
 // display file
 $sugar->caching = true;

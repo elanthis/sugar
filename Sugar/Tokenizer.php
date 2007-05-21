@@ -20,8 +20,6 @@ class SugarTokenizer {
 		switch($token[0]) {
 			case 'name': return 'name '.$token[1];
 			case 'var': return 'variable $'.$token[1];
-			case 'lparen': return '(';
-			case 'rparen': return ')';
 			case 'string': return 'string "'.addslashes($token[1]).'"';
 			case 'int': return 'integer '.($token[1]);
 			default: return $token[0];
@@ -30,7 +28,7 @@ class SugarTokenizer {
 
 	// get next token
 	private function getNext () {
-		static $pattern = '/(\s*)(%>|\$?(\w+)|\d+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|==|<>|!=|<=|>=|\|\||&&|.)/';
+		static $pattern = '/(\s*)(%>|\$?(\w+)|\d+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|==|!=|<=|>=|\|\||&&|.)/';
 
 		// EOF
 		if ($this->pos >= strlen($this->src)) {
@@ -82,15 +80,11 @@ class SugarTokenizer {
 		// string
 		if ($ar[4])
 			return array('string', stripslashes($ar[4]), $this->file, $line);
+		elseif ($ar[5])
+			return array('string', stripslashes($ar[5]), $this->file, $line);
 		// variable
 		elseif ($ar[3] && $ar[2] != $ar[3]) 
 			return array('var', $ar[3], $this->file, $line);
-		// <> operator to !=
-		elseif ($ar[2] == '<>')
-			return array('!=', null, $this->file, $line);
-		// == operator to =
-		elseif ($ar[2] == '==')
-			return array('=', null, $this->file, $line);
 		// keyword or special symbol
 		elseif (in_array($ar[2], array('echo', 'if', 'elif', 'else', 'end', 'foreach', 'in')))
 			return array($ar[2], null, $this->file, $line);
