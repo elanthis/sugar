@@ -21,8 +21,10 @@
 		<p>
 			<% if $test%4=1 %>
 				$test%4=1 (wrong)
+			<% elif $test%4=0 %>
+				$test%4=0 (correct)
 			<% else %>
-				$test%4!=1 (correct)
+				$test%4!=1 && $test%4!=0 (wrong)
 			<% end %>
 		</p>
 

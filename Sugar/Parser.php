@@ -165,13 +165,17 @@ class SugarParser {
 
 	// compile the given source code into bytecode
 	public function compile ($src, $file = '<input>') {
+		$blocks = array(
+			array('main', array())
+		);
+
 		try {
 			$this->tokens = new SugarTokenizer($src, $file);
 
 			// build byte-code
-			$blocks = array();
-			$bc = array();
 			while (!$this->tokens->eof()) {
+				$block =& $blocks[count($blocks)-1];
+
 				// peek at token
 				$token = $this->tokens->peek();
 
@@ -183,8 +187,8 @@ class SugarParser {
 				} elseif ($token[0] == 'literal') {
 					$this->tokens->pop();
 
-					$bc []= 'echo';
-					$bc []= $token[1];
+					$block[1] []= 'echo';
+					$block[1] []= $token[1];
 					continue;
 
 				// if the command is empty, ignore
@@ -197,24 +201,25 @@ class SugarParser {
 
 					$ops = $this->compileStmt($this->tokens);
 
-					$blocks []= array('if', $bc, $ops, null, null);
-					$bc = array();
+					$blocks []= array('if', array(), array(array($ops, null)));
 
 				// else for if
-				} elseif ($token[0] == 'else') {
+				} elseif ($token[0] == 'else' || $token[0] == 'elif') {
 					$this->tokens->pop();
 
-					// get top block; must be an if
-					$block = array_pop($blocks);
-					if ($block[0] != 'if')
+					// get top block; must be an if or elif
+					if ($block[0] != 'if' && $block[0] != 'elif')
 						throw new SugarParseException($block[2], $block[3], 'else missing if');
 
-					// convert to an else block
-					$block [0]= 'else';
-					$block [3]= $bc;
-					$bc = array();
+					// update block
+					$block[0] = $token[0];
+					$block[2][count($block[2])-1][1] = $block[1];
+					$block[1] = array();
+					$block[2] []= array(null, null);
 
-					$blocks []= $block;
+					// elif test
+					if ($token[0] == 'elif')
+						$block[2][count($block[2])-1][0] = $this->compileStmt($this->tokens);
 
 				// loop over an array
 				} elseif ($token[0] == 'foreach') {
@@ -256,41 +261,55 @@ class SugarParser {
 					$ops = $this->compileStmt($this->tokens);
 
 					// store foreach block
-					$blocks []= array('foreach', $key, $name, $ops, $bc);
-					$bc = array();
+					$blocks []= array('foreach', array(), $key, $name, $ops);
 
 				// pop the block
 				} elseif ($token[0] == 'end') {
 					$this->tokens->pop();
 
-					// get block
-					$block = array_pop($blocks);
+					// can't end if we're in the main block
+					if ($block[0] == 'main')
+						throw new SugarParseException($token[2], $token[3], 'end without an if or loop');
+
+					// new top block
+					array_pop($blocks);
 
 					// compile
 					switch ($block[0]) {
-						case 'if':
-							// if block - compile
-							$ops = $bc; // store block code
-							$bc = array_merge($block[1], $block[2], array('if', $ops, null)); // restore old block, test
-							break;
-						case 'else':
-							// else block - compile
-							$ops = $bc; // store block code
-							$bc = array_merge($block[1], $block[2], array('if', $block[3], $ops)); // restore old block, test
-							break;
 						case 'foreach':
-							// array loop - compile
-							$ops = $bc;
-							$bc = array_merge($block[4], $block[3], array('foreach', $block[1], $block[2], $ops));
+							$bc = array_merge($block[4], array('foreach', $block[2], $block[3], $block[1]));
 							break;
+						case 'if':
+						case 'elif':
+						case 'else':
+							// store current block opcodes into last block
+							$block[2][count($block[2])-1][1] = $block[1];
+
+							// build if tree
+							$bc = array();
+							while (!empty($block[2])) {
+								$chunk = array_pop($block[2]);
+								if ($chunk[0])
+									$bc = array_merge($chunk[0], array('if', $chunk[1], $bc));
+								else
+									$bc = $chunk[1];
+							}
+
+							break;
+						default:
+							die('Internal Error: '.__FILE__.','.__LINE__);
 					}
+
+					// merge bytecode to top block
+					$block =& $blocks[count($blocks)-1];
+					$block[1] = array_merge($block[1], $bc);
 
 				// print raw value
 				} elseif ($token[0] == 'echo') {
 					$this->tokens->pop();
 					$ops = $this->compileStmt($this->tokens);
 
-					$bc = array_merge($bc, $ops, array('print-raw'));
+					$block[1] = array_merge($block[1], $ops, array('print-raw'));
 
 				// if we have a var then a =, we have an assignment
 				} elseif ($token[0] == 'var' && ($t2 = $this->tokens->peek(1)) && $t2[0] == '=') {
@@ -301,12 +320,12 @@ class SugarParser {
 					$this->tokens->pop(2);
 					$ops = $this->compileStmt($this->tokens);
 
-					$bc = array_merge($bc, $ops, array('assign', $name));
+					$block[1] = array_merge($block[1], $ops, array('assign', $name));
 
 				// we have a statement
 				} else {
 					$ops = $this->compileStmt($this->tokens);
-					$bc = array_merge($bc, $ops, array('print'));
+					$block[1] = array_merge($block[1], $ops, array('print'));
 				}
 
 				// we should have the end token now
@@ -314,6 +333,10 @@ class SugarParser {
 				if ($end[0] != '%>' && $end[0] != ';')
 					throw new SugarParseException($end[2], $end[3], 'unexpected '.SugarTokenizer::tokenName($end).'; expected %>');
 			}
+
+			// still in a block?
+			if (count($blocks) != 1)
+				throw new SugarParseException($end[2], $end[3], 'unxpected end of file; expected end');
 
 		// error handler
 		} catch(SugarParseException $e) {
@@ -323,7 +346,7 @@ class SugarParser {
 		// free tokenizer
 		$this->tokens = null;
 
-		return $bc;
+		return $blocks[0][1];
 	}
 }
 ?>

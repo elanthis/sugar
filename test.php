@@ -42,6 +42,6 @@ $sugar->set('html', '<b>bold</b>');
 $sugar->set('list', array('one','two','three','foo'=>'bar'));
 
 // display file
-$sugar->caching = true;
+$sugar->caching = false;
 $sugar->display($file);
 ?>
