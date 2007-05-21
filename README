@@ -219,20 +219,15 @@ templates/$file.tpl, where $file is the name you pass to display().
 -----------------------------------------------------------------------
 VI.  Known Issues
 
-* HTML cache feature is missing.
+* No bytecode level optimization, even for basic things like -3 (that
+is compiled as push 3, negate; should just be push -3).
 
-* No ability to call object methods (not sure if we want this;
-it's convenient, but unsafe).
-
-* elif not supported.
-
-* No bytecode level optimization.
-
-* No way to declare that a function is no-cache; only relevant for
-when HTML caching is added, but necessary for that feature.
+* HTML caching is not supported.  When added, also need a way to mark a
+function as no-cache, so that dynamic content can be inserted into
+pages still.
 
 * All function calls need the name=value parameter form, which is
 overkill for simple functions - need support for alternate one-param
-function calls.
+function calls with no parameter name.
 
 * No way to include files.
