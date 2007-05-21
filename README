@@ -1,0 +1,238 @@
+PHP-Sugar Template Engine
+=======================================================================
+Copyright (C) 2007  AwesomePlay Productions, Inc.
+Sean Middleditch <sean@awesomeplay.com>
+See LICENSE for copying and distribution details.
+
+-----------------------------------------------------------------------
+I.   About PHP-Sugar
+
+PHP-Sugar is a new template engine, inspired by the author's experience
+with the Smarty template engine.  PHP-Sugar aims to provide a simple
+but flexible API, a friendly and easy macro language, and intelligent
+and easy caching functionality.
+
+The engine is implemented as a mini-scripting language parser and
+runtime, allowing for both quite flexible language features and for
+powerful expressions that a regular-expression engine like Smarty is
+not capable of providing.
+
+-----------------------------------------------------------------------
+II.  Installation
+
+To install PHP-Sugar, simply copy the Sugar.php file into your PHP
+include path.  Then copy the Sugar/ folder and its contents into the
+same folder in which you installed Sugar.php.
+
+The default templates folder for the file storage driver is
+./templates/, relative to the working directory of your application.
+The compile cache is ./templates/cache/ which must be writable by your
+application (e.g. the Apache user) in order to work.
+
+-----------------------------------------------------------------------
+III. Smarty vs. PHP-Sugar
+
+Smarty has several issues which led to the creation of PHP-Sugar.
+While PHP-Sugar avoids those issues, it does have a few down sides of
+its own compared to Smarty, and weighing these pros and cons is
+important for any developer seeking to choose a template engine.
+
+(a) The first issue is the inflexibility of its parse engine.  Smarty
+is built by using a series of regular expressions to convert the input
+source into PHP code.  Regular expressions, while powerful, are not a
+silver bullet for all text processing tasks, and parsing a complex
+language is one such task.  PHP-Sugar uses a model closer to
+traditional language processors; it tokenizes the input and then runs
+the tokens through a hand-written parser.  This allows for far more
+intricate expressions to be written in the template language than
+a regular-expression engine could ever handle.
+
+(b) Smarty compiles templates into PHP code and then executes that code
+using the Zend engine, while PHP-Sugar compiles code into something
+like a bytecode and executes it using its own runtime engine.  The
+Smarty approach makes for much faster template execution, as the
+resulting templates run as fast as PHP.  The PHP-Sugar method requires
+that PHP interpret the already-parsed bytecode, which adds overhead.
+This approach was taken for reasons of safety and control, however.
+There is no need to create white-lists for PHP functions, for example.
+
+(c) The Smarty syntax is very difficult to use.  Many programmers find
+the syntax very restricted, which PHP-Sugar alleviates by using a more
+powerful parser allowing for almost as much expressiveness and
+flexibility as PHP itself.  However, regular designers - the people who
+are supposed to be the main consumers of a template language - also
+find Smarty to be very painful to work with.  The default Smarty tags,
+{ and }, were very poorly chosen given how common they are in CSS and
+JavaScript.  Variables must be manually escaped in Smarty, requiring
+that designers to more work to HTML-escape their data than to not
+escape it, which is backwards from how it should be - failure to escape
+data leads to XSS and other Web-based attacks.  The Smarty function
+call syntax, while powerful and clear in expression, can be cumbersome
+for simpler functions and needs at times.  Smarty makes variable
+assignment and math expressions difficult to perform.  Finally,
+Smarty's separation of functions and "inserts" creates mnemonic
+overhead that is unnecessary.  PHP-Sugar has none of these problems,
+and is directly designed to be both powerful enough for programmers
+and obvious and sensical enough for designers.
+
+(d) PHP-Sugar does not allow as much direct access to PHP features as
+Smarty does, because of the different runtime models.  While this does
+make PHP-Sugar more secure in theory, it also can create more work for
+the programmers who need to declare more data and Sugar functions to
+make up for the loss of the ability to call into PHP.
+
+(e) Smarty is difficult to extend in terms of file storage.  Creating
+a new resource type takes several functions, odd registration
+steps, makes efficient implementation of some file storage backends
+difficult due to the split between timestamp checking and source
+retrieval, and doesn't allow for the over-loading of cache storage.
+PHP-Sugar merges the file storage and cache handling into a single
+interface and allows the application to provide its own instance of
+the interface.  This does require that more of the cache logic be
+implemented by users of the API, but this can be a benefit in some
+circumstances.
+
+(f) PHP-Sugar has a list of Known Issues, given at the end of this
+document.  Most of those issues are missing features which Smarty does
+not lack.
+
+-----------------------------------------------------------------------
+IV.  Basic Syntax
+
+All PHP-Sugar code is put with the tags <% and %>.  For example:
+
+  <% if $count > 10 %>
+    <ul>
+    <% foreach $key,$value in $list %>
+      <li><% $key %>: <b><% $value$></b></li>
+    <% end %>
+    </ul>
+  <% end %>
+
+Variables are the dollar sign $ followed by letters, numbers, and/or
+underscores.  Variables can be assigned by the Sugar API or by using
+the equal = operator in a template.
+
+  <% $myvar = "a test" %>
+  My Var is <% $myvar %>.
+
+The above code will print:
+
+  My Var is a test.
+
+To print the value of a variable, simply place the name of the
+variable in script tags.  You can also perform various operations on
+the variable in the tag.  Example:
+
+  <% $i = 7 %>
+  <% $i %> is 7
+  <% 1+$i %> is 8
+  <% $i*($i%5) %> is 14
+
+  <% $s = "test" %>
+  <% $s %> is test
+  <% $s+7 %> is test7
+  <% $s+" again" %> is test again
+
+  <% $test = $s+$i %>
+  <% $test %> is test7
+
+The value of a variable is always HTML-escaped by default.  To
+display the value of a variable with no escaping, use the echo
+keyword.
+
+  <% $html = "<b>bold</b>" %>
+  <% $html %> = &lt;b&gt;bold&lt;/b&gt;
+  <% echo $html %> = <b>bold</b>
+
+A function can be called by giving the name of the function, and
+then listing the parameters.  Function parameters are always given
+as a parameter name followed by the parameter value.  Example:
+
+  <% myFunc %>
+  <% myFunc value=$var %>
+  <% myFunc value=$var*2 other="test" last=4+($i*7) %>
+
+Conditional execution can be performed using the if, elif, and else
+statements.  Example:
+
+  <% if $i > 7 %>
+    The value is greater than 7.
+  <% elif $i < -7 %>
+    The value is less than 7.
+  <% elif $i = $v %>
+    The value is equal to $v.
+  <% else %>
+    The value is <% $i %>
+    <% if $i < 0 %>
+      which is negative
+    <% elif $i > 0 %>
+      which is positive
+    <% else %>
+      which is zero
+    <% end %>
+  <% end %>
+
+An array or PHP iterator can be looped over using the foreach
+statement.  Either the array values or both the array keys and
+values can be iterated over.
+
+  Just the values:
+  <% foreach $i in $mylist %>
+    <% $i %>
+  <% end %>
+
+  Keys and values:
+  <% foreach $k,$i in $mylist %>
+    <% $k %>=<% $i %>
+  <% end %>
+
+-----------------------------------------------------------------------
+V.   Sugar API
+
+The PHP-Sugar engine is controlled mainly by the Sugar class.  To use
+PHP-Sugar, you must first include the Sugar.php file and instantiate an
+object of the Sugar class.
+
+  require_once 'Sugar.php';
+
+  $sugar = new Sugar();
+
+To declare variables for use by template files, use the set() method.
+The first parameter is the variable name (do not include the $) and the
+second parameter is the value to assign to the variable.
+
+  $sugar->set('life', 42);
+	$sugar->set('results', getDatabaseResults());
+	$sugar->set('name', $user->name);
+
+To render a template, you can use either the display() or the
+displayString() method.  The display() method will look up the file
+given it using the storage engine and render the result.  The
+displayString() method takes a string containing the template source
+to display.  The default storage engine loads the path
+templates/$file.tpl, where $file is the name you pass to display().
+
+  $sugar->display('myTemplate'); // loads templates/myTemplate.tpl
+	$sugar->displayString('Var = <% $var %>');
+
+-----------------------------------------------------------------------
+VI.  Known Issues
+
+* HTML cache feature is missing.
+
+* No ability to call object methods (not sure if we want this;
+it's convenient, but unsafe).
+
+* elif not supported.
+
+* No bytecode level optimization.
+
+* No way to declare that a function is no-cache; only relevant for
+when HTML caching is added, but necessary for that feature.
+
+* All function calls need the name=value parameter form, which is
+overkill for simple functions - need support for alternate one-param
+function calls.
+
+* No way to include files.
