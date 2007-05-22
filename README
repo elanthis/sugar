@@ -210,7 +210,7 @@ can be executed using the eval function.
   <% include header %>
 	<% include 'some/other/template' %>
 	<% eval 'var is <% $var+1 %>' %>
-	<% eval (getCode ') %>
+	<% eval (getCode) %>
 
 -----------------------------------------------------------------------
 V.   Sugar API
