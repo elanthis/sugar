@@ -17,10 +17,8 @@ class Sugar {
     private $parser = null;
 
     public $storage = null;
-    public $caching = true;
+    public $debug = false;
     public $methods = false;
-
-    public $templateDir = './templates';
 
     function __construct () {
         $this->storage = new SugarFileStorage($this);
@@ -66,7 +64,7 @@ class Sugar {
         $data = $this->storage->load($file);
         if (is_string($data)) {
             $data = $this->parser->compile($data, $this->storage->getPath($file));
-            if ($this->caching)
+            if (!$this->debug)
                 $this->storage->store($file, $data);
         }
         $this->execute($data);
