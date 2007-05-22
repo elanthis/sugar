@@ -130,31 +130,56 @@ class SugarRuntime {
 						$func = $code[++$i];
 						$args = $code[++$i];
 						$invoke = $this->funcs[strtolower($func)];
-						if ($invoke) {
-							// compile args
-							$params = array();
-							foreach($args as $name=>$pcode)
-								$params[$name] = $this->execute($pcode);
-
-							// exception net
-							try {
-								// call function, using appropriate method
-								if ($invoke[1] & SUGAR_FUNC_SIMPLE)
-									$ret = call_user_func_array($invoke[0], $params);
-								else
-									$ret = call_user_func($invoke[0], $this, $params);
-
-								// suppress return value if flag is set
-								if ($invoke[1] & SUGAR_FUNC_SUPPRESS_RETURN)
-									$ret = null;
-
-								// store return value
-								$stack []= $ret;
-							} catch (Exception $e) {
-								throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
-							}
-						} else {
+						if (!$invoke)
 							throw new SugarRuntimeException ('unknown function: '.$func);
+
+						// compile args
+						$params = array();
+						foreach($args as $name=>$pcode)
+							$params[$name] = $this->execute($pcode);
+
+						// exception net
+						try {
+							// call function, using appropriate method
+							if ($invoke[1] & SUGAR_FUNC_SIMPLE)
+								$ret = call_user_func_array($invoke[0], $params);
+							else
+								$ret = call_user_func($invoke[0], $this, $params);
+
+							// suppress return value if flag is set
+							if ($invoke[1] & SUGAR_FUNC_SUPPRESS_RETURN)
+								$ret = null;
+
+							// store return value
+							$stack []= $ret;
+						} catch (Exception $e) {
+							throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
+						}
+						break;
+					case 'method':
+						$obj = array_pop($stack);
+						$func = $code[++$i];
+						$args = $code[++$i];
+
+						if (!$this->sugar->methods)
+							throw new SugarRuntimeException ('method invocation is disabled');
+
+						if (!is_object($obj))
+							throw new SugarRuntimeException ('method call on non-object');
+
+						if (!method_exists($obj, $func))
+							throw new SugarRuntimeException ('unknown method on object: '.$func);
+
+						// compile args
+						$params = array();
+						foreach($args as $pcode)
+							$params [] = $this->execute($pcode);
+
+						// exception net
+						try {
+							$stack []= call_user_func_array(array($obj, $func), $params);
+						} catch (Exception $e) {
+							throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
 						}
 						break;
 					case 'if':
@@ -182,10 +207,14 @@ class SugarRuntime {
 						$array = array_pop($stack);
 						if (is_array($array))
 							$stack []= $array[$index];
-						elseif (is_object($array))
-							$stack []= $array->$index;
 						else
 							$stack []= null;
+						break;
+					case '->':
+						$prop = array_pop($stack);
+						$obj = array_pop($stack);
+						if (is_object($obj))
+							$stack []= $obj->$prop;
 						break;
 					default:
 						throw new SugarRuntimeException ('unknown opcode: '.$code[$i]);

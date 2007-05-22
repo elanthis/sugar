@@ -6,17 +6,26 @@ class SugarParser {
 	private $sugar;
 
 	static $binops = array(
-		'.' => 0,
+		'.' => 0, '->' => 0,
 		'*' => 1, '/' => 1, '%' => 1,
 		'+' => 2, '-' => 2,
 		'==' => 3, '=' => 3, '<' => 3, '>' => 3,
 		'!=' => 3, '<=' => 3, '>=' => 3, 'in' => 3,
 		'||' => 4, '&&' => 4,
-		'(' => 10,
+		'(' => 11,
 	);
 
 	public function __construct (&$sugar) {
 		$this->sugar =& $sugar;
+	}
+
+	private function collapseOps ($level) {
+		while ($this->stack && SugarParser::$binops[$this->stack[count($this->stack)-1]] <= $level) {
+			$right = array_pop($this->output);
+			$left = array_pop($this->output);
+			$this->output []= array_merge($left, $right, array($this->stack[count($this->stack)-1]));
+			array_pop($this->stack);
+		}
 	}
 
 	private function E () {
@@ -25,17 +34,44 @@ class SugarParser {
 
 		// while we have a binary operator, continue chunking along
 		while (($op = $this->tokens->peek()) && array_key_exists($op[0], SugarParser::$binops)) {
-			$this->B();
-			$this->P();
+			// method call?
+			$p1 = $this->tokens->peek(1);
+			$p2 = $this->tokens->peek(2);
+
+			// method call:  expr -> name ( 
+			if ($op[0] == '->' && $p1[0] == 'name' && $p2[0] == '(') {
+				// store name
+				$func = $p1[1];
+
+				// read args
+				$this->tokens->pop(3);
+				$params = array();
+				while (($token = $this->tokens->peek()) && $token[0] != ')') {
+					$params []= $this->compileStmt();
+
+					// consume trailing , if it exists
+					$token = $this->tokens->peek();
+					if ($token[0] == ',')
+						$this->tokens->pop();
+					elseif ($token[0] != ')')
+						throw new SugarParseException($token[2], $token[3], 'unexpected '.SugarTokenizer::tokenName($token).'; expected ) or ,');
+				}
+				$this->tokens->pop();
+
+				// form output ops
+				$this->collapseOps(0);
+				$obj = array_pop($this->output);
+				$this->output []= array_merge($obj, array('method', $func, $params));
+
+			// normal binary operator
+			} else {
+				$this->B();
+				$this->P();
+			}
 		}
 
 		// pop remaining operators
-		while ($this->stack && $this->stack[count($this->stack)-1] != '(') {
-			$right = array_pop($this->output);
-			$left = array_pop($this->output);
-			$this->output []= array_merge($left, $right, array($this->stack[count($this->stack)-1]));
-			array_pop($this->stack);
-		}
+		$this->collapseOps(10);
 	}
 
 	private function P () {
@@ -91,14 +127,9 @@ class SugarParser {
 		$op = $op[0];
 
 		// pop higher precedence operators
-		while ($this->stack && SugarParser::$binops[$this->stack[count($this->stack)-1]] <= SugarParser::$binops[$op]) {
-			$right = array_pop($this->output);
-			$left = array_pop($this->output);
-			$this->output []= array_merge($left, $right, array($this->stack[count($this->stack)-1]));
-			array_pop($this->stack);
-		}
+		$this->collapseOps(SugarParser::$binops[$op]);
 
-		// merge = to ==
+		// convert = to ===
 		if ($op == '=') $op = '==';
 
 		// push op

@@ -31,6 +31,19 @@ function one($str='') {
 }
 $sugar->register('one', 'one', SUGAR_FUNC_SIMPLE);
 
+// test class
+class Test {
+	var $bar = 'BAR';
+
+	function foo () {
+		return 3;
+	}
+
+	function doit ($one, $two, $three) {
+		return '[['.$one.','.$two.','.$three.']]';
+	}
+}
+
 // set source variable is s is on
 if ($_GET['s'])
 	$sugar->set('source', '<div style="white-space: pre; border: 1px solid #000; padding: 4px; background: #eee;"><b>Source</b><br/>'.htmlentities($sugar->getSource($file)).'</div>');
@@ -40,8 +53,10 @@ $sugar->set('i', 10);
 $sugar->set('test', 'dancing mice');
 $sugar->set('html', '<b>bold</b>');
 $sugar->set('list', array('one','two','three','foo'=>'bar'));
+$sugar->set('obj', new Test());
 
 // display file
 $sugar->caching = false;
+$sugar->methods = true;
 $sugar->display($file);
 ?>

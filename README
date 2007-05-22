@@ -137,6 +137,23 @@ the variable in the tag.  Example:
   <% $test = $s+$i %>
   <% $test %> is test7
 
+Array keys can be accessed using the . operator.  Example:
+
+  <% $array.key %>
+	<% $array.0 %>
+	<% $array.$var %>
+	<% $array.($var-1) %>
+
+Object properties can be accessed using the -> operator.  Object
+methods, if enabled, can be invoked using the -> operator followed
+by a method name, then a list of comma-separated parameters within
+().  Example:
+
+  <% $obj->name %>
+	<% $obj->$var %>
+	<% $obj->method() %>
+	<% $obj->foobar(1, $var, "test") %>
+
 The value of a variable is always HTML-escaped by default.  To
 display the value of a variable with no escaping, use the echo
 keyword.
@@ -231,6 +248,17 @@ displayed like a regular expression by Sugar, so functions should
 not both return a value and display output.  Returned values are
 escaped when displayed by default, but output is not altered.
 
+Method support can be enabled by setting the $methods property to
+true.
+
+  $sugar->methods = true;
+
+By default, object methods cannot be invoked within a template for
+security reasons; there is no way to know which methods are safe
+for templates to execute.  It is highly recommended that this
+behavior be left at the default, and that programmers avoid the need
+for templates to access any object methods.
+
 To render a template, you can use either the display() or the
 displayString() method.  The display() method will look up the file
 given it using the storage engine and render the result.  The
@@ -240,6 +268,14 @@ templates/$file.tpl, where $file is the name you pass to display().
 
   $sugar->display('myTemplate'); // loads templates/myTemplate.tpl
 	$sugar->displayString('Var = <% $var %>');
+
+Caching can be disabled by setting the $caching property to false.  By
+default, caching is enabled.  Disabling caching is useful for debugging
+purposes.  The template directory can also be changed by setting the
+$templateDir property.
+
+  $sugar->templateDir = '/var/myapp/tpl/';
+  $sugar->caching = false; // disable caching
 
 -----------------------------------------------------------------------
 VI.  Known Issues

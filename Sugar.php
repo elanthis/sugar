@@ -16,6 +16,7 @@ class Sugar {
 
 	public $storage = null;
 	public $caching = true;
+	public $methods = false;
 
 	public $templateDir = './templates';
 
