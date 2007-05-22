@@ -46,7 +46,7 @@ class SugarRuntime {
 						break;
 					case 'negate':
 						$v = array_pop($stack);
-						$stack []= -$v;
+						$stack []= -intval($v);
 						break;
 					case '!':
 						$v = array_pop($stack);

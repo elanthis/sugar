@@ -23,9 +23,13 @@ class SugarParser {
 		while ($this->stack && SugarParser::$binops[$this->stack[count($this->stack)-1]] <= $level) {
 			$right = array_pop($this->output);
 			$left = array_pop($this->output);
-			$this->output []= array_merge($left, $right, array($this->stack[count($this->stack)-1]));
-			array_pop($this->stack);
+			$op = array_pop($this->stack);
+			$this->output []= array_merge($left, $right, array($op));
 		}
+	}
+
+	private static function isData (&$node) {
+		return (count($node) == 2 && $node[0] == 'push');
 	}
 
 	private function E () {
@@ -146,10 +150,16 @@ class SugarParser {
 
 		// negate operator
 		if ($op == '-') {
-			$this->output []= array_merge($value, array('negate'));
+			if (SugarParser::isData($value))
+				$this->output []= array('push', -intval($value[1]));
+			else
+				$this->output []= array_merge($value, array('negate'));
 		// not operator
 		} elseif ($op == '!') {
-			$this->output []= array_merge($value, array('!'));
+			if (SugarParser::isData($value))
+				$this->output []= array('push', !$value[1]);
+			else
+				$this->output []= array_merge($value, array('!'));
 		}
 	}
 
