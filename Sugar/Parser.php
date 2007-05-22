@@ -280,7 +280,7 @@ class SugarParser {
 					// compile
 					switch ($block[0]) {
 						case 'foreach':
-							$bc = array_merge($block[4], array('foreach', $block[2], $block[3], $block[1]));
+							$bc = array_merge($block[4], array('foreach', strtolower($block[2]), strtolower($block[3]), $block[1]));
 							break;
 						case 'if':
 						case 'elif':
@@ -323,7 +323,7 @@ class SugarParser {
 					$this->tokens->pop(2);
 					$ops = $this->compileStmt($this->tokens);
 
-					$block[1] = array_merge($block[1], $ops, array('assign', $name));
+					$block[1] = array_merge($block[1], $ops, array('assign', strtolower($name)));
 
 				// we have a statement
 				} else {
