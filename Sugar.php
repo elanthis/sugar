@@ -11,8 +11,8 @@ define('SUGAR_FUNC_NO_CACHE', 2);
 define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
 
 class Sugar {
-    private $vars = null;
-    private $funcs = null;
+    private $vars = array(array());
+    private $funcs = array();
     private $parser = null;
 
     public $storage = null;
@@ -29,11 +29,15 @@ class Sugar {
     // set a variable
     function set ($name, $value) {
         $name = strtolower($name);
-        $this->vars [$name]= $value;
+        $this->vars[count($this->vars)-1] [$name]= $value;
     }
 
     function get ($name) {
-        return $this->vars[strtolower($name)];
+        $name = strtolower($name);
+        for ($i = count($this->vars)-1; $i >= 0; --$i)
+            if (array_key_exists($name, $this->vars[$i]))
+                return $this->vars[$i][$name];
+        return null;
     }
 
     // register a function; second parameter is optional real name
@@ -47,6 +51,13 @@ class Sugar {
         return $this->funcs[strtolower($name)];
     }
 
+    // execute
+    private function execute (&$data) {
+        $this->vars []= array();
+        SugarRuntime::execute($this, $data);
+        array_pop($this->vars);
+    }
+
     // compile and display given source
     function display ($file) {
         $data = $this->storage->load($file);
@@ -55,13 +66,13 @@ class Sugar {
             if ($this->caching)
                 $this->storage->store($file, $data);
         }
-        SugarRuntime::execute($this, $data);
+        $this->execute($data);
     }
 
     // compile and display given source
     function displayString ($source) {
-        $bc = $this->parser->compile($source);
-        SugarRuntime::execute($this, $data);
+        $data = $this->parser->compile($source);
+        $this->execute($data);
     }
 
     // get the source code for a file
