@@ -11,7 +11,7 @@ $templates = preg_grep('/^[^.].*[.]tpl$/', scandir('templates'));
 
 // create parser
 $sugar = new Sugar();
-$sugar->set('t', $_GET['t']);
+$sugar->set('t', $file);
 $sugar->set('s', $_GET['s']);
 $sugar->set('templates', $templates);
 
@@ -45,8 +45,7 @@ class Test {
 }
 
 // set source variable is s is on
-if ($_GET['s'])
-	$sugar->set('source', '<div style="white-space: pre; border: 1px solid #000; padding: 4px; background: #eee;"><b>Source</b><br/>'.htmlentities($sugar->getSource($file)).'</div>');
+$sugar->set('source', '<div style="white-space: pre; border: 1px solid #000; padding: 4px; background: #eee;"><b>Source</b><br/>'.htmlentities($sugar->getSource($file)).'</div>');
 
 // test variables
 $sugar->set('i', 10);

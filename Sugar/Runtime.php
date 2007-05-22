@@ -31,10 +31,6 @@ class SugarRuntime {
                         $val = array_pop($stack);
                         echo htmlentities(SugarRuntime::showValue($val));
                         break;
-                    case 'print-raw':
-                        $val = array_pop($stack);
-                        echo SugarRuntime::showValue($val);
-                        break;
                     case 'push':
                         $str = $code[++$i];
                         $stack []= $str;
@@ -143,7 +139,7 @@ class SugarRuntime {
                             if ($invoke[1] & SUGAR_FUNC_SIMPLE)
                                 $ret = call_user_func_array($invoke[0], $params);
                             else
-                                $ret = call_user_func($invoke[0], $this, $params);
+                                $ret = call_user_func($invoke[0], $sugar, $params);
 
                             // suppress return value if flag is set
                             if ($invoke[1] & SUGAR_FUNC_SUPPRESS_RETURN)

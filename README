@@ -204,6 +204,14 @@ values can be iterated over.
     <% $k %>=<% $i %>
   <% end %>
 
+Other template files can be included using the include function.  Code
+can be executed using the eval function.
+
+  <% include header %>
+	<% include 'some/other/template' %>
+	<% eval 'var is <% $var+1 %>' %>
+	<% eval (getCode ') %>
+
 -----------------------------------------------------------------------
 V.   Sugar API
 
@@ -283,5 +291,3 @@ VI.  Known Issues
 * HTML caching is not supported.  When added, also need a way to mark a
 function as no-cache, so that dynamic content can be inserted into
 pages still.
-
-* No way to include files.

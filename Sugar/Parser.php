@@ -365,13 +365,6 @@ class SugarParser {
                     $block =& $this->blocks[count($this->blocks)-1];
                     $block[1] = array_merge($block[1], $bc);
 
-                // print raw value
-                } elseif ($token[0] == 'echo') {
-                    $this->tokens->pop();
-                    $ops = $this->compileStmt($this->tokens);
-
-                    $block[1] = array_merge($block[1], $ops, array('print-raw'));
-
                 // if we have a var then a =, we have an assignment
                 } elseif ($token[0] == 'var' && ($t2 = $this->tokens->peek(1)) && $t2[0] == '=') {
                     // remember name value

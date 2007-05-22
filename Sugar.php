@@ -4,6 +4,7 @@ require_once dirname(__FILE__).'/Sugar/Parser.php';
 require_once dirname(__FILE__).'/Sugar/Storage.php';
 require_once dirname(__FILE__).'/Sugar/Tokenizer.php';
 require_once dirname(__FILE__).'/Sugar/Runtime.php';
+require_once dirname(__FILE__).'/Sugar/Stdlib.php';
 
 // function registration flags
 define('SUGAR_FUNC_SIMPLE', 1);
@@ -24,6 +25,8 @@ class Sugar {
     function __construct () {
         $this->storage = new SugarFileStorage($this);
         $this->parser = new SugarParser($this);
+
+        SugarStdlib::initialize($this);
     }
 
     // set a variable
