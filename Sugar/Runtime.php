@@ -9,6 +9,24 @@ class SugarRuntime {
 		$this->sugar =& $sugar;
 	}
 
+	public static function showValue (&$value) {
+		if (is_bool($value))
+			return $value?'true':'false';
+		elseif (is_array($value))
+			return print_r($value, true);
+		else
+			return $value;
+	}
+
+	public static function addValues ($left, $right) {
+		if (is_string($left))
+			return $left.$right;
+		elseif (is_array($left))
+			return array_merge($left, is_array($right)?$right:array($right));
+		else
+			return $left+$right;
+	}
+
 	public function execute ($code) {
 		$stack = array();
 
@@ -20,16 +38,11 @@ class SugarRuntime {
 						break;
 					case 'print':
 						$val = array_pop($stack);
-						if (is_bool($val))
-							echo $val?'true':'false';
-						elseif (is_array($val))
-							echo htmlentities(print_r($val, true));
-						else
-							echo htmlentities($val);
+						echo htmlentities(SugarRuntime::showValue($val));
 						break;
 					case 'print-raw':
 						$val = array_pop($stack);
-						echo $val;
+						echo SugarRuntime::showValue($val);
 						break;
 					case 'push':
 						$str = $code[++$i];
@@ -55,12 +68,7 @@ class SugarRuntime {
 					case '+':
 						$v2 = array_pop($stack);
 						$v1 = array_pop($stack);
-						if (is_string($v1))
-							$stack []= $v1.$v2;
-						elseif (is_array($v1))
-							$stack []= array_merge($v1, is_array($v2)?$v2:array($v2));
-						else
-							$stack []= $v1+$v2;
+						$stack []= SugarRuntime::addValues($v1, $v2);
 						break;
 					case '*':
 						$v2 = array_pop($stack);
@@ -227,3 +235,4 @@ class SugarRuntime {
 		return $stack[0];
 	}
 }
+// vim: set expandtab shiftwidth=4 tabstop=4 : ?>

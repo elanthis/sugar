@@ -41,14 +41,9 @@ class SugarTokenizer {
 			// find next <%
 			$next = strpos($this->src, '<%', $this->pos);
 
-			// noting but literal text left?
-			if ($next === FALSE) {
-				$text = substr($this->src, $this->pos);
-				$line = $this->line;
-				$this->line += substr_count($this->src, "\n", $this->pos);
-				$this->pos = strlen($this->src);
-				return array('literal', $text, $this->file, $line);
-			}
+			// set $next to last byte
+			if ($next === FALSE)
+				$next = strlen($this->src);
 
 			// just a literal?
 			if ($next > $this->pos) {
@@ -139,4 +134,4 @@ class SugarTokenizer {
 		return $this->eof;
 	}
 }
-?>
+// vim: set expandtab shiftwidth=4 tabstop=4 : ?>

@@ -58,4 +58,4 @@ class SugarFileStorage implements ISugarStorage {
 		return file_get_contents($this->getPath($name));
 	}
 }
-?>
+// vim: set expandtab shiftwidth=4 tabstop=4 : ?>

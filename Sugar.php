@@ -65,4 +65,4 @@ class Sugar {
 		return $this->storage->getSource($file);
 	}
 }
-?>
+// vim: set expandtab shiftwidth=4 tabstop=4 : ?>

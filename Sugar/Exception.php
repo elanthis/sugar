@@ -26,4 +26,4 @@ class SugarRuntimeException extends SugarException {
 		return 'Sugar Runtime Error: '.$this->getMessage();
 	}
 }
-?>
+// vim: set expandtab shiftwidth=4 tabstop=4 : ?>

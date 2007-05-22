@@ -3,6 +3,7 @@ class SugarParser {
 	private $tokens = null;
 	private $output = array();
 	private $stack = array();
+	private $blocks = array();
 	private $sugar;
 
 	static $binops = array(
@@ -21,10 +22,63 @@ class SugarParser {
 
 	private function collapseOps ($level) {
 		while ($this->stack && SugarParser::$binops[$this->stack[count($this->stack)-1]] <= $level) {
+			// pull operands and operator
 			$right = array_pop($this->output);
 			$left = array_pop($this->output);
 			$op = array_pop($this->stack);
-			$this->output []= array_merge($left, $right, array($op));
+
+			// optimize away if both operands are constant data
+			if (SugarParser::isData($left) && SugarParser::isData($right)) {
+				switch ($op) {
+					case '+':
+						$this->output []= array('push', SugarRuntime::addValues($left[1], $right[1]));
+						break;
+					case '*':
+						$this->output []= array('push', $left[1] * $right[1]);
+						break;
+					case '-':
+						$this->output []= array('push', $left[1] - $right[1]);
+						break;
+					case '/':
+						$this->output []= array('push', $left[1] / $right[1]);
+						break;
+					case '%':
+						$this->output []= array('push', $left[1] % $right[1]);
+						break;
+					case '||':
+						$this->output []= array('push', $left[1] || $right[1]);
+						break;
+					case '&&':
+						$this->output []= array('push', $left[1] && $right[1]);
+						break;
+					case '==':
+						$this->output []= array('push', $left[1] == $right[1]);
+						break;
+					case '!=':
+						$this->output []= array('push', $left[1] != $right[1]);
+						break;
+					case '<':
+						$this->output []= array('push', $left[1] < $right[1]);
+						break;
+					case '>':
+						$this->output []= array('push', $left[1] > $right[1]);
+						break;
+					case '<=':
+						$this->output []= array('push', $left[1] <= $right[1]);
+						break;
+					case '>=':
+						$this->output []= array('push', $left[1] >= $right[1]);
+						break;
+
+					// unsupported operator - emit opcodes
+					default:
+						$this->output []= array_merge($left, $right, array($op));
+						break;
+				}
+			// can't optimize away - emit opcodes
+			} else {
+				$this->output []= array_merge($left, $right, array($op));
+			}
 		}
 	}
 
@@ -207,9 +261,20 @@ class SugarParser {
 		}
 	}
 
+	private function appendEcho ($text) {
+		$block =& $this->blocks[count($this->blocks)-1];
+
+		// if block ends in an echo, concat them; otherwise, add op
+		if ($block[1][count($block[1])-2] == 'echo')
+			$block[1][count($block[1])-1] .= $text;
+		// otherwise, just append the ops
+		else
+			$block[1] = array_merge($block[1], array('echo', $text));
+	}
+
 	// compile the given source code into bytecode
 	public function compile ($src, $file = '<input>') {
-		$blocks = array(
+		$this->blocks = array(
 			array('main', array())
 		);
 
@@ -218,7 +283,7 @@ class SugarParser {
 
 			// build byte-code
 			while (!$this->tokens->eof()) {
-				$block =& $blocks[count($blocks)-1];
+				$block =& $this->blocks[count($this->blocks)-1];
 
 				// peek at token
 				$token = $this->tokens->peek();
@@ -230,9 +295,7 @@ class SugarParser {
 				// raw string
 				} elseif ($token[0] == 'literal') {
 					$this->tokens->pop();
-
-					$block[1] []= 'echo';
-					$block[1] []= $token[1];
+					$this->appendEcho($token[1]);
 					continue;
 
 				// if the command is empty, ignore
@@ -245,7 +308,7 @@ class SugarParser {
 
 					$ops = $this->compileStmt($this->tokens);
 
-					$blocks []= array('if', array(), array(array($ops, null)));
+					$this->blocks []= array('if', array(), array(array($ops, null)));
 
 				// else for if
 				} elseif ($token[0] == 'else' || $token[0] == 'elif') {
@@ -305,7 +368,7 @@ class SugarParser {
 					$ops = $this->compileStmt($this->tokens);
 
 					// store foreach block
-					$blocks []= array('foreach', array(), $key, $name, $ops);
+					$this->blocks []= array('foreach', array(), $key, $name, $ops);
 
 				// pop the block
 				} elseif ($token[0] == 'end') {
@@ -316,7 +379,7 @@ class SugarParser {
 						throw new SugarParseException($token[2], $token[3], 'end without an if or loop');
 
 					// new top block
-					array_pop($blocks);
+					array_pop($this->blocks);
 
 					// compile
 					switch ($block[0]) {
@@ -345,7 +408,7 @@ class SugarParser {
 					}
 
 					// merge bytecode to top block
-					$block =& $blocks[count($blocks)-1];
+					$block =& $this->blocks[count($this->blocks)-1];
 					$block[1] = array_merge($block[1], $bc);
 
 				// print raw value
@@ -369,7 +432,11 @@ class SugarParser {
 				// we have a statement
 				} else {
 					$ops = $this->compileStmt($this->tokens);
-					$block[1] = array_merge($block[1], $ops, array('print'));
+
+					if (SugarParser::isData($ops))
+						$this->appendEcho(SugarRuntime::showValue($ops[1]));
+					else
+						$block[1] = array_merge($block[1], $ops, array('print'));
 				}
 
 				// we should have the end token now
@@ -379,7 +446,7 @@ class SugarParser {
 			}
 
 			// still in a block?
-			if (count($blocks) != 1)
+			if (count($this->blocks) != 1)
 				throw new SugarParseException($end[2], $end[3], 'unxpected end of file; expected end');
 
 		// error handler
@@ -390,7 +457,7 @@ class SugarParser {
 		// free tokenizer
 		$this->tokens = null;
 
-		return $blocks[0][1];
+		return $this->blocks[0][1];
 	}
 }
-?>
+// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
