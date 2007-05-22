@@ -280,9 +280,6 @@ $templateDir property.
 -----------------------------------------------------------------------
 VI.  Known Issues
 
-* No bytecode level optimization, even for basic things like -3 (that
-is compiled as push 3, negate; should just be push -3).
-
 * HTML caching is not supported.  When added, also need a way to mark a
 function as no-cache, so that dynamic content can be inserted into
 pages still.
