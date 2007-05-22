@@ -28,57 +28,11 @@ class SugarParser {
             $op = array_pop($this->stack);
 
             // optimize away if both operands are constant data
-            if (SugarParser::isData($left) && SugarParser::isData($right)) {
-                switch ($op) {
-                    case '+':
-                        $this->output []= array('push', SugarRuntime::addValues($left[1], $right[1]));
-                        break;
-                    case '*':
-                        $this->output []= array('push', $left[1] * $right[1]);
-                        break;
-                    case '-':
-                        $this->output []= array('push', $left[1] - $right[1]);
-                        break;
-                    case '/':
-                        $this->output []= array('push', $left[1] / $right[1]);
-                        break;
-                    case '%':
-                        $this->output []= array('push', $left[1] % $right[1]);
-                        break;
-                    case '||':
-                        $this->output []= array('push', $left[1] || $right[1]);
-                        break;
-                    case '&&':
-                        $this->output []= array('push', $left[1] && $right[1]);
-                        break;
-                    case '==':
-                        $this->output []= array('push', $left[1] == $right[1]);
-                        break;
-                    case '!=':
-                        $this->output []= array('push', $left[1] != $right[1]);
-                        break;
-                    case '<':
-                        $this->output []= array('push', $left[1] < $right[1]);
-                        break;
-                    case '>':
-                        $this->output []= array('push', $left[1] > $right[1]);
-                        break;
-                    case '<=':
-                        $this->output []= array('push', $left[1] <= $right[1]);
-                        break;
-                    case '>=':
-                        $this->output []= array('push', $left[1] >= $right[1]);
-                        break;
-
-                    // unsupported operator - emit opcodes
-                    default:
-                        $this->output []= array_merge($left, $right, array($op));
-                        break;
-                }
+            if (SugarParser::isData($left) && SugarParser::isData($right))
+                $this->output []= array('push', SugarRuntime::execute($this->sugar, array_merge($left, $right, array($op))));
             // can't optimize away - emit opcodes
-            } else {
+            else
                 $this->output []= array_merge($left, $right, array($op));
-            }
         }
     }
 

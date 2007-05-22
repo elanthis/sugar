@@ -1,14 +1,5 @@
 <?php
 class SugarRuntime {
-    private $sugar;
-
-    public $vars = array();
-    public $funcs = array();
-
-    public function __construct (&$sugar) {
-        $this->sugar =& $sugar;
-    }
-
     public static function showValue (&$value) {
         if (is_bool($value))
             return $value?'true':'false';
@@ -27,7 +18,7 @@ class SugarRuntime {
             return $left+$right;
     }
 
-    public function execute ($code) {
+    public static function execute (&$sugar, $code) {
         $stack = array();
 
         try {
@@ -50,12 +41,12 @@ class SugarRuntime {
                         break;
                     case 'lookup':
                         $var = strtolower($code[++$i]);
-                        $stack []= $this->vars[$var];
+                        $stack []= $sugar->get($var);
                         break;
                     case 'assign':
                         $name = $code[++$i];
                         $value = array_pop($stack);
-                        $this->vars [$name]= $value;
+                        $sugar->set($name, $value);
                         break;
                     case 'negate':
                         $v = array_pop($stack);
@@ -137,14 +128,14 @@ class SugarRuntime {
                     case 'call':
                         $func = $code[++$i];
                         $args = $code[++$i];
-                        $invoke = $this->funcs[strtolower($func)];
+                        $invoke =& $sugar->getFunction($func);
                         if (!$invoke)
                             throw new SugarRuntimeException ('unknown function: '.$func);
 
                         // compile args
                         $params = array();
                         foreach($args as $name=>$pcode)
-                            $params[$name] = $this->execute($pcode);
+                            $params[$name] = SugarRuntime::execute($sugar, $pcode);
 
                         // exception net
                         try {
@@ -169,7 +160,7 @@ class SugarRuntime {
                         $func = $code[++$i];
                         $args = $code[++$i];
 
-                        if (!$this->sugar->methods)
+                        if (!$sugar->methods)
                             throw new SugarRuntimeException ('method invocation is disabled');
 
                         if (!is_object($obj))
@@ -181,7 +172,7 @@ class SugarRuntime {
                         // compile args
                         $params = array();
                         foreach($args as $pcode)
-                            $params [] = $this->execute($pcode);
+                            $params [] = SugarRuntime::execute($sugar, $pcode);
 
                         // exception net
                         try {
@@ -195,9 +186,9 @@ class SugarRuntime {
                         $true = $code[++$i];
                         $false = $code[++$i];
                         if ($test && $true)
-                            $this->execute($true);
+                            SugarRuntime::execute($sugar, $true);
                         elseif (!$test && $false)
-                            $this->execute($false);
+                            SugarRuntime::execute($sugar, $false);
                         break;
                     case 'foreach':
                         $array = array_pop($stack);
@@ -206,9 +197,9 @@ class SugarRuntime {
                         $block = $code[++$i];
                         foreach($array as $k=>$v) {
                             if ($key)
-                                $this->vars [$key]= $k;
-                            $this->vars [$name]= $v;
-                            $this->execute($block);
+                                $sugar->set($key, $k);
+                            $sugar->set($name, $v);
+                            SugarRuntime::execute($sugar, $block);
                         }
                     case '.':
                         $index = array_pop($stack);
