@@ -18,24 +18,34 @@ class SugarRuntime {
             return $left+$right;
     }
 
-    public static function invoke (&$sugar, $func, $args) {
+    public static function invoke (&$sugar, $invoke, $flags, $args) {
+        // exception net
+        try {
+            // call function, using appropriate method
+            if ($flags & SUGAR_FUNC_SIMPLE)
+                $ret = call_user_func_array($invoke, $args);
+            else
+                $ret = call_user_func($invoke, $sugar, $args);
+
+            // suppress return value if necessary
+            if ($flags & SUGAR_FUNC_SUPPRESS_RETURN)
+                return null;
+            else
+                return $ret;
+        } catch (Exception $e) {
+            echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
+            return null;
+        }
+    }
+
+    public static function invokeNamed (&$sugar, $func, $args) {
         // lookup function
         $invoke =& $sugar->getFunction($func);
         if (!$invoke)
             throw new SugarRuntimeException ('unknown function: '.$func);
 
-        // exception net
-        try {
-            // call function, using appropriate method
-            if ($invoke[1] & SUGAR_FUNC_SIMPLE)
-                call_user_func_array($invoke[0], $args);
-            else
-                call_user_func($invoke[0], $sugar, $args);
-        } catch (SugarException $e) {
-            throw $e;
-        } catch (Exception $e) {
-            throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
-        }
+        // run it
+        SugarRuntime::invoke($sugar, $invoke[0], $invoke[1], $args);
     }
 
     public static function execute (&$sugar, $code) {
@@ -165,37 +175,21 @@ class SugarRuntime {
                     if ($sugar->cacheHandler && ($invoke[1] & SUGAR_FUNC_NO_CACHE))
                         $sugar->cacheHandler->addCall($func, $params);
 
+                    // caching wrapper
+                    if ($sugar->cacheHandler)
+                        $sugar->cacheHandler->beginCache();
+
                     // exception net
-                    try {
-                        // caching wrapper
-                        if ($sugar->cacheHandler)
-                            ob_start();
+                    $ret = SugarRuntime::invoke($sugar, $invoke[0], $invoke[1], $params);
 
-                        // call function, using appropriate method
-                        if ($invoke[1] & SUGAR_FUNC_SIMPLE)
-                            $ret = call_user_func_array($invoke[0], $params);
-                        else
-                            $ret = call_user_func($invoke[0], $sugar, $params);
-
-                        // process caching
-                        if ($sugar->cacheHandler) {
-                            // only cache output from cacheable functions
-                            if ( !($invoke[1] & SUGAR_FUNC_NO_CACHE)) {
-                                $out = ob_get_contents();
-                                $sugar->cacheHandler->addOutput($out);
-                            }
-                            ob_end_clean();
-                        }
-
-                        // suppress return value if flag is set
-                        if ($invoke[1] & SUGAR_FUNC_SUPPRESS_RETURN)
-                            $ret = null;
-
-                        // store return value
-                        $stack []= $ret;
-                    } catch (Exception $e) {
-                        throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
+                    // process caching
+                    if ($sugar->cacheHandler) {
+                        // only cache output from cacheable functions
+                        $sugar->cacheHandler->endCache($invoke[1] & SUGAR_FUNC_NO_CACHE);
                     }
+
+                    // store return value
+                    $stack []= $ret;
                     break;
                 case 'method':
                     $obj = array_pop($stack);
@@ -216,24 +210,16 @@ class SugarRuntime {
                     foreach($args as $pcode)
                         $params [] = SugarRuntime::execute($sugar, $pcode, $cache);
 
-                    // exception net
-                    try {
-                        // caching wrapper
-                        if ($sugar->cacheHandler)
-                            ob_start();
+                    // caching wrapper
+                    if ($sugar->cacheHandler)
+                        $sugar->cacheHandler->beginCache();
 
-                        // invoke
-                        $stack []= call_user_func_array(array($obj, $func), $params);
+                    // invoke
+                    $stack []= SugarRuntime::invoke($sugar, array($obj, $func), SUGAR_FUNC_SIMPLE, $params);
 
-                        // process caching
-                        if ($sugar->cacheHandler) {
-                            $out = ob_get_contents();
-                            $sugar->cacheHandler->addOutput($out);
-                            ob_end_clean();
-                        }
-                    } catch (Exception $e) {
-                        throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
-                    }
+                    // process caching
+                    if ($sugar->cacheHandler)
+                        $sugar->cacheHandler->endCache();
                     break;
                 case 'if':
                     $test = array_pop($stack);

@@ -20,11 +20,21 @@ class SugarCacheHandler {
     }
 
     public function addCall ($func, $args) {
-        $this->output .= '<?php SugarRuntime::invoke($sugar, "'.addslashes($func).'", unserialize("'.addslashes(serialize($args)).'")); ?>';
+        $this->output .= '<?php SugarRuntime::invokeNamed($sugar, "'.addslashes($func).'", unserialize("'.addslashes(serialize($args)).'")); ?>';
     }
 
     public function getOutput () {
         return $this->output;
+    }
+
+    public function beginCache () {
+        ob_start();
+    }
+
+    public function endCache ($ignore = false) {
+        if (!$ignore)
+            $this->output .= ob_get_contents();
+        ob_end_clean();
     }
 }
 

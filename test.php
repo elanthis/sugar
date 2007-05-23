@@ -53,6 +53,10 @@ class Test {
 	function doit ($one, $two, $three) {
 		return '[['.$one.','.$two.','.$three.']]';
 	}
+
+	function fail () {
+		throw new Exception("fail() called");
+	}
 }
 
 // set source variable is s is on
