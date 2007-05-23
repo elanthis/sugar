@@ -2,7 +2,7 @@
 interface ISugarStorage {
     function load ($name);
     function store ($name, $contents);
-    function getSource ($name);
+    function source ($name);
 }
 
 class SugarFileStorage implements ISugarStorage {
@@ -15,31 +15,36 @@ class SugarFileStorage implements ISugarStorage {
         $this->sugar =& $sugar;
     }
 
+    // validate a source name as being safe
+    // must be only alpha-numeric and /, with no leading or trailing slash
+    public static function validSourceName ($name) {
+        return preg_match(';^\w+(/\w+)*$;', $name);
+    }
+
     public function load ($name) {
         $path = $this->templateDir.'/'.$name.'.tpl';
         $cpath = $this->compileDir.'/'.$name.'.ctpl';
 
+        // validate name
+        if (!SugarFileStorage::validSourceName($name))
+            throw new SugarException('invalid template name: '.$name);
+
         // no such file?  end now
         if (!file_exists($path))
-            return null;
+            throw new SugarException('template not found: '.$name);
 
-        // no caching?  just return source
-        if ($this->sugar->debug)
-            return $this->getSource($name);
-
-        // no cache file?  just return source
-        if (!file_exists($cpath))
-            return $this->getSource($name);
-
-        // get stamps
-        $sstamp = filemtime($path);
-        $cstamp = filemtime($cpath);
-
-        // return proper file
-        if ($sstamp > $cstamp)
-            return file_get_contents($path);
-        else
+        // if caching is enabled, and the cache file exists, and its up-to-date, return the cached contents
+        if (!$this->sugar->debug && file_exists($cpath) && filemtime($cpath)>=filemtime($path))
             return unserialize(file_get_contents($cpath));
+
+        // otherwise, compile the source, cache it, and continue on
+        $parser = new SugarParser($this->sugar);
+        $data = $parser->compile($this->source($name));
+        $parser = null;
+
+        $this->store($name, $data);
+
+        return $data;
     }
 
     public function store ($name, $bc) {
@@ -51,7 +56,7 @@ class SugarFileStorage implements ISugarStorage {
         }
     }
 
-    public function getSource ($name) {
+    public function source ($name) {
         return file_get_contents($this->templateDir.'/'.$name.'.tpl');
     }
 }

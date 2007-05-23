@@ -45,7 +45,7 @@ class Test {
 }
 
 // set source variable is s is on
-$sugar->set('source', '<div style="white-space: pre; border: 1px solid #000; padding: 4px; background: #eee;"><b>Source</b><br/>'.htmlentities($sugar->getSource($file)).'</div>');
+$sugar->set('source', '<div style="white-space: pre; border: 1px solid #000; padding: 4px; background: #eee;"><b>Source</b><br/>'.htmlentities($sugar->storage->source($file)).'</div>');
 
 // test variables
 $sugar->set('i', 10);

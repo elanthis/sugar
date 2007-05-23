@@ -14,7 +14,6 @@ define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
 class Sugar {
     private $vars = array(array());
     private $funcs = array();
-    private $parser = null;
 
     public $storage = null;
     public $debug = false;
@@ -22,7 +21,6 @@ class Sugar {
 
     function __construct () {
         $this->storage = new SugarFileStorage($this);
-        $this->parser = new SugarParser($this);
 
         SugarStdlib::initialize($this);
     }
@@ -48,6 +46,7 @@ class Sugar {
         $this->funcs [strtolower($name)]= array($invoke, $flags);
     }
 
+    // return a function from the registered list
     function getFunction ($name) {
         return $this->funcs[strtolower($name)];
     }
@@ -61,24 +60,31 @@ class Sugar {
 
     // compile and display given source
     function display ($file) {
-        $data = $this->storage->load($file);
-        if (is_string($data)) {
-            $data = $this->parser->compile($data, $this->storage->getPath($file));
-            if (!$this->debug)
-                $this->storage->store($file, $data);
+        try {
+            $data = $this->storage->load($file);
+            $this->execute($data);
+        } catch (SugarException $e) {
+            echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
+            return false;
         }
-        $this->execute($data);
+
+        return true;
     }
 
     // compile and display given source
     function displayString ($source) {
-        $data = $this->parser->compile($source);
-        $this->execute($data);
-    }
+        try {
+            // compile
+            $parser = new SugarParser($this);
+            $data = $parser->compile($source);
+            $parser = null;
 
-    // get the source code for a file
-    function getSource ($file) {
-        return $this->storage->getSource($file);
+            // run
+            $this->execute($data);
+        } catch (SugarException $e) {
+            echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
+            return false;
+        }
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

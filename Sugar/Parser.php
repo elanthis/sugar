@@ -232,174 +232,168 @@ class SugarParser {
             array('main', array())
         );
 
-        try {
-            $this->tokens = new SugarTokenizer($src, $file);
+        $this->tokens = new SugarTokenizer($src, $file);
 
-            // build byte-code
-            while (!$this->tokens->eof()) {
-                $block =& $this->blocks[count($this->blocks)-1];
+        // build byte-code
+        while (!$this->tokens->eof()) {
+            $block =& $this->blocks[count($this->blocks)-1];
 
-                // peek at token
-                $token = $this->tokens->peek();
+            // peek at token
+            $token = $this->tokens->peek();
 
-                // eof
-                if (!$token) {
-                    break;
+            // eof
+            if (!$token) {
+                break;
 
-                // raw string
-                } elseif ($token[0] == 'literal') {
-                    $this->tokens->pop();
-                    $this->appendEcho($token[1]);
-                    continue;
+            // raw string
+            } elseif ($token[0] == 'literal') {
+                $this->tokens->pop();
+                $this->appendEcho($token[1]);
+                continue;
 
-                // if the command is empty, ignore
-                } elseif ($token[0] == '%>' || $token[0] == ';') {
-                    // do nothing
+            // if the command is empty, ignore
+            } elseif ($token[0] == '%>' || $token[0] == ';') {
+                // do nothing
 
-                // print raw value
-                } elseif ($token[0] == 'if') {
-                    $this->tokens->pop();
+            // print raw value
+            } elseif ($token[0] == 'if') {
+                $this->tokens->pop();
 
-                    $ops = $this->compileStmt($this->tokens);
+                $ops = $this->compileStmt($this->tokens);
 
-                    $this->blocks []= array('if', array(), array(array($ops, null)));
+                $this->blocks []= array('if', array(), array(array($ops, null)));
 
-                // else for if
-                } elseif ($token[0] == 'else' || $token[0] == 'elif') {
-                    $this->tokens->pop();
+            // else for if
+            } elseif ($token[0] == 'else' || $token[0] == 'elif') {
+                $this->tokens->pop();
 
-                    // get top block; must be an if or elif
-                    if ($block[0] != 'if' && $block[0] != 'elif')
-                        throw new SugarParseException($block[2], $block[3], 'else missing if');
+                // get top block; must be an if or elif
+                if ($block[0] != 'if' && $block[0] != 'elif')
+                    throw new SugarParseException($block[2], $block[3], 'else missing if');
 
-                    // update block
-                    $block[0] = $token[0];
-                    $block[2][count($block[2])-1][1] = $block[1];
-                    $block[1] = array();
-                    $block[2] []= array(null, null);
+                // update block
+                $block[0] = $token[0];
+                $block[2][count($block[2])-1][1] = $block[1];
+                $block[1] = array();
+                $block[2] []= array(null, null);
 
-                    // elif test
-                    if ($token[0] == 'elif')
-                        $block[2][count($block[2])-1][0] = $this->compileStmt($this->tokens);
+                // elif test
+                if ($token[0] == 'elif')
+                    $block[2][count($block[2])-1][0] = $this->compileStmt($this->tokens);
 
-                // loop over an array
-                } elseif ($token[0] == 'foreach') {
-                    $name = $this->tokens->peek(1);
-                    $sep = $this->tokens->peek(2);
-                    $name2 = $this->tokens->peek(3);
-                    $eq = $this->tokens->peek(4);
+            // loop over an array
+            } elseif ($token[0] == 'foreach') {
+                $name = $this->tokens->peek(1);
+                $sep = $this->tokens->peek(2);
+                $name2 = $this->tokens->peek(3);
+                $eq = $this->tokens->peek(4);
 
-                    // lead with name
-                    if ($name[0] != 'var')
-                        throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($name).'; expected variable');
+                // lead with name
+                if ($name[0] != 'var')
+                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($name).'; expected variable');
 
-                    // var = expression?
-                    if ($sep[0] == 'in') {
-                        $key = null;
-                        $name = $name[1];
-                        $this->tokens->pop(3);
+                // var = expression?
+                if ($sep[0] == 'in') {
+                    $key = null;
+                    $name = $name[1];
+                    $this->tokens->pop(3);
 
-                    // var , var = expression ?
-                    } elseif ($sep[0] == ',') {
-                        // need a second name
-                        if ($name2[0] != 'var')
-                            throw new SugarParseException($name2[2], $name2[3], 'unexpected '.SugarTokenizer::tokenName($name2).'; expected variable');
+                // var , var = expression ?
+                } elseif ($sep[0] == ',') {
+                    // need a second name
+                    if ($name2[0] != 'var')
+                        throw new SugarParseException($name2[2], $name2[3], 'unexpected '.SugarTokenizer::tokenName($name2).'; expected variable');
 
-                        // and follow with an =
-                        if ($eq[0] != 'in')
-                            throw new SugarParseException($eq[2], $eq[3], 'unexpected '.SugarTokenizer::tokenName($eq).'; expected in');
-                    
-                        $key = $name[1];
-                        $name = $name2[1];
-                        $this->tokens->pop(5);
-
-                    // invalid
-                    } else {
-                        throw new SugarParseException($sep[2], $sep[3], 'unexpected '.SugarTokenizer::tokenName($sep).'; expected , or in');
-                    }
-
-                    // compile expression
-                    $ops = $this->compileStmt($this->tokens);
-
-                    // store foreach block
-                    $this->blocks []= array('foreach', array(), $key, $name, $ops);
-
-                // pop the block
-                } elseif ($token[0] == 'end') {
-                    $this->tokens->pop();
-
-                    // can't end if we're in the main block
-                    if ($block[0] == 'main')
-                        throw new SugarParseException($token[2], $token[3], 'end without an if or loop');
-
-                    // new top block
-                    array_pop($this->blocks);
-
-                    // compile
-                    switch ($block[0]) {
-                        case 'foreach':
-                            $bc = array_merge($block[4], array('foreach', strtolower($block[2]), strtolower($block[3]), $block[1]));
-                            break;
-                        case 'if':
-                        case 'elif':
-                        case 'else':
-                            // store current block opcodes into last block
-                            $block[2][count($block[2])-1][1] = $block[1];
-
-                            // build if tree
-                            $bc = array();
-                            while (!empty($block[2])) {
-                                $chunk = array_pop($block[2]);
-                                if ($chunk[0])
-                                    $bc = array_merge($chunk[0], array('if', $chunk[1], $bc));
-                                else
-                                    $bc = $chunk[1];
-                            }
-
-                            break;
-                        default:
-                            die('Internal Error: '.__FILE__.','.__LINE__);
-                    }
-
-                    // merge bytecode to top block
-                    $block =& $this->blocks[count($this->blocks)-1];
-                    $block[1] = array_merge($block[1], $bc);
-
-                // if we have a var then a =, we have an assignment
-                } elseif ($token[0] == 'var' && ($t2 = $this->tokens->peek(1)) && $t2[0] == '=') {
-                    // remember name value
-                    $name = $token[1];
+                    // and follow with an =
+                    if ($eq[0] != 'in')
+                        throw new SugarParseException($eq[2], $eq[3], 'unexpected '.SugarTokenizer::tokenName($eq).'; expected in');
                 
-                    // remove tokens, parse
-                    $this->tokens->pop(2);
-                    $ops = $this->compileStmt($this->tokens);
+                    $key = $name[1];
+                    $name = $name2[1];
+                    $this->tokens->pop(5);
 
-                    $block[1] = array_merge($block[1], $ops, array('assign', strtolower($name)));
-
-                // we have a statement
+                // invalid
                 } else {
-                    $ops = $this->compileStmt($this->tokens);
-
-                    if (SugarParser::isData($ops))
-                        $this->appendEcho(SugarRuntime::showValue($ops[1]));
-                    else
-                        $block[1] = array_merge($block[1], $ops, array('print'));
+                    throw new SugarParseException($sep[2], $sep[3], 'unexpected '.SugarTokenizer::tokenName($sep).'; expected , or in');
                 }
 
-                // we should have the end token now
-                $end = $this->tokens->get();
-                if ($end[0] != '%>' && $end[0] != ';')
-                    throw new SugarParseException($end[2], $end[3], 'unexpected '.SugarTokenizer::tokenName($end).'; expected %>');
+                // compile expression
+                $ops = $this->compileStmt($this->tokens);
+
+                // store foreach block
+                $this->blocks []= array('foreach', array(), $key, $name, $ops);
+
+            // pop the block
+            } elseif ($token[0] == 'end') {
+                $this->tokens->pop();
+
+                // can't end if we're in the main block
+                if ($block[0] == 'main')
+                    throw new SugarParseException($token[2], $token[3], 'end without an if or loop');
+
+                // new top block
+                array_pop($this->blocks);
+
+                // compile
+                switch ($block[0]) {
+                    case 'foreach':
+                        $bc = array_merge($block[4], array('foreach', strtolower($block[2]), strtolower($block[3]), $block[1]));
+                        break;
+                    case 'if':
+                    case 'elif':
+                    case 'else':
+                        // store current block opcodes into last block
+                        $block[2][count($block[2])-1][1] = $block[1];
+
+                        // build if tree
+                        $bc = array();
+                        while (!empty($block[2])) {
+                            $chunk = array_pop($block[2]);
+                            if ($chunk[0])
+                                $bc = array_merge($chunk[0], array('if', $chunk[1], $bc));
+                            else
+                                $bc = $chunk[1];
+                        }
+
+                        break;
+                    default:
+                        die('Internal Error: '.__FILE__.','.__LINE__);
+                }
+
+                // merge bytecode to top block
+                $block =& $this->blocks[count($this->blocks)-1];
+                $block[1] = array_merge($block[1], $bc);
+
+            // if we have a var then a =, we have an assignment
+            } elseif ($token[0] == 'var' && ($t2 = $this->tokens->peek(1)) && $t2[0] == '=') {
+                // remember name value
+                $name = $token[1];
+            
+                // remove tokens, parse
+                $this->tokens->pop(2);
+                $ops = $this->compileStmt($this->tokens);
+
+                $block[1] = array_merge($block[1], $ops, array('assign', strtolower($name)));
+
+            // we have a statement
+            } else {
+                $ops = $this->compileStmt($this->tokens);
+
+                if (SugarParser::isData($ops))
+                    $this->appendEcho(SugarRuntime::showValue($ops[1]));
+                else
+                    $block[1] = array_merge($block[1], $ops, array('print'));
             }
 
-            // still in a block?
-            if (count($this->blocks) != 1)
-                throw new SugarParseException($end[2], $end[3], 'unxpected end of file; expected end');
-
-        // error handler
-        } catch(SugarParseException $e) {
-            echo '<b>'.htmlentities($e->__toString()).'</b>';
+            // we should have the end token now
+            $end = $this->tokens->get();
+            if ($end[0] != '%>' && $end[0] != ';')
+                throw new SugarParseException($end[2], $end[3], 'unexpected '.SugarTokenizer::tokenName($end).'; expected %>');
         }
+
+        // still in a block?
+        if (count($this->blocks) != 1)
+            throw new SugarParseException($end[2], $end[3], 'unxpected end of file; expected end');
 
         // free tokenizer
         $this->tokens = null;

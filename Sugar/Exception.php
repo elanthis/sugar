@@ -1,7 +1,7 @@
 <?php
 class SugarException extends Exception {
     public function __toString () {
-        return 'Sugar Core Error: '.$this->getMessage();
+        return 'Sugar Error: '.$this->getMessage();
     }
 }
 
