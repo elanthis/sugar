@@ -60,6 +60,13 @@ class Sugar {
 
     // compile and display given source
     function display ($file) {
+        // ensure template exists
+        if (!$this->storage->exists($file)) {
+            echo '<p><b>Sugar Error: template not found: '.htmlentities($file).'</b></p>';
+            return false;
+        }
+
+        // load and run
         try {
             $data = $this->storage->load($file);
             $this->execute($data);
