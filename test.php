@@ -33,10 +33,14 @@ function one($str='') {
 }
 $sugar->register('one', 'one', SUGAR_FUNC_SIMPLE);
 
-function noCache($data='') {
-	echo htmlentities($data);
+function random() {
+	echo rand()%1000;
 }
-$sugar->register('noCache', 'noCache', SUGAR_FUNC_SIMPLE|SUGAR_FUNC_NO_CACHE);
+$sugar->register('random', 'random', SUGAR_FUNC_SIMPLE);
+function randomNC() {
+	echo rand()%1000;
+}
+$sugar->register('randomNC', 'randomNC', SUGAR_FUNC_SIMPLE|SUGAR_FUNC_NO_CACHE);
 
 // test class
 class Test {
@@ -65,8 +69,8 @@ $sugar->set('random', rand()%1000);
 // display file
 $sugar->debug = false;
 $sugar->methods = true;
-//$sugar->displayCache($file, $_GET['s']);
-$sugar->display($file);
+$sugar->displayCache($file, $_GET['s']);
+//$sugar->display($file);
 
 $end = microtime(true);
 printf('<p>%.03f seconds</p>', $end-$start);

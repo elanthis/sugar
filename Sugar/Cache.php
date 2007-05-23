@@ -7,6 +7,27 @@ interface ISugarCache {
     function clear ();
 }
 
+class SugarCacheHandler {
+    private $sugar;
+    private $output;
+
+    public function __construct (&$sugar) {
+        $this->sugar =& $sugar;
+    }
+
+    public function addOutput ($text) {
+        $this->output .= $text;
+    }
+
+    public function addCall ($func, $args) {
+        $this->output .= '<?php SugarRuntime::invoke($sugar, "'.addslashes($func).'", unserialize("'.addslashes(serialize($args)).'")); ?>';
+    }
+
+    public function getOutput () {
+        return $this->output;
+    }
+}
+
 class SugarFileCache implements ISugarCache {
     private $sugar;
 
@@ -31,8 +52,11 @@ class SugarFileCache implements ISugarCache {
         $path = $this->cachePath ($name, $id);
     
         // must exist, be readable, and not be older than $cacheLimit seconds
-        if (file_exists($path) && is_file($path) && is_readable($path) && time()-filemtime($path)<=$this->cacheLimit)
-            return unserialize(file_get_contents($path));
+        if (file_exists($path) && is_file($path) && is_readable($path) && time()-filemtime($path)<=$this->cacheLimit) {
+            $sugar = $this->sugar;
+            require $path;
+            return true;
+        }
 
         return false;
     }
@@ -42,7 +66,7 @@ class SugarFileCache implements ISugarCache {
 
         // if the directory exists and is writable
         if (file_exists($this->cacheDir) && is_dir($this->cacheDir) && is_writeable($this->cacheDir)) {
-            file_put_contents($path, serialize($data));
+            file_put_contents($path, $data);
             return true; 
         } else {
             return false;

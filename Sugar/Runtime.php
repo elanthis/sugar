@@ -18,32 +18,39 @@ class SugarRuntime {
             return $left+$right;
     }
 
-    private static function cacheOutput (&$cache, $text) {
-        // if bytecode ends in an echo, append it
-        if ($cache[count($cache)-2] == 'echo') {
-            $cache[count($cache)-1] .= $text;
-        // append a new echo
-        } else {
-            $cache []= 'echo';
-            $cache []= $text;
+    public static function invoke (&$sugar, $func, $args) {
+        // lookup function
+        $invoke =& $sugar->getFunction($func);
+        if (!$invoke)
+            throw new SugarRuntimeException ('unknown function: '.$func);
+
+        // exception net
+        try {
+            // call function, using appropriate method
+            if ($invoke[1] & SUGAR_FUNC_SIMPLE)
+                call_user_func_array($invoke[0], $args);
+            else
+                call_user_func($invoke[0], $sugar, $args);
+        } catch (Exception $e) {
+            throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
         }
     }
 
-    public static function execute (&$sugar, $code, &$cache=false) {
+    public static function execute (&$sugar, $code) {
         $stack = array();
 
         for ($i = 0; $i < count($code); ++$i) {
             switch($code[$i]) {
                 case 'echo':
-                    if ($cache !== false)
-                        SugarRuntime::cacheOutput($cache, $code[++$i]);
+                    if ($sugar->cacheHandler)
+                        $sugar->cacheHandler->addOutput($code[++$i]);
                     else
                         echo $code[++$i];
                     break;
                 case 'print':
                     $val = array_pop($stack);
-                    if ($cache !== false)
-                        SugarRuntime::cacheOutput($cache, htmlentities(SugarRuntime::showValue($val)));
+                    if ($sugar->cacheHandler)
+                        $sugar->cacheHandler->addOutput(htmlentities(SugarRuntime::showValue($val)));
                     else
                         echo htmlentities(SugarRuntime::showValue($val));
                     break;
@@ -146,27 +153,37 @@ class SugarRuntime {
                     if (!$invoke)
                         throw new SugarRuntimeException ('unknown function: '.$func);
 
-                    // if we're caching and this is a no-cache function,
-                    // append these opcodes to the cache
-                    if ($cache !== false && ($invoke[1] & SUGAR_FUNC_NO_CACHE)) {
-                        $cache []= 'call';
-                        $cache []= $func;
-                        $cache []= $args;
-                        break;
-                    }
-
                     // compile args
                     $params = array();
                     foreach($args as $name=>$pcode)
                         $params[$name] = SugarRuntime::execute($sugar, $pcode, $cache);
 
+                    // if we're caching and this is a no-cache function,
+                    // append these opcodes to the cache
+                    if ($sugar->cacheHandler && ($invoke[1] & SUGAR_FUNC_NO_CACHE))
+                        $sugar->cacheHandler->addCall($func, $params);
+
                     // exception net
                     try {
+                        // caching wrapper
+                        if ($sugar->cacheHandler)
+                            ob_start();
+
                         // call function, using appropriate method
                         if ($invoke[1] & SUGAR_FUNC_SIMPLE)
                             $ret = call_user_func_array($invoke[0], $params);
                         else
                             $ret = call_user_func($invoke[0], $sugar, $params);
+
+                        // process caching
+                        if ($sugar->cacheHandler) {
+                            // only cache output from cacheable functions
+                            if ( !($invoke[1] & SUGAR_FUNC_NO_CACHE)) {
+                                $out = ob_get_contents();
+                                $sugar->cacheHandler->addOutput($out);
+                            }
+                            ob_end_clean();
+                        }
 
                         // suppress return value if flag is set
                         if ($invoke[1] & SUGAR_FUNC_SUPPRESS_RETURN)
@@ -199,7 +216,19 @@ class SugarRuntime {
 
                     // exception net
                     try {
+                        // caching wrapper
+                        if ($sugar->cacheHandler)
+                            ob_start();
+
+                        // invoke
                         $stack []= call_user_func_array(array($obj, $func), $params);
+
+                        // process caching
+                        if ($sugar->cacheHandler) {
+                            $out = ob_get_contents();
+                            $sugar->cacheHandler->addOutput($out);
+                            ob_end_clean();
+                        }
                     } catch (Exception $e) {
                         throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
                     }

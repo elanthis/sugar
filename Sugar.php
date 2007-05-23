@@ -15,6 +15,7 @@ define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
 class Sugar {
     private $vars = array(array());
     private $funcs = array();
+    public $cacheHandler = null;
 
     public $storage = null;
     public $cache = null;
@@ -85,34 +86,47 @@ class Sugar {
 
     // compile and display given source, with caching
     function displayCache ($file, $id) {
-        // if the cache exists, just run that
-        $data = $this->cache->load($file, $id);
-        if ($data !== false) {
-            $this->vars []= array();
-            SugarRuntime::run($this, $data);
-            array_pop($this->vars);
-            return true;
-        }
-
-        // ensure template exists
-        if (!$this->storage->exists($file)) {
-            echo '<p><b>Sugar Error: template not found: '.htmlentities($file).'</b></p>';
-            return false;
-        }
-
-        // load, cache, display
         try {
-            // cache
-            $data = $this->storage->load($file);
-            $this->vars []= array();
-            $data = SugarRuntime::makeCache($this, $data);
-            array_pop($this->vars);
-            $this->cache->store($file, $id, $data);
+            // if the cache exists, just run that
+            if ($this->cache->exists($file, $id)) {
+                $this->vars []= array();
+                $this->cache->load($file, $id);
+                array_pop($this->vars);
+                return true;
+            }
 
-            // run cache
-            $this->vars []= array();
-            $data = SugarRuntime::run($this, $data);
-            array_pop($this->vars);
+            // ensure template exists
+            if (!$this->storage->exists($file)) {
+                echo '<p><b>Sugar Error: template not found: '.htmlentities($file).'</b></p>';
+                return false;
+            }
+
+            // create cache handler if necessary
+            if (!$this->cacheHandler) {
+                $this->cacheHandler = new SugarCacheHandler($this);
+
+                // cache
+                $data = $this->storage->load($file);
+                $this->vars []= array();
+                SugarRuntime::makeCache($this, $data);
+                array_pop($this->vars);
+                $this->cache->store($file, $id, $this->cacheHandler->getOutput());
+                $this->cacheHandler = null;
+
+                // run cache
+                $this->vars []= array();
+                $this->cache->load($file, $id);
+                array_pop($this->vars);
+
+            // cache handler already running - just display normally
+            } else {
+                $data = $this->storage->load($file);
+                $this->vars []= array();
+                SugarRuntime::run($this, $data);
+                array_pop($this->vars);
+
+                return true;
+            }
 
             return true;
         } catch (SugarException $e) {
