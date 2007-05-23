@@ -31,6 +31,8 @@ class SugarRuntime {
                 call_user_func_array($invoke[0], $args);
             else
                 call_user_func($invoke[0], $sugar, $args);
+        } catch (SugarException $e) {
+            throw $e;
         } catch (Exception $e) {
             throw new SugarRuntimeException ('caught exception: '.$e->getMessage());
         }

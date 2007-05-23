@@ -83,11 +83,11 @@ class Sugar {
     public function display ($file) {
         // validate name
         if (!Sugar::validTemplateName($file))
-            throw SugarException('illegal template name: '.$file);
+            throw new SugarException('illegal template name: '.$file);
 
         // ensure template exists
         if ($this->storage->stamp($file) === false)
-            throw SugarException('template not found: '.$file);
+            throw new SugarException('template not found: '.$file);
 
         // load and run
         try {
@@ -105,7 +105,7 @@ class Sugar {
     function isCached ($file, $id) {
         // validate name
         if (!Sugar::validTemplateName($file))
-            throw SugarException('illegal template name: '.$file);
+            throw new SugarException('illegal template name: '.$file);
 
         return $this->cache->exists($file, $id);
     }
@@ -114,13 +114,13 @@ class Sugar {
     function displayCache ($file, $id) {
         // validate name
         if (!Sugar::validTemplateName($file))
-            throw SugarException('illegal template name: '.$file);
+            throw new SugarException('illegal template name: '.$file);
 
         try {
             // get stamp, ensure template exists
             $stamp = $this->storage->stamp($file);
             if ($stamp === false)
-                throw SugarException('template not found: '.$file);
+                throw new SugarException('template not found: '.$file);
 
             // get cache stamp
             $cstamp = $this->cache->stamp($file, $id);
