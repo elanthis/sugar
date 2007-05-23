@@ -8,7 +8,7 @@ require_once dirname(__FILE__).'/Sugar/Stdlib.php';
 require_once dirname(__FILE__).'/Sugar/Cache.php';
 
 // function registration flags
-define('SUGAR_FUNC_SIMPLE', 1);
+define('SUGAR_FUNC_NATIVE', 1);
 define('SUGAR_FUNC_NO_CACHE', 2);
 define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
 

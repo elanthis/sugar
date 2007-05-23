@@ -171,18 +171,18 @@ parameter is the name of the function as used within templates.  The
 second optional parameter is the callback to use when invoking the
 function; if ommitted, the PHP function of the same name as the first
 argument will be invoked.  The final optional argument is a list of
-flags: SUGAR_FUNC_SIMPLE, SUGAR_FUNC_NO_CACHE, or
+flags: SUGAR_FUNC_NATIVE, SUGAR_FUNC_NO_CACHE, or
 SUGAR_FUNC_SUPPRESS_RETURN.
 
   $sugar->register('myFunc');
   $sugar->register('foo', 'some_function');
   $sugar->register('getCost', array($cart, 'get_cost'));
-  $sugar->register('size, 'count', SUGAR_FUNC_SIMPLE);
+  $sugar->register('size, 'count', SUGAR_FUNC_NATIVE);
   $sugar->register('dynamic', 'dynamic', SUGAR_FUNC_NO_CACHE);
 
 Normal functions receive two arguments: the Sugar object and a keyed
 array with the parameters.  Functions registered with
-SUGAR_FUNC_SIMPLE will instead receive a list of parameters like a
+SUGAR_FUNC_NATIVE will instead receive a list of parameters like a
 regular PHP function.
 
 Functions can display data by using echo or print like normal, and

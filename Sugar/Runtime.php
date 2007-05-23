@@ -22,7 +22,7 @@ class SugarRuntime {
         // exception net
         try {
             // call function, using appropriate method
-            if ($flags & SUGAR_FUNC_SIMPLE)
+            if ($flags & SUGAR_FUNC_NATIVE)
                 $ret = call_user_func_array($invoke, $args);
             else
                 $ret = call_user_func($invoke, $sugar, $args);
@@ -221,7 +221,7 @@ class SugarRuntime {
                         $sugar->cacheHandler->beginCache();
 
                     // invoke
-                    $stack []= SugarRuntime::invoke($sugar, array($obj, $func), SUGAR_FUNC_SIMPLE, $params);
+                    $stack []= SugarRuntime::invoke($sugar, array($obj, $func), SUGAR_FUNC_NATIVE, $params);
 
                     // process caching
                     if ($sugar->cacheHandler)
