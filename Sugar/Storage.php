@@ -9,7 +9,7 @@ class SugarFileStorage implements ISugarStorage {
     private $sugar;
 
     public $templateDir = './templates';
-    public $compileDir = './templates/cache';
+    public $compileDir = './templates/compiled';
 
     public function __construct (&$sugar) {
         $this->sugar =& $sugar;
