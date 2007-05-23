@@ -273,6 +273,7 @@ false on error, unless stated otherwise.
     false if the compiled version is out-of-date.
   store ($name, $data): stores the compiled version of the template.
   source ($name): returns the source of the template.
+	path ($name): returns a user-friendly name for the template.
 
 Cache drivers are classes derived from ISugarCache.  The following
 methods must be implemented.  All methods return true on success or

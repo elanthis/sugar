@@ -68,7 +68,7 @@ class Sugar {
         // compile if necessary
         if ($data === false) {
             $parser = new SugarParser($this);
-            $data = $parser->compile($this->storage->source($file));
+            $data = $parser->compile($this->storage->source($file), $this->storage->path($file));
             $this->storage->store($file, $data);
             $parser = null;
         }
@@ -94,7 +94,7 @@ class Sugar {
             $this->execute($file);
             return true;
         } catch (SugarException $e) {
-            echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
+            echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
             return false;
         }
 
@@ -153,7 +153,7 @@ class Sugar {
 
             return true;
         } catch (SugarException $e) {
-            echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
+            echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
             return false;
         }
     }
@@ -173,7 +173,7 @@ class Sugar {
             
             return true;
         } catch (SugarException $e) {
-            echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
+            echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
             return false;
         }
     }

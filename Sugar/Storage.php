@@ -4,6 +4,7 @@ interface ISugarStorage {
     function load ($name);
     function store ($name, $data);
     function source ($name);
+    function path ($name);
 }
 
 class SugarFileStorage implements ISugarStorage {
@@ -51,6 +52,10 @@ class SugarFileStorage implements ISugarStorage {
             return file_get_contents($path);
         else
             return false;
+    }
+
+    public function path ($name) {
+        return $this->templateDir.'/'.$name.'.tpl';
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

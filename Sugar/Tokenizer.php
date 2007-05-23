@@ -74,10 +74,10 @@ class SugarTokenizer {
             $this->inCmd = false;
 
         // string
-        if ($ar[4])
+        if ($ar[3])
+            return array('data', stripslashes($ar[3]), $this->file, $line);
+        elseif ($ar[4])
             return array('data', stripslashes($ar[4]), $this->file, $line);
-        elseif ($ar[5])
-            return array('data', stripslashes($ar[5]), $this->file, $line);
         // variable
         elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
             return array('var', substr($ar[2], 1), $this->file, $line);

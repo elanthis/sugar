@@ -33,7 +33,7 @@ class SugarRuntime {
             else
                 return $ret;
         } catch (Exception $e) {
-            echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
+            echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
             return null;
         }
     }
@@ -42,7 +42,7 @@ class SugarRuntime {
         // lookup function
         $invoke =& $sugar->getFunction($func);
         if (!$invoke)
-            throw new SugarRuntimeException ('unknown function: '.$func);
+            throw new SugarRxception ('unknown function: '.$func);
 
         // run it
         SugarRuntime::invoke($sugar, $invoke[0], $invoke[1], $args);
@@ -169,7 +169,7 @@ class SugarRuntime {
                     // lookup function
                     $invoke =& $sugar->getFunction($func);
                     if (!$invoke)
-                        throw new SugarRuntimeException ('unknown function: '.$func);
+                        throw new SugarRxception ('unknown function: '.$func);
 
                     // compile args
                     $params = array();
@@ -203,13 +203,13 @@ class SugarRuntime {
                     $args = $code[++$i];
 
                     if (!$sugar->methods)
-                        throw new SugarRuntimeException ('method invocation is disabled');
+                        throw new SugarRxception ('method invocation is disabled');
 
                     if (!is_object($obj))
-                        throw new SugarRuntimeException ('method call on non-object');
+                        throw new SugarRxception ('method call on non-object');
 
                     if (!method_exists($obj, $func))
-                        throw new SugarRuntimeException ('unknown method on object: '.$func);
+                        throw new SugarRxception ('unknown method on object: '.$func);
 
                     // compile args
                     $params = array();
@@ -262,7 +262,7 @@ class SugarRuntime {
                         $stack []= $obj->$prop;
                     break;
                 default:
-                    throw new SugarRuntimeException ('unknown opcode: '.$code[$i]);
+                    throw new SugarRxception ('unknown opcode: '.$code[$i]);
             }
         }
 

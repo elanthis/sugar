@@ -31,16 +31,16 @@ $sugar->register('showText');
 function one($str='') {
 	return 'Uno'.$str;
 }
-$sugar->register('one', 'one', SUGAR_FUNC_SIMPLE);
+$sugar->register('one', 'one', SUGAR_FUNC_NATIVE);
 
 function random() {
 	echo rand()%1000;
 }
-$sugar->register('random', 'random', SUGAR_FUNC_SIMPLE);
+$sugar->register('random', 'random', SUGAR_FUNC_NATIVE);
 function randomNC() {
 	echo rand()%1000;
 }
-$sugar->register('randomNC', 'randomNC', SUGAR_FUNC_SIMPLE|SUGAR_FUNC_NO_CACHE);
+$sugar->register('randomNC', 'randomNC', SUGAR_FUNC_NATIVE|SUGAR_FUNC_NO_CACHE);
 
 // test class
 class Test {
