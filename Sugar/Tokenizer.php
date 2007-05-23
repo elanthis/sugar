@@ -22,13 +22,14 @@ class SugarTokenizer {
             case 'var': return 'variable $'.$token[1];
             case 'string': return 'string "'.addslashes($token[1]).'"';
             case 'int': return 'integer '.($token[1]);
+            case 'float': return 'number '.($token[1]);
             default: return $token[0];
         }
     }
 
     // get next token
     private function getNext () {
-        static $pattern = '/(\s*)(%>|\$?(\w+)|\d+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|==|!=|<=|>=|\|\||&&|->|.)/';
+        static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|==|!=|<=|>=|\|\||&&|->|.)/';
 
         // EOF
         if ($this->pos >= strlen($this->src)) {
@@ -74,18 +75,21 @@ class SugarTokenizer {
 
         // string
         if ($ar[4])
-            return array('string', stripslashes($ar[4]), $this->file, $line);
+            return array('data', stripslashes($ar[4]), $this->file, $line);
         elseif ($ar[5])
-            return array('string', stripslashes($ar[5]), $this->file, $line);
+            return array('data', stripslashes($ar[5]), $this->file, $line);
         // variable
-        elseif ($ar[3] && $ar[2] != $ar[3]) 
-            return array('var', $ar[3], $this->file, $line);
+        elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
+            return array('var', substr($ar[2], 1), $this->file, $line);
         // keyword or special symbol
         elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in')))
             return array($ar[2], null, $this->file, $line);
-        // number
+        // integer
         elseif (preg_match('/^\d+$/', $ar[2]))
-            return array('int', $ar[2], $this->file, $line);
+            return array('data', intval($ar[2]), $this->file, $line);
+        // float
+        elseif (preg_match('/^\d+[.]\d+$/', $ar[2]))
+            return array('data', floatval($ar[2]), $this->file, $line);
         // name
         elseif (preg_match('/^\w+$/', $ar[2]))
             return array('name', $ar[2], $this->file, $line);

@@ -117,10 +117,10 @@ class SugarParser {
         }
 
         // ints
-        elseif ($t[0] == 'int')
-            $this->output []= array('push', intval($t[1]));
-        // strings and names(treat as strings)
-        elseif ($t[0] == 'string' || $t[0] == 'name')
+        elseif ($t[0] == 'data')
+            $this->output []= array('push', $t[1]);
+        // treat names as strings
+        elseif ($t[0] == 'name')
             $this->output []= array('push', $t[1]);
         // vars
         elseif ($t[0] == 'var')
@@ -159,7 +159,7 @@ class SugarParser {
         // negate operator
         if ($op == '-') {
             if (SugarParser::isData($value))
-                $this->output []= array('push', -intval($value[1]));
+                $this->output []= array('push', -$value[1]);
             else
                 $this->output []= array_merge($value, array('negate'));
         // not operator
@@ -178,7 +178,7 @@ class SugarParser {
 
     private function isExprNext () {
         $token = $this->tokens->peek();
-        return in_array($token[0], array('(', '-', '!', 'name', 'var', 'string', 'int'));
+        return in_array($token[0], array('(', '-', '!', 'name', 'var', 'data'));
     }
 
     private function compileStmt () {
