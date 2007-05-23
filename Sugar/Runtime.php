@@ -18,17 +18,34 @@ class SugarRuntime {
             return $left+$right;
     }
 
-    public static function execute (&$sugar, $code) {
+    private static function cacheOutput (&$cache, $text) {
+        // if bytecode ends in an echo, append it
+        if ($cache[count($cache)-2] == 'echo') {
+            $cache[count($cache)-1] .= $text;
+        // append a new echo
+        } else {
+            $cache []= 'echo';
+            $cache []= $text;
+        }
+    }
+
+    public static function execute (&$sugar, $code, &$cache=false) {
         $stack = array();
 
         for ($i = 0; $i < count($code); ++$i) {
             switch($code[$i]) {
                 case 'echo':
-                    echo $code[++$i];
+                    if ($cache !== false)
+                        SugarRuntime::cacheOutput($cache, $code[++$i]);
+                    else
+                        echo $code[++$i];
                     break;
                 case 'print':
                     $val = array_pop($stack);
-                    echo htmlentities(SugarRuntime::showValue($val));
+                    if ($cache !== false)
+                        SugarRuntime::cacheOutput($cache, htmlentities(SugarRuntime::showValue($val)));
+                    else
+                        echo htmlentities(SugarRuntime::showValue($val));
                     break;
                 case 'push':
                     $str = $code[++$i];
@@ -123,14 +140,25 @@ class SugarRuntime {
                 case 'call':
                     $func = $code[++$i];
                     $args = $code[++$i];
+
+                    // lookup function
                     $invoke =& $sugar->getFunction($func);
                     if (!$invoke)
                         throw new SugarRuntimeException ('unknown function: '.$func);
 
+                    // if we're caching and this is a no-cache function,
+                    // append these opcodes to the cache
+                    if ($cache !== false && ($invoke[1] & SUGAR_FUNC_NO_CACHE)) {
+                        $cache []= 'call';
+                        $cache []= $func;
+                        $cache []= $args;
+                        break;
+                    }
+
                     // compile args
                     $params = array();
                     foreach($args as $name=>$pcode)
-                        $params[$name] = SugarRuntime::execute($sugar, $pcode);
+                        $params[$name] = SugarRuntime::execute($sugar, $pcode, $cache);
 
                     // exception net
                     try {
@@ -167,7 +195,7 @@ class SugarRuntime {
                     // compile args
                     $params = array();
                     foreach($args as $pcode)
-                        $params [] = SugarRuntime::execute($sugar, $pcode);
+                        $params [] = SugarRuntime::execute($sugar, $pcode, $cache);
 
                     // exception net
                     try {
@@ -181,9 +209,9 @@ class SugarRuntime {
                     $true = $code[++$i];
                     $false = $code[++$i];
                     if ($test && $true)
-                        SugarRuntime::execute($sugar, $true);
+                        SugarRuntime::execute($sugar, $true, $cache);
                     elseif (!$test && $false)
-                        SugarRuntime::execute($sugar, $false);
+                        SugarRuntime::execute($sugar, $false, $cache);
                     break;
                 case 'foreach':
                     $array = array_pop($stack);
@@ -194,7 +222,7 @@ class SugarRuntime {
                         if ($key)
                             $sugar->set($key, $k);
                         $sugar->set($name, $v);
-                        SugarRuntime::execute($sugar, $block);
+                        SugarRuntime::execute($sugar, $block, $cache);
                     }
                 case '.':
                     $index = array_pop($stack);
@@ -216,6 +244,17 @@ class SugarRuntime {
         }
 
         return $stack[0];
+    }
+
+    public static function run (&$sugar, $data) {
+        SugarRuntime::execute($sugar, $data);
+    }
+
+    public static function makeCache (&$sugar, $data) {
+        // build cache
+        $cache = array();
+        SugarRuntime::execute($sugar, $data, $cache);
+        return $cache;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

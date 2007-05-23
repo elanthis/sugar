@@ -5,6 +5,7 @@ require_once dirname(__FILE__).'/Sugar/Storage.php';
 require_once dirname(__FILE__).'/Sugar/Tokenizer.php';
 require_once dirname(__FILE__).'/Sugar/Runtime.php';
 require_once dirname(__FILE__).'/Sugar/Stdlib.php';
+require_once dirname(__FILE__).'/Sugar/Cache.php';
 
 // function registration flags
 define('SUGAR_FUNC_SIMPLE', 1);
@@ -16,11 +17,13 @@ class Sugar {
     private $funcs = array();
 
     public $storage = null;
+    public $cache = null;
     public $debug = false;
     public $methods = false;
 
     function __construct () {
         $this->storage = new SugarFileStorage($this);
+        $this->cache = new SugarFileCache($this);
 
         SugarStdlib::initialize($this);
     }
@@ -51,13 +54,6 @@ class Sugar {
         return $this->funcs[strtolower($name)];
     }
 
-    // execute
-    private function execute (&$data) {
-        $this->vars []= array();
-        SugarRuntime::execute($this, $data);
-        array_pop($this->vars);
-    }
-
     // compile and display given source
     function display ($file) {
         // ensure template exists
@@ -69,13 +65,60 @@ class Sugar {
         // load and run
         try {
             $data = $this->storage->load($file);
-            $this->execute($data);
+            $this->vars []= array();
+            SugarRuntime::run($this, $data);
+            array_pop($this->vars);
+
+            return true;
         } catch (SugarException $e) {
             echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
             return false;
         }
 
         return true;
+    }
+
+    // check if a cache exists
+    function isCached ($file, $id) {
+        return $this->cache->exists($file, $id);
+    }
+
+    // compile and display given source, with caching
+    function displayCache ($file, $id) {
+        // if the cache exists, just run that
+        $data = $this->cache->load($file, $id);
+        if ($data !== false) {
+            $this->vars []= array();
+            SugarRuntime::run($this, $data);
+            array_pop($this->vars);
+            return true;
+        }
+
+        // ensure template exists
+        if (!$this->storage->exists($file)) {
+            echo '<p><b>Sugar Error: template not found: '.htmlentities($file).'</b></p>';
+            return false;
+        }
+
+        // load, cache, display
+        try {
+            // cache
+            $data = $this->storage->load($file);
+            $this->vars []= array();
+            $data = SugarRuntime::makeCache($this, $data);
+            array_pop($this->vars);
+            $this->cache->store($file, $id, $data);
+
+            // run cache
+            $this->vars []= array();
+            $data = SugarRuntime::run($this, $data);
+            array_pop($this->vars);
+
+            return true;
+        } catch (SugarException $e) {
+            echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
+            return false;
+        }
     }
 
     // compile and display given source
@@ -87,7 +130,11 @@ class Sugar {
             $parser = null;
 
             // run
-            $this->execute($data);
+            $this->vars []= array();
+            SugarRuntime::run($this, $data);
+            array_pop($this->vars);
+            
+            return true;
         } catch (SugarException $e) {
             echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
             return false;

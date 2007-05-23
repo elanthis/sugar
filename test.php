@@ -1,4 +1,6 @@
 <?php
+$start = microtime(true);
+
 require './Sugar.php';
 
 // determine file to load
@@ -31,6 +33,11 @@ function one($str='') {
 }
 $sugar->register('one', 'one', SUGAR_FUNC_SIMPLE);
 
+function noCache($data='') {
+	echo htmlentities($data);
+}
+$sugar->register('noCache', 'noCache', SUGAR_FUNC_SIMPLE|SUGAR_FUNC_NO_CACHE);
+
 // test class
 class Test {
 	var $bar = 'BAR';
@@ -53,9 +60,14 @@ $sugar->set('test', 'dancing mice');
 $sugar->set('html', '<b>bold</b>');
 $sugar->set('list', array('one','two','three','foo'=>'bar'));
 $sugar->set('obj', new Test());
+$sugar->set('random', rand()%1000);
 
 // display file
-$sugar->caching = false;
+$sugar->debug = false;
 $sugar->methods = true;
+//$sugar->displayCache($file, $_GET['s']);
 $sugar->display($file);
+
+$end = microtime(true);
+printf('<p>%.03f seconds</p>', $end-$start);
 ?>

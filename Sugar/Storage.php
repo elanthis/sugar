@@ -44,7 +44,7 @@ class SugarFileStorage implements ISugarStorage {
         $parser = null;
 
         if (is_dir($this->compileDir) && is_writable($this->compileDir))
-            file_put_contents($this->compileDir.'/'.$name.'.ctpl', serialize($bc));
+            file_put_contents($this->compileDir.'/'.$name.'.ctpl', serialize($data));
 
         return $data;
     }

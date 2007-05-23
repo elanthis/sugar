@@ -26,8 +26,8 @@ same folder in which you installed Sugar.php.
 
 The default templates folder for the file storage driver is
 ./templates/, relative to the working directory of your application.
-The compile cache is ./templates/cache/ which must be writable by your
-application (e.g. the Apache user) in order to work.
+The compile cache is ./templates/compiled/ which must be writable by
+your application (e.g. the Apache user) in order to work.
 
 -----------------------------------------------------------------------
 III. Basic Syntax
@@ -212,7 +212,7 @@ templates/$file.tpl, where $file is the name you pass to display().
 
 Compilation caching can be disabled by setting the $debug property
 to true.  By default, compilation caching is enabled if the cache
-directory (./templates/cache/) exists and is writable.  Disabling
+directory (./templates/compiled/) exists and is writable.  Disabling
 this cache is useful for debugging purposes.
 
 The template directory can also be by setting the $templateDir
