@@ -113,7 +113,10 @@ class SugarRuntime {
                 case '%':
                     $v2 = array_pop($stack);
                     $v1 = array_pop($stack);
-                    $stack []= $v1 % $v2;
+                    if ($v2 == 0)
+                        $stack []= null;
+                    else
+                        $stack []= $v1 % $v2;
                     break;
                 case '==':
                     $v2 = array_pop($stack);
