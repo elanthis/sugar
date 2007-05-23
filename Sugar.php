@@ -107,7 +107,7 @@ class Sugar {
         if (!Sugar::validTemplateName($file))
             throw new SugarException('illegal template name: '.$file);
 
-        return $this->cache->exists($file, $id);
+        return !$this->debug && $this->cache->exists($file, $id);
     }
 
     // compile and display given source, with caching
@@ -125,8 +125,8 @@ class Sugar {
             // get cache stamp
             $cstamp = $this->cache->stamp($file, $id);
 
-            // if cache exists and is up-to-date, run the cache
-            if ($cstamp > $stamp) {
+            // if cache exists and is up-to-date amd debug is off, run the cache
+            if (!$this->debug && $cstamp > $stamp) {
                 $this->vars []= array();
                 $this->cache->display($file, $id);
                 array_pop($this->vars);
