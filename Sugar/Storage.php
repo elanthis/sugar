@@ -1,7 +1,8 @@
 <?php
 interface ISugarStorage {
-    function exists ($name);
+    function stamp ($name);
     function load ($name);
+    function store ($name, $data);
     function source ($name);
 }
 
@@ -15,42 +16,41 @@ class SugarFileStorage implements ISugarStorage {
         $this->sugar =& $sugar;
     }
 
-    // validate a source name as being safe
-    // must be only alpha-numeric and /, with no leading or trailing slash
-    public static function validSourceName ($name) {
-        return preg_match(';^\w+(/\w+)*$;', $name);
-    }
-
-    public function exists ($name) {
+    public function stamp ($name) {
         $path = $this->templateDir.'/'.$name.'.tpl';
-        return file_exists($path) && is_file($path) && is_readable($path);
+        if (is_file($path) && is_readable($path))
+            return filemtime($path);
+        else
+            return false;
     }
 
     public function load ($name) {
         $path = $this->templateDir.'/'.$name.'.tpl';
         $cpath = $this->compileDir.'/'.$name.'.ctpl';
 
-        // validate name
-        if (!SugarFileStorage::validSourceName($name))
-            throw new SugarException('invalid template name: '.$name);
-
         // if caching is enabled, and the cache file exists, and its up-to-date, return the cached contents
-        if (!$this->sugar->debug && file_exists($cpath) && filemtime($cpath)>=filemtime($path))
+        if (!$this->sugar->debug && is_file($cpath) && is_readable($cpath) && filemtime($cpath)>=filemtime($path))
             return unserialize(file_get_contents($cpath));
 
-        // otherwise, compile the source, cache it, and continue on
-        $parser = new SugarParser($this->sugar);
-        $data = $parser->compile($this->source($name));
-        $parser = null;
+        // no cached data
+        return false;
+    }
 
-        if (is_dir($this->compileDir) && is_writable($this->compileDir))
+    public function store ($name, $data) {
+        if (is_dir($this->compileDir) && is_writable($this->compileDir)) {
             file_put_contents($this->compileDir.'/'.$name.'.ctpl', serialize($data));
-
-        return $data;
+            return true;
+        } else {
+            return false;
+        }
     }
 
     public function source ($name) {
-        return file_get_contents($this->templateDir.'/'.$name.'.tpl');
+        $path = $this->templateDir.'/'.$name.'.tpl';
+        if (is_file($path) && is_readable($path))
+            return file_get_contents($path);
+        else
+            return false;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

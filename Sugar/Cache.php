@@ -1,7 +1,7 @@
 <?php
 interface ISugarCache {
-    function exists ($name, $id);
-    function load ($name, $id);
+    function stamp ($name, $id);
+    function display ($name, $id);
     function store ($name, $id, $data);
     function erase ($name, $id);
     function clear ();
@@ -39,16 +39,18 @@ class SugarFileCache implements ISugarCache {
     }
 
     private function cachePath ($name, $id) {
-        $ref = preg_replace('/[^\w-]+/', '.', $name.'-'.$id);
-        return $this->cacheDir.'/'.md5($ref).'-'.$ref.'.cache';
+        return $this->cacheDir.'/'.md5($name.$id).'-'.str_replace('/', '-', $name).'.'.preg_replace('/[^\w]+/', '-', $id).'.cache';
     }
 
-    public function exists ($name, $id) {
+    public function stamp ($name, $id) {
         $path = $this->cachePath ($name, $id);
-        return file_exists($path) && is_file($path) && is_readable($path) && time()-filemtime($path)<=$this->cacheLimit;
+        if (file_exists($path) && is_file($path) && is_readable($path) && time()-filemtime($path)<=$this->cacheLimit)
+            return filemtime($path);
+        else
+            return false;
     }
 
-    public function load ($name, $id) {
+    public function display ($name, $id) {
         $path = $this->cachePath ($name, $id);
     
         // must exist, be readable, and not be older than $cacheLimit seconds

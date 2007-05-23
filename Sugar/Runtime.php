@@ -60,7 +60,7 @@ class SugarRuntime {
                     break;
                 case 'lookup':
                     $var = strtolower($code[++$i]);
-                    $stack []= $sugar->get($var);
+                    $stack []= $sugar->getVariable($var);
                     break;
                 case 'assign':
                     $name = $code[++$i];
@@ -273,17 +273,6 @@ class SugarRuntime {
         }
 
         return $stack[0];
-    }
-
-    public static function run (&$sugar, $data) {
-        SugarRuntime::execute($sugar, $data);
-    }
-
-    public static function makeCache (&$sugar, $data) {
-        // build cache
-        $cache = array();
-        SugarRuntime::execute($sugar, $data, $cache);
-        return $cache;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

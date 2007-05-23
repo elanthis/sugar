@@ -22,7 +22,7 @@ class Sugar {
     public $debug = false;
     public $methods = false;
 
-    function __construct () {
+    public function __construct () {
         $this->storage = new SugarFileStorage($this);
         $this->cache = new SugarFileCache($this);
 
@@ -30,12 +30,19 @@ class Sugar {
     }
 
     // set a variable
-    function set ($name, $value) {
+    public function set ($name, $value) {
         $name = strtolower($name);
         $this->vars[count($this->vars)-1] [$name]= $value;
     }
 
-    function get ($name) {
+    // register a function; second parameter is optional real name
+    public function register ($name, $invoke=false, $flags=0) {
+        if ($invoke === false)
+            $invoke = $name;
+        $this->funcs [strtolower($name)]= array($invoke, $flags);
+    }
+
+    public function getVariable ($name) {
         $name = strtolower($name);
         for ($i = count($this->vars)-1; $i >= 0; --$i)
             if (array_key_exists($name, $this->vars[$i]))
@@ -43,33 +50,48 @@ class Sugar {
         return null;
     }
 
-    // register a function; second parameter is optional real name
-    function register ($name, $invoke=false, $flags=0) {
-        if ($invoke === false)
-            $invoke = $name;
-        $this->funcs [strtolower($name)]= array($invoke, $flags);
-    }
-
     // return a function from the registered list
-    function getFunction ($name) {
+    public function getFunction ($name) {
         return $this->funcs[strtolower($name)];
     }
 
-    // compile and display given source
-    function display ($file) {
-        // ensure template exists
-        if (!$this->storage->exists($file)) {
-            echo '<p><b>Sugar Error: template not found: '.htmlentities($file).'</b></p>';
-            return false;
+    // validate a source name as being safe
+    // must be only alpha-numeric and /, with no leading or trailing slash
+    public static function validTemplateName ($name) {
+        return preg_match(';^\w+(?:/\w+)*$;', $name);
+    }
+
+    // execute a template, compiling if necessary
+    private function execute ($file) {
+        $data = $this->storage->load($file);
+
+        // compile if necessary
+        if ($data === false) {
+            $parser = new SugarParser($this);
+            $data = $parser->compile($this->storage->source($file));
+            $this->storage->store($file, $data);
+            $parser = null;
         }
+
+        // execute
+        $this->vars []= array();
+        SugarRuntime::execute($this, $data);
+        array_pop($this->vars);
+    }
+
+    // compile and display given source
+    public function display ($file) {
+        // validate name
+        if (!Sugar::validTemplateName($file))
+            throw SugarException('illegal template name: '.$file);
+
+        // ensure template exists
+        if ($this->storage->stamp($file) === false)
+            throw SugarException('template not found: '.$file);
 
         // load and run
         try {
-            $data = $this->storage->load($file);
-            $this->vars []= array();
-            SugarRuntime::run($this, $data);
-            array_pop($this->vars);
-
+            $this->execute($file);
             return true;
         } catch (SugarException $e) {
             echo '<p><b>'.htmlentities($e->__toString()).'</b></p>';
@@ -81,51 +103,52 @@ class Sugar {
 
     // check if a cache exists
     function isCached ($file, $id) {
+        // validate name
+        if (!Sugar::validTemplateName($file))
+            throw SugarException('illegal template name: '.$file);
+
         return $this->cache->exists($file, $id);
     }
 
     // compile and display given source, with caching
     function displayCache ($file, $id) {
+        // validate name
+        if (!Sugar::validTemplateName($file))
+            throw SugarException('illegal template name: '.$file);
+
         try {
-            // if the cache exists, just run that
-            if ($this->cache->exists($file, $id)) {
+            // get stamp, ensure template exists
+            $stamp = $this->storage->stamp($file);
+            if ($stamp === false)
+                throw SugarException('template not found: '.$file);
+
+            // get cache stamp
+            $cstamp = $this->cache->stamp($file, $id);
+
+            // if cache exists and is up-to-date, run the cache
+            if ($cstamp > $stamp) {
                 $this->vars []= array();
-                $this->cache->load($file, $id);
+                $this->cache->display($file, $id);
                 array_pop($this->vars);
                 return true;
-            }
-
-            // ensure template exists
-            if (!$this->storage->exists($file)) {
-                echo '<p><b>Sugar Error: template not found: '.htmlentities($file).'</b></p>';
-                return false;
             }
 
             // create cache handler if necessary
             if (!$this->cacheHandler) {
+                // create cache
                 $this->cacheHandler = new SugarCacheHandler($this);
-
-                // cache
-                $data = $this->storage->load($file);
-                $this->vars []= array();
-                SugarRuntime::makeCache($this, $data);
-                array_pop($this->vars);
+                $this->execute($file);
                 $this->cache->store($file, $id, $this->cacheHandler->getOutput());
                 $this->cacheHandler = null;
 
-                // run cache
+                // display cache
                 $this->vars []= array();
-                $this->cache->load($file, $id);
+                $this->cache->display($file, $id);
                 array_pop($this->vars);
 
             // cache handler already running - just display normally
             } else {
-                $data = $this->storage->load($file);
-                $this->vars []= array();
-                SugarRuntime::run($this, $data);
-                array_pop($this->vars);
-
-                return true;
+                $this->execute($file);
             }
 
             return true;
@@ -145,7 +168,7 @@ class Sugar {
 
             // run
             $this->vars []= array();
-            SugarRuntime::run($this, $data);
+            SugarRuntime::execute($this, $data);
             array_pop($this->vars);
             
             return true;
