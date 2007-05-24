@@ -15,15 +15,16 @@ define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
 class Sugar {
     private $vars = array(array());
     private $funcs = array();
+    private $storage = array();
     public $cacheHandler = null;
 
-    public $storage = null;
     public $cache = null;
     public $debug = false;
     public $methods = false;
+    public $defaultStorage = 'file';
 
     public function __construct () {
-        $this->storage = new SugarFileStorage($this);
+        $this->storage ['file']= new SugarFileStorage($this);
         $this->cache = new SugarFileCache($this);
 
         SugarStdlib::initialize($this);
@@ -33,6 +34,7 @@ class Sugar {
     public function set ($name, $value) {
         $name = strtolower($name);
         $this->vars[count($this->vars)-1] [$name]= $value;
+        return true;
     }
 
     // register a function; second parameter is optional real name
@@ -40,6 +42,7 @@ class Sugar {
         if ($invoke === false)
             $invoke = $name;
         $this->funcs [strtolower($name)]= array($invoke, $flags);
+        return true;
     }
 
     public function getVariable ($name) {
@@ -55,21 +58,46 @@ class Sugar {
         return $this->funcs[strtolower($name)];
     }
 
+    // add a new storage type
+    public function addStorage ($name, &$driver) {
+        $this->storage [$name]= &$driver;
+        return true;
+    }
+
     // validate a source name as being safe
     // must be only alpha-numeric and /, with no leading or trailing slash
-    public static function validTemplateName ($name) {
-        return preg_match(';^\w+(?:/\w+)*$;', $name);
+    private function parseName ($name) {
+        // parse out parts
+        if (!preg_match(';^(?:(\w+):)?(/?\w+(?:/\w+)*)(?:[.]tpl)?$;', $name, $ar))
+            return false;
+
+        // determine scheme; set to default is necessary
+        $scheme = $ar[1];
+        if (!$scheme)
+            $scheme = $this->defaultStorage;
+
+        // validate scheme exists
+        if (!isset($this->storage[$scheme]))
+            return false;
+
+        return array($this->storage[$scheme], $ar[2]);
     }
+
+    // 
 
     // execute a template, compiling if necessary
     private function execute ($file) {
-        $data = $this->storage->load($file);
+        $ref =& $this->parseName($file);
+        if ($ref === false)
+            throw new SugarException('illegal template name: '.$file);
+
+        $data = $ref[0]->load($ref[1]);
 
         // compile if necessary
         if ($data === false) {
             $parser = new SugarParser($this);
-            $data = $parser->compile($this->storage->source($file), $this->storage->path($file));
-            $this->storage->store($file, $data);
+            $data = $parser->compile($ref[0]->source($ref[1]), $ref[0]->path($ref[1]));
+            $ref[0]->store($ref[1], $data);
             $parser = null;
         }
 
@@ -82,11 +110,12 @@ class Sugar {
     // compile and display given source
     public function display ($file) {
         // validate name
-        if (!Sugar::validTemplateName($file))
+        $ref =& $this->parseName($file);
+        if ($ref === false)
             throw new SugarException('illegal template name: '.$file);
 
         // ensure template exists
-        if ($this->storage->stamp($file) === false)
+        if ($ref[0]->stamp($ref[1]) === false)
             throw new SugarException('template not found: '.$file);
 
         // load and run
@@ -104,7 +133,7 @@ class Sugar {
     // check if a cache exists
     function isCached ($file, $id) {
         // validate name
-        if (!Sugar::validTemplateName($file))
+        if (!$this->parseName($file))
             throw new SugarException('illegal template name: '.$file);
 
         return !$this->debug && $this->cache->exists($file, $id);
@@ -113,12 +142,13 @@ class Sugar {
     // compile and display given source, with caching
     function displayCache ($file, $id=true) {
         // validate name
-        if (!Sugar::validTemplateName($file))
+        $ref =& $this->parseName($file);
+        if ($ref === false)
             throw new SugarException('illegal template name: '.$file);
 
         try {
             // get stamp, ensure template exists
-            $stamp = $this->storage->stamp($file);
+            $stamp = $ref[0]->stamp($ref[1]);
             if ($stamp === false)
                 throw new SugarException('template not found: '.$file);
 
@@ -176,6 +206,17 @@ class Sugar {
             echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
             return false;
         }
+    }
+
+    // get source code for a file
+    function getSource ($file) {
+        // validate name
+        $ref =& $this->parseName($file);
+        if ($ref === false)
+            throw new SugarException('illegal template name: '.$file);
+
+        // fetch source
+        return $ref[0]->source($ref[1]);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
