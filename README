@@ -218,11 +218,11 @@ By default, compiled templates are saved in the compile directory
 object is set to true.
 
 The template directory can be by setting the $templateDir
-property of the default storage driver.  The compilation cache
-directory can be changed by setting the $compileDir of the driver.
+property of the Sugar object.  The compilation cache directory can
+be changed by setting the $compileDir property.
 
-  $sugar->storage->templateDir = '/var/myapp/tpl/';
-  $sugar->storage->compileDir = '/var/myapp/ctpl/';
+  $sugar->templateDir = '/var/myapp/tpl/';
+  $sugar->compileDir = '/var/myapp/ctpl/';
   $sugar->debug = true; // disable caching
 
 Caching can be performed on a template by using the displayCache()
@@ -235,10 +235,14 @@ for each product.  The second parameter can be ommitted if desired.
   $sugar->displayCache('homepage');
   $sugar->displayCache('product', $product->id);
 
-The cache lifetime for the default cache driver can be changed by
-setting the $cacheLife property to the number of seconds desired.
+The cache lifetime can be changed by setting the $cacheLimit property
+to the number of seconds desired.  The cache lifetime is the number
+of seconds a cache will exist before being forced to re-cache.  The
+cache directory can be changed by setting the $cacheDir property.
 
-  $sugar->cache->cacheLife = 60*5; // five minutes
+  $sugar->cacheLimit = 60*5; // five minutes
+  $sugar->cacheDir = './cache';
+
 
 It is possible to check if a valid cache exists for a given template
 and cache identifier using the isCached() method.  This allows the
@@ -275,6 +279,12 @@ false on error, unless stated otherwise.
   source ($name): returns the source of the template.
 	path ($name): returns a user-friendly name for the template.
 
+To register a new storage driver, use the addStorage() method of the
+Sugar object, passing in the desired name and an instance of the new
+driver.
+
+  $sugar->addStorage('db', new SugarDatabaseStorage($sugar));
+
 Cache drivers are classes derived from ISugarCache.  The following
 methods must be implemented.  All methods return true on success or
 false on error, unless stated otherwise.
@@ -285,3 +295,8 @@ false on error, unless stated otherwise.
   store ($name, $id, $data): stores the specified cache.
   erase ($name, $id): erases the specified cache.
   clear (): erases all caches.
+
+To change the cache driver, set the $cache property of the Sugar
+object to an instance of the new driver.
+
+  $sugar->cache = new SugarCustomCache($sugar);

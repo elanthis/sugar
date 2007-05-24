@@ -22,6 +22,10 @@ class Sugar {
     public $debug = false;
     public $methods = false;
     public $defaultStorage = 'file';
+    public $cacheLimit = 3600; // one hour
+    public $templateDir = './templates';
+    public $compileDir = './templates/compiled';
+    public $cacheDir = './templates/cache';
 
     public function __construct () {
         $this->storage ['file']= new SugarFileStorage($this);
