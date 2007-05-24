@@ -6,15 +6,14 @@ require './Sugar.php';
 // determine file to load
 $file = 'index';
 if (isset($_GET['t']))
-	$file = preg_replace('/[.]tpl$/', '', $_GET['t']);
+	$file = $_GET['t'];
 
 // scan available templates
-$templates = preg_grep('/^[^.].*[.]tpl$/', scandir('templates'));
+$templates = preg_replace('/[.]tpl$/', '', preg_grep('/^[^.].*[.]tpl$/', scandir('templates')));
 
 // create parser
 $sugar = new Sugar();
 $sugar->set('t', $file);
-$sugar->set('s', $_GET['s']);
 $sugar->set('templates', $templates);
 
 // various test functions
@@ -73,7 +72,7 @@ $sugar->set('random', rand()%1000);
 // display file
 $sugar->debug = false;
 $sugar->methods = true;
-$sugar->displayCache($file, $_GET['s']);
+$sugar->displayCache($file);
 //$sugar->display($file);
 
 $end = microtime(true);

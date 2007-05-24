@@ -111,7 +111,7 @@ class Sugar {
     }
 
     // compile and display given source, with caching
-    function displayCache ($file, $id) {
+    function displayCache ($file, $id=true) {
         // validate name
         if (!Sugar::validTemplateName($file))
             throw new SugarException('illegal template name: '.$file);

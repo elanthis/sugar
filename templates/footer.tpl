@@ -1,9 +1,10 @@
 
-		<% if !$s %>
-			<a href="test.php?t=<% $t %>&s=1">[view source]</a>
-		<% else %>
+		<div id="hide_source">
+			<a href="#" onClick="this.parentNode.style.display='none'; document.getElementById('show_source').style.display='block';">[view source]</a>
+		</div>
+		<div id="show_source" style="display: none;">
 			<% echo $source %>
-			<a href="test.php?t=<% $t %>&s=0">[hide source]</a>
-		<% end %>
+			<a href="#" onClick="this.parentNode.style.display='none'; document.getElementById('hide_source').style.display='block';">[hide source]</a>
+		</div>
 	</body>
 </html>
