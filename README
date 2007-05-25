@@ -275,7 +275,8 @@ false on error, unless stated otherwise.
     the specified template does not exist.
   load ($name): returns the compiled version of the template, or
     false if the compiled version is out-of-date.
-  store ($name, $data): stores the compiled version of the template.
+  store ($name, $data): stores the compiled version of the template,
+	  or throw a SugarException on failure.
   source ($name): returns the source of the template.
 	path ($name): returns a user-friendly name for the template.
 
@@ -292,7 +293,8 @@ false on error, unless stated otherwise.
   stamp ($name, $id): returns the cache timestamp, or false if the
     specified cache does not exist.
   display ($name, $id): loads and displays the specified cache.
-  store ($name, $id, $data): stores the specified cache.
+  store ($name, $id, $data): stores the specified cache, or throw
+	  a SugarException on failure.
   erase ($name, $id): erases the specified cache.
   clear (): erases all caches.
 

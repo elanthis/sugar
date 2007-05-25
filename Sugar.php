@@ -172,8 +172,11 @@ class Sugar {
                 // create cache
                 $this->cacheHandler = new SugarCacheHandler($this);
                 $this->execute($file);
-                $this->cache->store($file, $id, $this->cacheHandler->getOutput());
+                $cache = $this->cacheHandler->getOutput();
                 $this->cacheHandler = null;
+
+                // attempt to save cache
+                $this->cache->store($file, $id, $cache);
 
                 // display cache
                 $this->vars []= array();

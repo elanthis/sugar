@@ -35,12 +35,15 @@ class SugarFileStorage implements ISugarStorage {
     }
 
     public function store ($name, $data) {
-        if (is_dir($this->sugar->compileDir) && is_writable($this->sugar->compileDir)) {
-            file_put_contents($this->sugar->compileDir.'/'.$name.'.ctpl', serialize($data));
-            return true;
-        } else {
-            return false;
-        }
+        // ensure directory is writable
+        if (!is_dir($this->sugar->compileDir))
+            throw new SugarException('compilation directory does not exist: '.$this->sugar->compileDir);
+        if (!is_writeable($this->sugar->compileDir))
+            throw new SugarException('compilation directory is not writeable: '.$this->sugar->compileDir);
+
+        // save
+        file_put_contents($this->sugar->compileDir.'/'.$name.'.ctpl', serialize($data));
+        return true;
     }
 
     public function source ($name) {

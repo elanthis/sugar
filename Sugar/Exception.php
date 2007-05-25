@@ -1,7 +1,7 @@
 <?php
 class SugarException extends Exception {
     public function __construct ($msg) {
-        parent::__construct('Sugar: '.$msg);
+        parent::__construct($msg);
     }
 }
 

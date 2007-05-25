@@ -73,13 +73,17 @@ class SugarFileCache implements ISugarCache {
     public function store ($name, $id, $data) {
         $path = $this->cachePath ($name, $id);
 
-        // if the directory exists and is writable
-        if (file_exists($this->sugar->cacheDir) && is_dir($this->sugar->cacheDir) && is_writeable($this->sugar->cacheDir)) {
-            file_put_contents($path, $data);
-            return true; 
-        } else {
-            return false;
-        }
+        // ensure we can save the cache file
+        if (!file_exists($this->sugar->cacheDir))
+            throw new SugarException('cache directory does not exist: '.$this->sugar->cacheDir);
+        if (!is_dir($this->sugar->cacheDir))
+            throw new SugarException('cache directory is not a directory: '.$this->sugar->cacheDir);
+        if (!is_writeable($this->sugar->cacheDir))
+            throw new SugarException('cache directory is not writable: '.$this->sugar->cacheDir);
+
+        // save the contents
+        file_put_contents($path, $data);
+        return true; 
     }
 
     public function erase ($name, $id) {
