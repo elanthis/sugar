@@ -10,6 +10,15 @@ interface ISugarCache {
 class SugarCacheHandler {
     private $sugar;
     private $output;
+    private $bc;
+
+    private function compact () {
+        if ($this->output) {
+            $this->bc []= 'echo';
+            $this->bc []= $this->output;
+            $this->output = '';
+        }
+    }
 
     public function __construct (&$sugar) {
         $this->sugar =& $sugar;
@@ -20,11 +29,13 @@ class SugarCacheHandler {
     }
 
     public function addCall ($func, $args) {
-        $this->output .= '<?php SugarRuntime::invokeNamed($sugar, "'.addslashes($func).'", unserialize("'.addslashes(serialize($args)).'")); ?>';
+        $this->compact();
+        array_push($this->bc, 'cinvoke', $func, $args);
     }
 
     public function getOutput () {
-        return $this->output;
+        $this->compact();
+        return $this->bc;
     }
 
     public function beginCache () {
@@ -40,9 +51,11 @@ class SugarCacheHandler {
 
 class SugarFileCache implements ISugarCache {
     private $sugar;
+    private $useJson;
 
     public function __construct (&$sugar) {
         $this->sugar =& $sugar;
+        $this->useJson = function_exists('json_encode');
     }
 
     private function cachePath ($name, $id) {
@@ -62,8 +75,16 @@ class SugarFileCache implements ISugarCache {
     
         // must exist, be readable, and not be older than $cacheLimit seconds
         if (file_exists($path) && is_file($path) && is_readable($path) && time()-filemtime($path)<=$this->sugar->cacheLimit) {
-            $sugar = $this->sugar;
-            require $path;
+            // load, deserialize
+            $data = file_get_contents($path);
+            // decode 
+            if (substr($data, 0, 1) == '[') // indicates json
+                $data = json_decode($data);
+            else // must be PHP serialized
+                $data = unserialize($data);
+
+            // execute
+            SugarRuntime::execute($this->sugar, $data);
             return true;
         }
 
@@ -81,7 +102,11 @@ class SugarFileCache implements ISugarCache {
         if (!is_writeable($this->sugar->cacheDir))
             throw new SugarException('cache directory is not writable: '.$this->sugar->cacheDir);
 
-        // save the contents
+        // encode, save
+        if ($this->useJson)
+            $data = json_encode($data);
+        else
+            $data = serialize($data);
         file_put_contents($path, $data);
         return true; 
     }

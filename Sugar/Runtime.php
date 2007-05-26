@@ -32,7 +32,7 @@ class SugarRuntime {
         }
     }
 
-    public static function invokeNamed (&$sugar, $func, $args) {
+    public static function cacheInvoke (&$sugar, $func, $args) {
         // lookup function
         $invoke =& $sugar->getFunction($func);
         if (!$invoke)
@@ -155,6 +155,11 @@ class SugarRuntime {
                     $v2 = array_pop($stack);
                     $v1 = array_pop($stack);
                     $stack []= (is_array($v2) && in_array($v1, $v2));
+                    break;
+                case 'cinvoke':
+                    $func = $code[++$i];
+                    $args = $code[++$i];
+                    SugarRuntime::cacheInvoke($sugar, $func, $args);
                     break;
                 case 'call':
                     $func = $code[++$i];
