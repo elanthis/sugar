@@ -70,7 +70,7 @@ $sugar->set('obj', new Test());
 $sugar->set('random', rand()%1000);
 
 // display file
-$sugar->debug = true;
+$sugar->debug = false;
 $sugar->methods = true;
 $sugar->displayCache('file:'.$file.'.tpl');
 //$sugar->display($file);

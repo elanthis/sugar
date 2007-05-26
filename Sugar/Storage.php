@@ -9,9 +9,11 @@ interface ISugarStorage {
 
 class SugarFileStorage implements ISugarStorage {
     private $sugar;
+    private $useJson;
 
     public function __construct (&$sugar) {
         $this->sugar =& $sugar;
+        $this->useJson = function_exists('json_encode');
     }
 
     public function stamp ($name) {
@@ -27,8 +29,15 @@ class SugarFileStorage implements ISugarStorage {
         $cpath = $this->sugar->compileDir.'/'.$name.'.ctpl';
 
         // if caching is enabled, and the cache file exists, and its up-to-date, return the cached contents
-        if (!$this->sugar->debug && is_file($cpath) && is_readable($cpath) && filemtime($cpath)>=filemtime($path))
-            return unserialize(file_get_contents($cpath));
+        if (!$this->sugar->debug && is_file($cpath) && is_readable($cpath) && filemtime($cpath)>=filemtime($path)) {
+            $data = file_get_contents($cpath);
+
+            // decode 
+            if (substr($data, 0, 1) == '[') // indicates json
+                return json_decode($data);
+            else // must be PHP serialized
+                return unserialize($data);
+        }
 
         // no cached data
         return false;
@@ -41,8 +50,14 @@ class SugarFileStorage implements ISugarStorage {
         if (!is_writeable($this->sugar->compileDir))
             throw new SugarException('compilation directory is not writeable: '.$this->sugar->compileDir);
 
+        // encode data
+        if ($this->useJson)
+            $data = json_encode($data);
+        else
+            $data = serialize($data);
+
         // save
-        file_put_contents($this->sugar->compileDir.'/'.$name.'.ctpl', serialize($data));
+        file_put_contents($this->sugar->compileDir.'/'.$name.'.ctpl', $data);
         return true;
     }
 

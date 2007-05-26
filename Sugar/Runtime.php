@@ -23,15 +23,9 @@ class SugarRuntime {
         try {
             // call function, using appropriate method
             if ($flags & SUGAR_FUNC_NATIVE)
-                $ret = call_user_func_array($invoke, $args);
+                return call_user_func_array($invoke, $args);
             else
-                $ret = call_user_func($invoke, $sugar, $args);
-
-            // suppress return value if necessary
-            if ($flags & SUGAR_FUNC_SUPPRESS_RETURN)
-                return null;
-            else
-                return $ret;
+                return call_user_func($invoke, $sugar, $args);
         } catch (Exception $e) {
             echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
             return null;

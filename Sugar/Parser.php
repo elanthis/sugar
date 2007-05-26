@@ -353,6 +353,11 @@ class SugarParser {
                 $func = $token[1];
                 $this->tokens->pop();
 
+                // lookup function
+                $invoke = $this->sugar->getFunction($func);
+                if (!$invoke)
+                    throw new SugarParseException($token[2], $token[3], 'unknown function: '.$func);
+
                 // parse out parameters
                 $params = array();
                 $token = $this->tokens->peek();
@@ -374,7 +379,12 @@ class SugarParser {
                         $this->tokens->pop();
                 }
 
-                array_push($block[1], 'call', $func, $params, 'print');
+                // build function call
+                array_push($block[1], 'call', $func, $params);
+
+                // if the function does not have SUPPRESS_RETURN, print return val
+                if ( !($invoke[2] & SUGAR_FUNC_SUPPRESS_RETURN))
+                    $block[1] []= 'print';
 
             // we have a statement
             } else {
