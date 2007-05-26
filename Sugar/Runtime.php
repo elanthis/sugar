@@ -42,7 +42,7 @@ class SugarRuntime {
         // lookup function
         $invoke =& $sugar->getFunction($func);
         if (!$invoke)
-            throw new SugarRxception ('unknown function: '.$func);
+            throw new SugarException ('unknown function: '.$func);
 
         // run it
         SugarRuntime::invoke($sugar, $invoke[0], $invoke[1], $args);
@@ -169,7 +169,7 @@ class SugarRuntime {
                     // lookup function
                     $invoke =& $sugar->getFunction($func);
                     if (!$invoke)
-                        throw new SugarRxception ('unknown function: '.$func);
+                        throw new SugarException ('unknown function: '.$func);
 
                     // compile args
                     $params = array();
@@ -203,13 +203,13 @@ class SugarRuntime {
                     $args = $code[++$i];
 
                     if (!$sugar->methods)
-                        throw new SugarRxception ('method invocation is disabled');
+                        throw new SugarException ('method invocation is disabled');
 
                     if (!is_object($obj))
-                        throw new SugarRxception ('method call on non-object');
+                        throw new SugarException ('method call on non-object');
 
                     if (!method_exists($obj, $func))
-                        throw new SugarRxception ('unknown method on object: '.$func);
+                        throw new SugarException ('unknown method on object: '.$func);
 
                     // compile args
                     $params = array();
@@ -262,7 +262,7 @@ class SugarRuntime {
                         $stack []= $obj->$prop;
                     break;
                 default:
-                    throw new SugarRxception ('unknown opcode: '.$code[$i]);
+                    throw new SugarException ('unknown opcode: '.$code[$i]);
             }
         }
 
