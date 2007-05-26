@@ -56,8 +56,9 @@ The above code will print:
   My Var is a test.
 
 To print the value of a variable, simply place the name of the
-variable in script tags.  You can also perform various operations on
-the variable in the tag.  Example:
+variable in script tags.  You can also perform various mathematical
+and logical operations on the variable in the tag, which is called
+an expression.  Example:
 
   <% $i = 7 %>
   <% $i %> is 7
@@ -99,11 +100,21 @@ keyword.
 
 A function can be called by giving the name of the function, and
 then listing the parameters.  Function parameters are always given
-as a parameter name followed by the parameter value.  Example:
+as a parameter name followed by the parameter value.  Commas may
+optionally separate parameters.  Example:
 
   <% myFunc %>
   <% myFunc value=$var %>
   <% myFunc value=$var*2 other="test" last=4+($i*7) %>
+
+Functions may also be called within an expression.  In this case,
+the function call is written as the function name, followed by the
+arguments, separated by commas, within paranthesis.  If there are
+no arguments, just put () after the function name.  Examples:
+
+  <% "show "+getTime() %>
+	<% "show "+getTime('tomorrow') %>
+	<% 12*1+foobar(test="enable", time="now") %>
 
 Conditional execution can be performed using the if, elif, and else
 statements.  Example:
