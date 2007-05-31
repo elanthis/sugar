@@ -1,5 +1,12 @@
 <?php
 class SugarRuntime {
+    public static function xmlentities ($text) {
+        return str_replace(
+            array('&','<','>','"'),
+            array('&amp;','&lt;','&gt;','&quot;'),
+            $text);
+    }
+
     public static function showValue (&$value) {
         if (is_bool($value))
             return $value?'true':'false';
@@ -27,7 +34,7 @@ class SugarRuntime {
             else
                 return call_user_func($invoke, $sugar, $args);
         } catch (Exception $e) {
-            echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
+            $sugar->handleError($e);
             return null;
         }
     }
@@ -56,9 +63,9 @@ class SugarRuntime {
                 case 'print':
                     $val = array_pop($stack);
                     if ($sugar->cacheHandler)
-                        $sugar->cacheHandler->addOutput(htmlentities(SugarRuntime::showValue($val)));
+                        $sugar->cacheHandler->addOutput($sugar->escape(SugarRuntime::showValue($val)));
                     else
-                        echo htmlentities(SugarRuntime::showValue($val));
+                        echo $sugar->escape(SugarRuntime::showValue($val));
                     break;
                 case 'push':
                     $str = $code[++$i];

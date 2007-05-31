@@ -18,6 +18,12 @@ define('SUGAR_ERROR_THROW', 2);
 define('SUGAR_ERROR_DIE', 3);
 define('SUGAR_ERROR_IGNORE', 4);
 
+// output mode
+define('SUGAR_OUTPUT_HTML', 1);
+define('SUGAR_OUTPUT_XHTML', 2);
+define('SUGAR_OUTPUT_XML', 3);
+define('SUGAR_OUTPUT_TEXT', 4);
+
 class Sugar {
     private $vars = array(array());
     private $funcs = array();
@@ -28,6 +34,7 @@ class Sugar {
     public $debug = false;
     public $methods = false;
     public $errors = SUGAR_ERROR_PRINT;
+    public $output = SUGAR_OUTPUT_HTML;
     public $defaultStorage = 'file';
     public $cacheLimit = 3600; // one hour
     public $templateDir = './templates';
@@ -75,19 +82,36 @@ class Sugar {
         return true;
     }
 
-    // handle errors
-    private function handleError ($e) {
-        switch ($this->errors) {
-            case SUGAR_ERROR_PRINT:
-                echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
-                break;
-            case SUGAR_ERROR_THROW:
-                throw $e;
-            case SUGAR_ERROR_DIE:
-                die('<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>');
-            case SUGAR_ERROR_IGNORE;
-                break;
+    // escape output based on current mode
+    public function escape ($output) {
+        switch ($this->output) {
+            case SUGAR_OUTPUT_HTML:
+            case SUGAR_OUTPUT_XHTML:
+                return htmlentities($output);
+            case SUGAR_OUTPUT_XML:
+                return SugarRuntime::xmlentities($output);
+            case SUGAR_OUTPUT_TEXT:
+            default:
+                return $output;
         }
+    }
+
+    // handle errors
+    public function handleError ($e) {
+        // if in throw mode, re-throw the exception
+        if ($this->errors == SUGAR_ERROR_THROW)
+            throw $e;
+
+        // if in ignore mode, just return
+        if ($this->errors == SUGAR_ERROR_IGNORE)
+            return;
+
+        // print the error
+        echo "\n[[ ".$this->escape(get_class($e)).': '.$this->escape($e->getMessage())." ]]\n";
+
+        // die if in die mode
+        if ($this->errors == SUGAR_ERROR_DIE)
+            die();
     }
 
     // validate a source name as being safe
