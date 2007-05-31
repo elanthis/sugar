@@ -12,6 +12,12 @@ define('SUGAR_FUNC_NATIVE', 1);
 define('SUGAR_FUNC_NO_CACHE', 2);
 define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
 
+// error handling method
+define('SUGAR_ERROR_PRINT', 1);
+define('SUGAR_ERROR_THROW', 2);
+define('SUGAR_ERROR_DIE', 3);
+define('SUGAR_ERROR_IGNORE', 4);
+
 class Sugar {
     private $vars = array(array());
     private $funcs = array();
@@ -21,6 +27,7 @@ class Sugar {
     public $cache = null;
     public $debug = false;
     public $methods = false;
+    public $errors = SUGAR_ERROR_PRINT;
     public $defaultStorage = 'file';
     public $cacheLimit = 3600; // one hour
     public $templateDir = './templates';
@@ -66,6 +73,21 @@ class Sugar {
     public function addStorage ($name, &$driver) {
         $this->storage [$name]= &$driver;
         return true;
+    }
+
+    // handle errors
+    private function handleError ($e) {
+        switch ($this->errors) {
+            case SUGAR_ERROR_PRINT:
+                echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
+                break;
+            case SUGAR_ERROR_THROW:
+                throw $e;
+            case SUGAR_ERROR_DIE:
+                die('<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>');
+            case SUGAR_ERROR_IGNORE;
+                break;
+        }
     }
 
     // validate a source name as being safe
@@ -127,7 +149,7 @@ class Sugar {
             $this->execute($file);
             return true;
         } catch (SugarException $e) {
-            echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
+            $this->handleError($e);
             return false;
         }
 
@@ -190,7 +212,7 @@ class Sugar {
 
             return true;
         } catch (SugarException $e) {
-            echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
+            $this->handleError($e);
             return false;
         }
     }
@@ -210,7 +232,7 @@ class Sugar {
             
             return true;
         } catch (SugarException $e) {
-            echo '<p><b>[['.htmlentities(get_class($e)).': '.htmlentities($e->getMessage()).']]</b></p>';
+            $this->handleError($e);
             return false;
         }
     }
