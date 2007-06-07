@@ -253,6 +253,43 @@ class SugarParser {
                 if ($token[0] == 'elif')
                     $block[2][count($block[2])-1][0] = $this->compileExpr($this->tokens);
 
+            // range loop
+            } elseif ($token[0] == 'loop') {
+                $this->tokens->pop(1);
+
+                // lead with name
+                $name = $this->tokens->get();
+                if ($name[0] != 'var')
+                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($name).'; expected variable');
+
+                // require in keyword
+                $in = $this->tokens->get();
+                if ($in[0] != 'in')
+                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($in).'; expected in');
+
+                // parse lower-bound
+                $lower = $this->compileExpr($this->tokens);
+
+                // expect .. keyword
+                $range = $this->tokens->get();
+                if ($range[0] != '..')
+                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($range).'; expected ..');
+
+                // parse upper bound
+                $upper = $this->compileExpr($this->tokens);
+
+                // parse optional step
+                $range = $this->tokens->peek();
+                if ($range[0] == '..') {
+                    $this->tokens->pop();
+                    $step = $this->compileExpr($this->tokens);
+                } else {
+                    $step = array('push', 'auto');
+                }
+
+                // push block
+                $this->blocks []= array('loop', array(), $name[1], $lower, $upper, $step);
+
             // loop over an array
             } elseif ($token[0] == 'foreach') {
                 $name = $this->tokens->peek(1);
@@ -308,6 +345,9 @@ class SugarParser {
 
                 // compile
                 switch ($block[0]) {
+                    case 'loop':
+                        $bc = array_merge($block[3], $block[4], $block[5], array('range', strtolower($block[2]), $block[1]));
+                        break;
                     case 'foreach':
                         $bc = array_merge($block[4], array('foreach', strtolower($block[2]), strtolower($block[3]), $block[1]));
                         break;

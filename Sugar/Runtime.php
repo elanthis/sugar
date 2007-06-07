@@ -242,6 +242,31 @@ class SugarRuntime {
                     elseif (!$test && $false)
                         SugarRuntime::execute($sugar, $false, $cache);
                     break;
+                case 'range':
+                    $step = array_pop($stack);
+                    $upper = array_pop($stack);
+                    $lower = array_pop($stack);
+                    $name = $code[++$i];
+                    $block = $code[++$i];
+
+                    // select proper step
+                    if ($step == 'auto')
+                        $step = ($lower <= $upper ? 1 : -1);
+                    else
+                        $step = intval($step);
+
+                    // if step is 0, fail
+                    if ($step == 0)
+                        throw new SugarException ('step of 0 in range loop');
+
+                    // iterate
+                    $index = $lower;
+                    while (($step < 0 && $index >= $upper) || ($step > 0 && $index <= $upper)) {
+                        $sugar->set($name, $index);
+                        SugarRuntime::execute($sugar, $block, $cache);
+                        $index += $step;
+                    }
+                    break;
                 case 'foreach':
                     $array = array_pop($stack);
                     $key = $code[++$i];
@@ -253,6 +278,7 @@ class SugarRuntime {
                         $sugar->set($name, $v);
                         SugarRuntime::execute($sugar, $block, $cache);
                     }
+                    break;
                 case '.':
                     $index = array_pop($stack);
                     $array = array_pop($stack);

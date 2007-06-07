@@ -29,7 +29,7 @@ class SugarTokenizer {
 
     // get next token
     private function getNext () {
-        static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|==|!=|<=|>=|\|\||&&|->|.)/';
+        static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|==|!=|<=|>=|\|\||&&|->|\.\.|.)/';
 
         // EOF
         if ($this->pos >= strlen($this->src)) {
@@ -82,7 +82,7 @@ class SugarTokenizer {
         elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
             return array('var', substr($ar[2], 1), $this->file, $line);
         // keyword or special symbol
-        elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in')))
+        elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop')))
             return array($ar[2], null, $this->file, $line);
         // integer
         elseif (preg_match('/^\d+$/', $ar[2]))
