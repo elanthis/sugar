@@ -26,7 +26,7 @@ class SugarFileStorage implements ISugarStorage {
 
     public function load ($name) {
         $path = $this->sugar->templateDir.'/'.$name.'.tpl';
-        $cpath = $this->sugar->compileDir.'/'.$name.'.ctpl';
+        $cpath = $this->sugar->cacheDir.'/'.str_replace('/','.',$name).'.ctpl';
 
         // if caching is enabled, and the cache file exists, and its up-to-date, return the cached contents
         if (!$this->sugar->debug && is_file($cpath) && is_readable($cpath) && filemtime($cpath)>=filemtime($path)) {
@@ -45,10 +45,10 @@ class SugarFileStorage implements ISugarStorage {
 
     public function store ($name, $data) {
         // ensure directory is writable
-        if (!is_dir($this->sugar->compileDir))
-            throw new SugarException('compilation directory does not exist: '.$this->sugar->compileDir);
-        if (!is_writeable($this->sugar->compileDir))
-            throw new SugarException('compilation directory is not writeable: '.$this->sugar->compileDir);
+        if (!is_dir($this->sugar->cacheDir))
+            throw new SugarException('cache directory does not exist: '.$this->sugar->cacheDir);
+        if (!is_writeable($this->sugar->cacheDir))
+            throw new SugarException('cache directory is not writeable: '.$this->sugar->cacheDir);
 
         // encode data
         if ($this->useJson)
@@ -57,7 +57,7 @@ class SugarFileStorage implements ISugarStorage {
             $data = serialize($data);
 
         // save
-        file_put_contents($this->sugar->compileDir.'/'.$name.'.ctpl', $data);
+        file_put_contents($this->sugar->cacheDir.'/'.str_replace('/','.',$name).'.ctpl', $data);
         return true;
     }
 
