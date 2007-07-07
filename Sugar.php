@@ -6,11 +6,16 @@ require_once dirname(__FILE__).'/Sugar/Tokenizer.php';
 require_once dirname(__FILE__).'/Sugar/Runtime.php';
 require_once dirname(__FILE__).'/Sugar/Stdlib.php';
 require_once dirname(__FILE__).'/Sugar/Cache.php';
+require_once dirname(__FILE__).'/Sugar/CacheFile.php';
 
 // function registration flags
 define('SUGAR_FUNC_NATIVE', 1);
 define('SUGAR_FUNC_NO_CACHE', 2);
 define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
+
+// different cache types
+define('SUGAR_CACHE_TPL', 'ctpl');
+define('SUGAR_CACHE_HTML', 'chtml');
 
 // error handling method
 define('SUGAR_ERROR_PRINT', 1);
@@ -42,7 +47,7 @@ class Sugar {
 
     public function __construct () {
         $this->storage ['file']= new SugarFileStorage($this);
-        $this->cache = new SugarFileCache($this);
+        $this->cache = new SugarCacheFile($this);
 
         SugarStdlib::initialize($this);
     }
@@ -185,7 +190,7 @@ class Sugar {
         if (!$this->parseName($file))
             throw new SugarException('illegal template name: '.$file);
 
-        return !$this->debug && $this->cache->exists($file, $id);
+        return !$this->debug && $this->cache->exists($file, $id, SUGAR_CACHE_HTML);
     }
 
     // compile and display given source, with caching
@@ -202,12 +207,13 @@ class Sugar {
                 throw new SugarException('template not found: '.$file);
 
             // get cache stamp
-            $cstamp = $this->cache->stamp($file, $id);
+            $cstamp = $this->cache->stamp($file, $id, SUGAR_CACHE_HTML);
 
             // if cache exists and is up-to-date amd debug is off, run the cache
             if (!$this->debug && $cstamp > $stamp) {
+                $data = $this->cache->load($file, $id, SUGAR_CACHE_HTML);
                 $this->vars []= array();
-                $this->cache->display($file, $id);
+                SugarRuntime::execute($this->sugar, $data);
                 array_pop($this->vars);
                 return true;
             }
@@ -221,11 +227,12 @@ class Sugar {
                 $this->cacheHandler = null;
 
                 // attempt to save cache
-                $this->cache->store($file, $id, $cache);
+                $this->cache->store($file, $id, SUGAR_CACHE_HTML, $cache);
 
                 // display cache
+                $data = $this->cache->load($file, $id, SUGAR_CACHE_HTML);
                 $this->vars []= array();
-                $this->cache->display($file, $id);
+                SugarRuntime::execute($this->sugar, $data);
                 array_pop($this->vars);
 
             // cache handler already running - just display normally
