@@ -8,20 +8,28 @@ class SugarCacheFile implements ISugarCache {
         $this->useJson = function_exists('json_encode');
     }
 
-    private function cachePath ($name, $id, $type) {
-        return $this->sugar->cacheDir.'/'.md5($name.$id).'-'.str_replace('/', '-', $name).'.'.preg_replace('/\W+/', '-', $id).'.'.preg_replace('/\W+/', '', $type);
+    private function makePath (SugarRef $ref, $type) {
+        $path = $this->sugar->cacheDir.'/';
+        $path .= md5($ref->storageName .$ref->name . $ref->cacheId);
+        $path .= ',' . $ref->storageName . ',' . str_replace('/', '%', $ref->name);
+        if ($ref->cacheId !== null)
+            $path .= ',' . preg_replace('/[^A-Za-z0-9._-]+/', '', $ref->cacheId);
+        $path .= ',' . $type;
+        return $path;
     }
 
-    public function stamp ($name, $id, $type) {
-        $path = $this->cachePath ($name, $id, $type);
+    public function stamp (SugarRef $ref, $type) {
+        $path = $this->makePath($ref, $type);
+
+        // check exists, return stamp
         if (file_exists($path) && is_file($path) && is_readable($path) && time()-filemtime($path)<=$this->sugar->cacheLimit)
             return filemtime($path);
         else
             return false;
     }
 
-    public function load ($name, $id, $type) {
-        $path = $this->cachePath ($name, $id, $type);
+    public function load (SugarRef $ref, $type) {
+        $path = $this->makePath($ref, $type);
     
         // must exist, be readable, and not be older than $cacheLimit seconds
         if (file_exists($path) && is_file($path) && is_readable($path) && time()-filemtime($path)<=$this->sugar->cacheLimit) {
@@ -41,8 +49,8 @@ class SugarCacheFile implements ISugarCache {
         return false;
     }
 
-    public function store ($name, $id, $type, $data) {
-        $path = $this->cachePath ($name, $id, $type);
+    public function store (SugarRef $ref, $type, $data) {
+        $path = $this->makePath($ref, $type);
 
         // ensure we can save the cache file
         if (!file_exists($this->sugar->cacheDir))
@@ -61,8 +69,9 @@ class SugarCacheFile implements ISugarCache {
         return true; 
     }
 
-    public function erase ($name, $id, $type) {
-        $path = $this->cachePath($name, $id, $type);
+    public function erase (SugarRef $ref, $type) {
+        $path = $this->makePath($ref, $type);
+
         // if the file exists and the directory is writeable, erase it
         if (file_exists($path) && is_file($path) && is_writeable($this->sugar->cacheDir)) {
             unlink($path);
@@ -73,7 +82,7 @@ class SugarCacheFile implements ISugarCache {
     }
 
     public function clear () {
-        // direcoty rmust exist, and be both readable and writable
+        // directory must exist, and be both readable and writable
         if (!file_exists($this->sugar->cacheDir) || !is_dir($this->sugar->cacheDir) || !is_writable($this->sugar->cacheDir) || !is_readable($this->sugar->cacheDir))
             return false;
 

@@ -1,9 +1,9 @@
 <?php
 interface ISugarCache {
-    function stamp ($name, $id, $type);
-    function load ($name, $id, $type);
-    function store ($name, $id, $type, $data);
-    function erase ($name, $id, $type);
+    function stamp (SugarRef $ref, $type);
+    function load (SugarRef $ref, $type);
+    function store (SugarRef $ref, $type, $data);
+    function erase (SugarRef $ref, $type);
     function clear ();
 }
 
