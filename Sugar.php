@@ -130,7 +130,7 @@ class Sugar {
 
         // if compiled version does not exist or is out of date, compile it
         $cstamp = $this->cache->stamp($ref, SUGAR_CACHE_TPL);
-        if ($sstamp >= $cstamp) {
+        if ($this->debug || $sstamp >= $cstamp) {
             // compile
             $source = $ref->storage->load($ref);
 

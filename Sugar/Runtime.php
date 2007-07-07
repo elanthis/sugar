@@ -293,6 +293,13 @@ class SugarRuntime {
                     if (is_object($obj))
                         $stack []= $obj->$prop;
                     break;
+                case 'array':
+                    $elems = $code[++$i];
+                    $array = array();
+                    foreach ($elems as $elem)
+                        $array []= SugarRuntime::execute($sugar, $elem, $cache);
+                    $stack []= $array;
+                    break;
                 default:
                     throw new SugarException ('unknown opcode: '.$code[$i]);
             }

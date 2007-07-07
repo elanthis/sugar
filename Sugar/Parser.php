@@ -13,7 +13,7 @@ class SugarParser {
         '==' => 3, '=' => 3, '<' => 3, '>' => 3,
         '!=' => 3, '<=' => 3, '>=' => 3, 'in' => 3,
         '||' => 4, '&&' => 4,
-        '(' => 11,
+        '(' => 11, '[' => 11
     );
 
     public function __construct (&$sugar) {
@@ -64,6 +64,47 @@ class SugarParser {
         if ($t[0] == '-' || $t[0] == '!') {
             $this->U();
             return;
+
+        // array constructor
+        } elseif ($t[0] == '[') {
+            // consume
+            $this->tokens->pop();
+
+            // push ( to mark array constructor
+            $this->stack []= '[';
+
+            // read in elements
+            $elems = array();
+            $data = true;
+            $end = $this->tokens->peek();
+            while ($end[0] != ']') {
+                // read in element
+                $elem = $this->compileExpr();
+                $elems []= $elem;
+
+                // if not pure data, unmark data flag
+                if ($data && !$this->isData($elem))
+                    $data = $false;
+
+                // consume comma
+                $end = $this->tokens->get();
+                if ($end[0] != ',' && $end[0] != ']')
+                    throw new SugarParseException($end[2], $end[3], 'unexpected '.SugarTokenizer::tokenName($end).'; expected , or ]');
+            }
+            $this->tokens->pop();
+
+            // if the data flag is true, all elements are pure data,
+            // so we can push this as a value instead of an opcode
+            if ($data) {
+                foreach ($elems as $i=>$v)
+                    $elems[$i] = $v[1];
+                $this->output []= array('push', $elems);
+            } else {
+                $this->output []= array('array', $elems);
+            }
+
+            // pop [
+            array_pop($this->stack);
 
         // sub-expression
         } elseif ($t[0] == '(') {
@@ -184,7 +225,7 @@ class SugarParser {
 
     private function isExprNext () {
         $token = $this->tokens->peek();
-        return in_array($token[0], array('(', '-', '!', 'name', 'var', 'data'));
+        return in_array($token[0], array('(', '[', '-', '!', 'name', 'var', 'data'));
     }
 
     private function appendEcho ($text) {
