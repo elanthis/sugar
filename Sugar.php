@@ -1,5 +1,6 @@
 <?php
 require_once dirname(__FILE__).'/Sugar/Exception.php';
+require_once dirname(__FILE__).'/Sugar/Util.php';
 require_once dirname(__FILE__).'/Sugar/Ref.php';
 require_once dirname(__FILE__).'/Sugar/Parser.php';
 require_once dirname(__FILE__).'/Sugar/Storage.php';
