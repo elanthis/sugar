@@ -6,6 +6,8 @@ require_once dirname(__FILE__).'/Sugar/Tokenizer.php';
 require_once dirname(__FILE__).'/Sugar/Runtime.php';
 require_once dirname(__FILE__).'/Sugar/Stdlib.php';
 require_once dirname(__FILE__).'/Sugar/Cache.php';
+
+require_once dirname(__FILE__).'/Sugar/StorageFile.php';
 require_once dirname(__FILE__).'/Sugar/CacheFile.php';
 
 // function registration flags
@@ -46,7 +48,7 @@ class Sugar {
     public $cacheDir = './templates/cache';
 
     public function __construct () {
-        $this->storage ['file']= new SugarFileStorage($this);
+        $this->storage ['file']= new SugarStorageFile($this);
         $this->cache = new SugarCacheFile($this);
 
         SugarStdlib::initialize($this);
@@ -125,7 +127,7 @@ class Sugar {
         if (!preg_match(';^(?:(\w+):)?(/?\w+(?:/\w+)*)(?:[.]tpl)?$;', $name, $ar))
             return false;
 
-        // determine scheme; set to default is necessary
+        // determine scheme; set to default if necessary
         $scheme = $ar[1];
         if (!$scheme)
             $scheme = $this->defaultStorage;
@@ -137,22 +139,32 @@ class Sugar {
         return array($this->storage[$scheme], $ar[2]);
     }
 
-    // 
-
     // execute a template, compiling if necessary
     private function execute ($file) {
         $ref =& $this->parseName($file);
         if ($ref === false)
             throw new SugarException('illegal template name: '.$file);
 
-        $data = $ref[0]->load($ref[1]);
+        // check template exists, and remember stamp
+        $sstamp = $ref[0]->stamp($ref[1]);
+        if ($sstamp === false)
+            throw new SugarException('template not found: '.$file);
 
-        // compile if necessary
-        if ($data === false) {
+        // if compiled version does not exist or is out of date, compile it
+        $cstamp = $this->cache->stamp($ref[1], '', SUGAR_CACHE_TPL);
+        if ($sstamp >= $cstamp) {
+            // compile
+            $source = $ref[0]->load($ref[1]);
+
             $parser = new SugarParser($this);
-            $data = $parser->compile($ref[0]->source($ref[1]), $ref[0]->path($ref[1]));
-            $ref[0]->store($ref[1], $data);
+            $data = $parser->compile($source, $ref[0]->path($ref[1]));
             $parser = null;
+
+            // store
+            $this->cache->store($ref[1], '', SUGAR_CACHE_TPL, $data);
+        // load compiled version
+        } else {
+            $data = $this->cache->load($ref[1], '', SUGAR_CACHE_TPL);
         }
 
         // execute
@@ -230,9 +242,8 @@ class Sugar {
                 $this->cache->store($file, $id, SUGAR_CACHE_HTML, $cache);
 
                 // display cache
-                $data = $this->cache->load($file, $id, SUGAR_CACHE_HTML);
                 $this->vars []= array();
-                SugarRuntime::execute($this->sugar, $data);
+                SugarRuntime::execute($this->sugar, $cache);
                 array_pop($this->vars);
 
             // cache handler already running - just display normally
@@ -275,7 +286,7 @@ class Sugar {
             throw new SugarException('illegal template name: '.$file);
 
         // fetch source
-        return $ref[0]->source($ref[1]);
+        return $ref[0]->load($ref[1]);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
