@@ -37,6 +37,17 @@ class SugarStdlib {
         return date($format, $stamp);
     }
 
+    public static function format ($sugar, $params) {
+        if (isset($params['format'])) {
+            $args = array($params['format']);
+            unset($params['format']);
+            $args = array_merge($args, $params);
+            return call_user_func_array('sprintf', $args);
+        } else {
+            return call_user_func('sprintf', $params);
+        }
+    }
+
     public static function initialize (&$sugar) {
         $sugar->register('include', array('SugarStdlib', '_include'));
         $sugar->register('eval', array('SugarStdlib', '_eval'));
@@ -45,6 +56,7 @@ class SugarStdlib {
         $sugar->register('urlEncode', array('SugarStdlib', 'urlEncode'));
         $sugar->register('jsValue', array('SugarStdlib', 'jsValue'));
         $sugar->register('date', array('SugarStdlib', 'date'));
+        $sugar->register('format', array('SugarStdlib', 'format'));
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

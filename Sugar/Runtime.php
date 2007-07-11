@@ -151,7 +151,7 @@ class SugarRuntime {
                 case '>':
                     $v2 = array_pop($stack);
                     $v1 = array_pop($stack);
-                    $stack []= ($v1 >= $v2);
+                    $stack []= ($v1 > $v2);
                     break;
                 case '>=':
                     $v2 = array_pop($stack);
