@@ -44,7 +44,7 @@ class SugarStdlib {
             $args = array_merge($args, $params);
             return call_user_func_array('sprintf', $args);
         } else {
-            return call_user_func('sprintf', $params);
+            return call_user_func_array('sprintf', $params);
         }
     }
 
