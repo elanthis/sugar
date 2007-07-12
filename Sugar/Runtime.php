@@ -17,12 +17,12 @@ class SugarRuntime {
     }
 
     public static function addValues ($left, $right) {
-        if (is_string($left))
-            return $left.$right;
-        elseif (is_array($left))
-            return array_merge($left, is_array($right)?$right:array($right));
+        if (is_numeric($left) && is_numeric($right))
+            return $left + $right;
+        elseif (is_array($left) && is_array($rihgt))
+            return array_merge($left, $right);
         else
-            return $left+$right;
+            return $left . $right;
     }
 
     public static function invoke (&$sugar, $invoke, $flags, $args) {
@@ -87,6 +87,11 @@ class SugarRuntime {
                 case '!':
                     $v = array_pop($stack);
                     $stack []= !$v;
+                    break;
+                case '..':
+                    $v2 = array_pop($stack);
+                    $v1 = array_pop($stack);
+                    $stack []= $v1 . $v2;
                     break;
                 case '+':
                     $v2 = array_pop($stack);
@@ -249,12 +254,6 @@ class SugarRuntime {
                     $name = $code[++$i];
                     $block = $code[++$i];
 
-                    // select proper step
-                    if ($step == 'auto')
-                        $step = ($lower <= $upper ? 1 : -1);
-                    else
-                        $step = intval($step);
-
                     // if step is 0, fail
                     if ($step == 0)
                         throw new SugarException ('step of 0 in range loop');
@@ -272,11 +271,13 @@ class SugarRuntime {
                     $key = $code[++$i];
                     $name = $code[++$i];
                     $block = $code[++$i];
-                    foreach($array as $k=>$v) {
-                        if ($key)
-                            $sugar->set($key, $k);
-                        $sugar->set($name, $v);
-                        SugarRuntime::execute($sugar, $block, $cache);
+                    if (is_array($array) || is_object($array)) {
+                        foreach($array as $k=>$v) {
+                            if ($key)
+                                $sugar->set($key, $k);
+                            $sugar->set($name, $v);
+                            SugarRuntime::execute($sugar, $block, $cache);
+                        }
                     }
                     break;
                 case '.':

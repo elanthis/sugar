@@ -8,11 +8,12 @@ class SugarParser {
 
     static $binops = array(
         '.' => 0, '->' => 0,
-        '*' => 1, '/' => 1, '%' => 1,
-        '+' => 2, '-' => 2,
-        '==' => 3, '=' => 3, '<' => 3, '>' => 3,
-        '!=' => 3, '<=' => 3, '>=' => 3, 'in' => 3,
-        '||' => 4, '&&' => 4,
+        '..' => 1,
+        '*' => 2, '/' => 2, '%' => 2,
+        '+' => 3, '-' => 3,
+        '==' => 4, '=' => 4, '<' => 4, '>' => 4,
+        '!=' => 4, '<=' => 4, '>=' => 4, 'in' => 4,
+        '||' => 5, '&&' => 5,
         '(' => 11, '[' => 11
     );
 
@@ -313,19 +314,19 @@ class SugarParser {
 
                 // expect .. keyword
                 $range = $this->tokens->get();
-                if ($range[0] != '..')
-                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($range).'; expected ..');
+                if ($range[0] != ',')
+                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($range).'; expected ,');
 
                 // parse upper bound
                 $upper = $this->compileExpr($this->tokens);
 
                 // parse optional step
                 $range = $this->tokens->peek();
-                if ($range[0] == '..') {
+                if ($range[0] == ',') {
                     $this->tokens->pop();
                     $step = $this->compileExpr($this->tokens);
                 } else {
-                    $step = array('push', 'auto');
+                    $step = array('push', 1);
                 }
 
                 // push block
