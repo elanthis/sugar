@@ -6,14 +6,15 @@ class SugarParser {
     private $blocks = array();
     private $sugar;
 
-    static $binops = array(
+    static $precedence = array(
         '.' => 0, '->' => 0,
-        '*' => 1, '/' => 1, '%' => 1,
-        '+' => 2, '-' => 2,
-        '..' => 3,
-        '==' => 4, '=' => 4, '<' => 4, '>' => 4,
-        '!=' => 4, '<=' => 4, '>=' => 4, 'in' => 4,
-        '||' => 5, '&&' => 5,
+        '!' => 1, 'negate' => 1,
+        '*' => 2, '/' => 2, '%' => 2,
+        '+' => 3, '-' => 3,
+        '..' => 4,
+        '==' => 5, '=' => 5, '<' => 5, '>' => 5,
+        '!=' => 5, '<=' => 5, '>=' => 5, 'in' => 5,
+        '||' => 6, '&&' => 6,
         '(' => 11, '[' => 11
     );
 
@@ -22,21 +23,36 @@ class SugarParser {
     }
 
     private function collapseOps ($level) {
-        while ($this->stack && SugarParser::$binops[$this->stack[count($this->stack)-1]] <= $level) {
-            // pull operands and operator
-            $right = array_pop($this->output);
-            $left = array_pop($this->output);
+        while ($this->stack && SugarParser::$precedence[$this->stack[count($this->stack)-1]] <= $level) {
+            // get operator
             $op = array_pop($this->stack);
 
-            // create method call
-            if ($op == '->' && $right[0] == 'call')
-                $this->output []= array_merge($left, array('method', $right[1], $right[2]));
-            // optimize away if both operands are constant data
-            elseif (SugarParser::isData($left) && SugarParser::isData($right))
-                $this->output []= array('push', SugarRuntime::execute($this->sugar, array_merge($left, $right, array($op))));
-            // can't optimize away - emit opcodes
-            else
-                $this->output []= array_merge($left, $right, array($op));
+            // if unary, pop right-hand operand
+            if ($op == '!' || $op == 'negate') {
+                $right = array_pop($this->output);
+
+                // optimize away if operand is data
+                if (SugarParser::isData($right))
+                    $this->output []= array('push', SugarRuntime::execute($this->sugar, array_merge($right, array($op))));
+                // can't optimize away - emit opcodes
+                else
+                    $this->output []= array_merge($right, array($op));
+
+            // binary, pop both
+            } else {
+                $right = array_pop($this->output);
+                $left = array_pop($this->output);
+
+                // create method call
+                if ($op == '->' && $right[0] == 'call')
+                    $this->output []= array_merge($left, array('method', $right[1], $right[2]));
+                // optimize away if both operands are constant data
+                elseif (SugarParser::isData($left) && SugarParser::isData($right))
+                    $this->output []= array('push', SugarRuntime::execute($this->sugar, array_merge($left, $right, array($op))));
+                // can't optimize away - emit opcodes
+                else
+                    $this->output []= array_merge($left, $right, array($op));
+            }
         }
     }
 
@@ -49,7 +65,7 @@ class SugarParser {
         $this->P();
 
         // while we have a binary operator, continue chunking along
-        while (($op = $this->tokens->peek()) && array_key_exists($op[0], SugarParser::$binops)) {
+        while (($op = $this->tokens->peek()) && array_key_exists($op[0], SugarParser::$precedence)) {
             $this->B();
             $this->P();
         }
@@ -187,7 +203,7 @@ class SugarParser {
         $op = $op[0];
 
         // pop higher precedence operators
-        $this->collapseOps(SugarParser::$binops[$op]);
+        $this->collapseOps(SugarParser::$precedence[$op]);
 
         // convert = to ===
         if ($op == '=') $op = '==';
@@ -200,23 +216,14 @@ class SugarParser {
         $op = $this->tokens->get();
         $op = $op[0];
 
+        // push correct unary operator
+        if ($op == '-')
+            $this->stack []= 'negate';
+        elseif ($op == '!')
+            $this->stack []= '!';
+
         // need another P
         $this->P();
-        $value = array_pop($this->output);
-
-        // negate operator
-        if ($op == '-') {
-            if (SugarParser::isData($value))
-                $this->output []= array('push', -$value[1]);
-            else
-                $this->output []= array_merge($value, array('negate'));
-        // not operator
-        } elseif ($op == '!') {
-            if (SugarParser::isData($value))
-                $this->output []= array('push', !$value[1]);
-            else
-                $this->output []= array_merge($value, array('!'));
-        }
     }
 
     private function compileExpr () {
