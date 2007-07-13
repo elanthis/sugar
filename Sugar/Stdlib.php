@@ -48,13 +48,23 @@ class SugarStdlib {
         }
     }
 
+    public static function defaultValue ($sugar, $params) {
+        $value = SugarUtil::getArg($params, 'value', 0);
+        if ($value)
+            return $value;
+        else
+            return SugarUtil::getArg($params, 'default', 1);
+    }
+
     public static function initialize (&$sugar) {
         $sugar->register('include', array('SugarStdlib', '_include'));
         $sugar->register('eval', array('SugarStdlib', '_eval'));
         $sugar->register('echo', array('SugarStdlib', '_echo'));
+        $sugar->register('raw', array('SugarStdlib', '_echo'));
         $sugar->register('urlEncodeAll', array('SugarStdlib', 'urlEncodeAll'));
         $sugar->register('urlEncode', array('SugarStdlib', 'urlEncode'));
         $sugar->register('jsValue', array('SugarStdlib', 'jsValue'));
+        $sugar->register('default', array('SugarStdlib', 'defaultValue'));
         $sugar->register('date', array('SugarStdlib', 'date'));
         $sugar->register('format', array('SugarStdlib', 'format'));
     }

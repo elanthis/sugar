@@ -55,10 +55,13 @@ class SugarUtil {
     }
 
     function valueToTime ($value) {
+        // raw int?  it's a timestamp
         if (is_int($value))
             return $value;
+        // otherwise, convert it with strtotime
         elseif (is_string($value))
             return strtotime($value);
+        // something... use current time
         else
             return time();
     }
