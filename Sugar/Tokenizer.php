@@ -29,7 +29,7 @@ class SugarTokenizer {
 
     // get next token
     private function getNext () {
-        static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|==|!=|<=|>=|\|\||&&|->|\.\.|.)/';
+        static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|\/\*.*?\*\/|\/\/.*?($|%>)|==|!=|<=|>=|\|\||&&|->|\.\.|.)/m';
 
         // EOF
         if ($this->pos >= strlen($this->src)) {
@@ -60,42 +60,56 @@ class SugarTokenizer {
             $this->pos = $next + 2;
         }
 
-        // get next token
-        if (!preg_match($pattern, $this->src, $ar, 0, $this->pos))
-            throw new SugarParseException($this->file, $this->line, 'garbage at: '.substr($this->src, $this->pos, 12));
-        $this->pos += strlen($ar[0]);
+        // keep looping until we get something valid - used mainly for comments
+        while (true) {
+            // get next token
+            if (!preg_match($pattern, $this->src, $ar, 0, $this->pos))
+                throw new SugarParseException($this->file, $this->line, 'garbage at: '.substr($this->src, $this->pos, 12));
+            $this->pos += strlen($ar[0]);
 
-        // calc line count
-        $line = $this->line + substr_count($ar[1], "\n");
-        $this->line = $line + substr_count($ar[2], "\n");
+            // calc line count
+            $line = $this->line + substr_count($ar[1], "\n");
+            $this->line = $line + substr_count($ar[2], "\n");
 
-        // if at end, mark that
-        if ($ar[2] == '%>')
-            $this->inCmd = false;
+            // if at end, mark that
+            if ($ar[2] == '%>')
+                $this->inCmd = false;
 
-        // string
-        if ($ar[3])
-            return array('data', stripslashes($ar[3]), $this->file, $line);
-        elseif ($ar[4])
-            return array('data', stripslashes($ar[4]), $this->file, $line);
-        // variable
-        elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
-            return array('var', substr($ar[2], 1), $this->file, $line);
-        // keyword or special symbol
-        elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop')))
-            return array($ar[2], null, $this->file, $line);
-        // integer
-        elseif (preg_match('/^\d+$/', $ar[2]))
-            return array('data', intval($ar[2]), $this->file, $line);
-        // float
-        elseif (preg_match('/^\d+[.]\d+$/', $ar[2]))
-            return array('data', floatval($ar[2]), $this->file, $line);
-        // name
-        elseif (preg_match('/^\w+$/', $ar[2]))
-            return array('name', $ar[2], $this->file, $line);
-        // generic operator
-        else
-            return array($ar[2], null, $this->file, $line);
+            // comments
+            if (substr($ar[2], 0, 2) == '/*' || substr($ar[2], 0, 2) == '//') {
+                // if the comment ends in %> (only for // comments), return that
+                if (substr($ar[2], -2, 2) == '%>') {
+                    $this->inCmd = false;
+                    return array('%>', null, $this->file, $line);
+                }
+                // otherwise, continue to next token
+                continue;
+            }
+
+            // string
+            if ($ar[3])
+                return array('data', stripslashes($ar[3]), $this->file, $line);
+            elseif ($ar[4])
+                return array('data', stripslashes($ar[4]), $this->file, $line);
+            // variable
+            elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
+                return array('var', substr($ar[2], 1), $this->file, $line);
+            // keyword or special symbol
+            elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop')))
+                return array($ar[2], null, $this->file, $line);
+            // integer
+            elseif (preg_match('/^\d+$/', $ar[2]))
+                return array('data', intval($ar[2]), $this->file, $line);
+            // float
+            elseif (preg_match('/^\d+[.]\d+$/', $ar[2]))
+                return array('data', floatval($ar[2]), $this->file, $line);
+            // name
+            elseif (preg_match('/^\w+$/', $ar[2]))
+                return array('name', $ar[2], $this->file, $line);
+            // generic operator
+            else
+                return array($ar[2], null, $this->file, $line);
+        }
     }
 
     // get next token
