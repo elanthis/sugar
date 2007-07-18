@@ -56,6 +56,40 @@ class SugarStdlib {
             return SugarUtil::getArg($params, 'default', 1);
     }
 
+    public static function count ($sugar, $params) {
+        return count(SugarUtil::getArg($params, 'array', 0));
+    }
+
+    public static function selected ($sugar, $params) {
+        if (SugarUtil::getArg($params, 'test', 0))
+            echo ' selected="selected" ';
+    }
+
+    public static function checked ($sugar, $params) {
+        if (SugarUtil::getArg($params, 'test', 0))
+            echo ' checked="checked" ';
+    }
+
+    public static function switchValue ($sugar, $params) {
+        $value = SugarUtil::getArg($params, 'value', 0);
+
+        if (isset($params[$value]))
+            return $params[$value];
+        elseif (isset($params['default']))
+            return $params['default'];
+        else
+            return $value;
+    }
+
+    public static function truncate ($sugar, $params) {
+        $text = SugarUtil::getArg($params, 'text', 0);
+        $length = SugarUtil::getArg($params, 'length', 1, 72);
+        if (strlen($text) <= $length)
+            return $text;
+        else
+            return preg_replace('/\s+?(\S+)?$/', '...', substr($text, 0, $length + 1));
+    }
+
     public static function initialize (&$sugar) {
         $sugar->register('include', array('SugarStdlib', '_include'));
         $sugar->register('eval', array('SugarStdlib', '_eval'));
@@ -67,6 +101,12 @@ class SugarStdlib {
         $sugar->register('default', array('SugarStdlib', 'defaultValue'));
         $sugar->register('date', array('SugarStdlib', 'date'));
         $sugar->register('format', array('SugarStdlib', 'format'));
+        $sugar->register('count', array('SugarStdlib', 'count'));
+        $sugar->register('selected', array('SugarStdlib', 'selected'));
+        $sugar->register('checked', array('SugarStdlib', 'checked'));
+        $sugar->register('switch', array('SugarStdlib', 'switchVAlue'));
+        $sugar->register('basename', 'basename', SUGAR_FUNC_NATIVE);
+        $sugar->register('truncate', array('SugarStdlib', 'truncate'));
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
