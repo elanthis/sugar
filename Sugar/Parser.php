@@ -163,18 +163,17 @@ class SugarParser {
             while ($token[0] != ')') {
                 // check for name= assignment
                 $check = $this->tokens->peek(1);
-                if ($token[0] == 'name' && $check[0] == '=')
+                if ($token[0] == 'name' && $check[0] == '=') {
+                    $this->tokens->pop(2);
                     $params [$token[1]]= $this->compileExpr();
                 // regular parameter
-                else
+                } else {
                     $params []= $this->compileExpr();
+                }
 
-                // check trailing token
+                // consume optional ,
                 $token = $this->tokens->peek();
-                if ($token[0] != ',' && $token[0] != ')')
-                    throw new SugarParseException($token[2], $token[3], 'unexpected '.SugarTokenizer::tokenName($token).'; expected ) or ,');
-                // pop the ,
-                elseif ($token[0] == ',')
+                if ($token[0] == ',')
                     $this->tokens->pop();
             }
             $this->tokens->pop();
