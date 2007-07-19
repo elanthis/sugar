@@ -1,12 +1,5 @@
 <?php
 class SugarRuntime {
-    public static function xmlentities ($text) {
-        return str_replace(
-            array('&','<','>','"'),
-            array('&amp;','&lt;','&gt;','&quot;'),
-            $text);
-    }
-
     public static function showValue (&$value) {
         if (is_bool($value))
             return $value?'true':'false';

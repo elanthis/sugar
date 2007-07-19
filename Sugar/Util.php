@@ -1,5 +1,12 @@
 <?php
 class SugarUtil {
+    public static function xmlentities ($text) {
+        return str_replace(
+            array('&','<','>','"'),
+            array('&amp;','&lt;','&gt;','&quot;'),
+            $text);
+    }
+
     public static function getArg (&$params, $name, $index = 0, $default = null) {
         if (isset($params[$name]))
             return $params[$name];
