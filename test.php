@@ -76,5 +76,5 @@ $sugar->methods = true;
 $sugar->display($file);
 
 $end = microtime(true);
-printf('<p>%.03f seconds</p>', $end-$start);
+printf('<p>%0.6f seconds</p>', $end-$start);
 ?>
