@@ -97,7 +97,7 @@ class Sugar {
             case SUGAR_OUTPUT_XHTML:
                 return htmlentities($output);
             case SUGAR_OUTPUT_XML:
-                return SugarRuntime::xmlentities($output);
+                return SugarUtil::xmlentities($output);
             case SUGAR_OUTPUT_TEXT:
             default:
                 return $output;
@@ -122,8 +122,26 @@ class Sugar {
             die();
     }
 
-    // execute a template, compiling if necessary
-    private function execute (SugarRef $ref) {
+    // execute bytecode in new domain
+    private function execute ($data) {
+        // create new domain
+        $this->vars []= array();
+
+        try {
+            $rs = SugarRuntime::execute($this, $data);
+
+            // cleanup
+            array_pop($this->vars);
+            return $rs;
+        } catch (Exception $e) {
+            // cleanup
+            array_pop($this->vars);
+            throw $e;
+        }
+    }
+
+    // load a template from cache or compile from source, then execute it
+    private function loadExecute (SugarRef $ref) {
         // check template exists, and remember stamp
         $sstamp = $ref->storage->stamp($ref);
         if ($sstamp === false)
@@ -147,9 +165,7 @@ class Sugar {
         }
 
         // execute
-        $this->vars []= array();
-        SugarRuntime::execute($this, $data);
-        array_pop($this->vars);
+        $this->execute($data);
     }
 
     // compile and display given source
@@ -165,7 +181,7 @@ class Sugar {
 
         // load and run
         try {
-            $this->execute($ref);
+            $this->loadExecute($ref);
             return true;
         } catch (SugarException $e) {
             $this->handleError($e);
@@ -204,9 +220,7 @@ class Sugar {
             // if cache exists and is up-to-date amd debug is off, run the cache
             if (!$this->debug && $cstamp > $stamp) {
                 $data = $this->cache->load($ref, SUGAR_CACHE_HTML);
-                $this->vars []= array();
-                SugarRuntime::execute($this, $data);
-                array_pop($this->vars);
+                $this->execute($data);
                 return true;
             }
 
@@ -214,7 +228,7 @@ class Sugar {
             if (!$this->cacheHandler) {
                 // create cache
                 $this->cacheHandler = new SugarCacheHandler($this);
-                $this->execute($ref);
+                $this->loadExecute($ref);
                 $cache = $this->cacheHandler->getOutput();
                 $this->cacheHandler = null;
 
@@ -222,13 +236,11 @@ class Sugar {
                 $this->cache->store($ref, SUGAR_CACHE_HTML, $cache);
 
                 // display cache
-                $this->vars []= array();
-                SugarRuntime::execute($this->sugar, $cache);
-                array_pop($this->vars);
+                $this->execute($data);
 
             // cache handler already running - just display normally
             } else {
-                $this->execute($ref);
+                $this->loadExecute($ref);
             }
 
             return true;
@@ -247,9 +259,7 @@ class Sugar {
             $parser = null;
 
             // run
-            $this->vars []= array();
-            SugarRuntime::execute($this, $data);
-            array_pop($this->vars);
+            $this->execute($data);
             
             return true;
         } catch (SugarException $e) {
