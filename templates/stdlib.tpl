@@ -13,4 +13,9 @@
 <p>urlEncode 'this+is%(illegal)in#url': <% urlEncode 'this+is%(illegal)in#url' %></p>
 <p>urlEncodeAll a=foo bar='baz+gar' boo='1%2 3': <% urlEncodeAll a=foo bar='baz+gar' boo='1%2 3' %></p>
 
+<p>escape '&lt;test&gt;' 'html': <% escape '<test>' 'html' %></p>
+<p>escape '&lt;xml&gt;' 'html': <% escape '<test>' 'xml' %></p>
+<p>escape '&lt;url&gt;' 'html': <% escape '<test>' 'url' %></p>
+<p>escape '&lt;js&gt;' 'html': <% escape '<test>' 'js' %></p>
+
 <% include footer %>
