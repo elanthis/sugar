@@ -90,6 +90,24 @@ class SugarStdlib {
             return preg_replace('/\s+?(\S+)?$/', '...', substr($text, 0, $length + 1));
     }
 
+    public static function escape ($sugar, $params) {
+        $value = SugarUtil::getArg($params, 'value', 0);
+        $mode = SugarUtil::getArg($params, 'mode', 1, 'html');
+
+        switch ($mode) {
+            case 'html':
+                return htmlentities($value);
+            case 'xml':
+                return SugarUtil::xmlentities($value);
+            case 'js':
+                return SugarUtil::jsValue($value);
+            case 'url':
+                return urlencode($value);
+            default:
+                return null;
+        }
+    }
+
     public static function initialize (&$sugar) {
         $sugar->register('include', array('SugarStdlib', '_include'));
         $sugar->register('eval', array('SugarStdlib', '_eval'));
@@ -107,6 +125,7 @@ class SugarStdlib {
         $sugar->register('switch', array('SugarStdlib', 'switchVAlue'));
         $sugar->register('basename', 'basename', SUGAR_FUNC_NATIVE);
         $sugar->register('truncate', array('SugarStdlib', 'truncate'));
+        $sugar->register('escape', array('SugarStdlib', 'escape'));
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
