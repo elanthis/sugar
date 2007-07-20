@@ -289,7 +289,7 @@ class SugarParser {
 
                 // get top block; must be an if or elif
                 if ($block[0] != 'if' && $block[0] != 'elif')
-                    throw new SugarParseException($block[2], $block[3], 'else missing if');
+                    throw new SugarParseException($token[2], $token[3], 'else missing if');
 
                 // update block
                 $block[0] = $token[0];
