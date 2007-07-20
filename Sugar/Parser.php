@@ -301,6 +301,16 @@ class SugarParser {
                 if ($token[0] == 'elif')
                     $block[2][count($block[2])-1][0] = $this->compileExpr($this->tokens);
 
+            // while loop
+            } elseif ($token[0] == 'while') {
+                $this->tokens->pop(1);
+
+                // get expression
+                $test = $this->compileExpr($this->tokens);
+
+                // push block
+                $this->blocks []= array('while', array(), $test);
+
             // range loop
             } elseif ($token[0] == 'loop') {
                 $this->tokens->pop(1);
@@ -398,6 +408,9 @@ class SugarParser {
                         break;
                     case 'foreach':
                         $bc = array_merge($block[4], array('foreach', strtolower($block[2]), strtolower($block[3]), $block[1]));
+                        break;
+                    case 'while':
+                        $bc = array('while', $block[2], $block[1]);
                         break;
                     case 'if':
                     case 'elif':

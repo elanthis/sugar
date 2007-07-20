@@ -274,6 +274,12 @@ class SugarRuntime {
                         }
                     }
                     break;
+                case 'while':
+                    $test = $code[++$i];
+                    $block = $code[++$i];
+                    while (SugarRuntime::execute($sugar, $test, $cache))
+                        SugarRuntime::execute($sugar, $block, $cache);
+                    break;
                 case '.':
                     $index = array_pop($stack);
                     $array = array_pop($stack);
