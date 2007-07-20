@@ -8,6 +8,7 @@ require_once dirname(__FILE__).'/Sugar/Tokenizer.php';
 require_once dirname(__FILE__).'/Sugar/Runtime.php';
 require_once dirname(__FILE__).'/Sugar/Stdlib.php';
 require_once dirname(__FILE__).'/Sugar/Cache.php';
+require_once dirname(__FILE__).'/Sugar/Escaped.php';
 
 require_once dirname(__FILE__).'/Sugar/StorageFile.php';
 require_once dirname(__FILE__).'/Sugar/CacheFile.php';
@@ -92,6 +93,11 @@ class Sugar {
 
     // escape output based on current mode
     public function escape ($output) {
+        // do not escape for raw values - just return text
+        if (is_a($output, 'SugarEscaped'))
+            return $output->getText();
+
+        // perform proper escaping for current mode
         switch ($this->output) {
             case SUGAR_OUTPUT_HTML:
             case SUGAR_OUTPUT_XHTML:

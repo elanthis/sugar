@@ -9,7 +9,7 @@ class SugarStdlib {
     }
 
     public static function _echo (&$sugar, $params) {
-        echo SugarRuntime::showValue(SugarUtil::getArg($params, 'val'));
+        return new SugarEscaped(SugarRuntime::showValue(SugarUtil::getArg($params, 'val')));
     }
 
     public static function urlEncodeAll ($sugar, $params) {
@@ -48,7 +48,7 @@ class SugarStdlib {
         }
     }
 
-    public static function defaultValue ($sugar, $params) {
+    public static function _default ($sugar, $params) {
         $value = SugarUtil::getArg($params, 'value', 0);
         if ($value)
             return $value;
@@ -62,15 +62,15 @@ class SugarStdlib {
 
     public static function selected ($sugar, $params) {
         if (SugarUtil::getArg($params, 'test', 0))
-            echo ' selected="selected" ';
+            return new SugarEscaped(' selected="selected" ');
     }
 
     public static function checked ($sugar, $params) {
         if (SugarUtil::getArg($params, 'test', 0))
-            echo ' checked="checked" ';
+            return new SugarEscaped(' checked="checked" ');
     }
 
-    public static function switchValue ($sugar, $params) {
+    public static function _switch ($sugar, $params) {
         $value = SugarUtil::getArg($params, 'value', 0);
 
         if (isset($params[$value]))
@@ -96,13 +96,13 @@ class SugarStdlib {
 
         switch ($mode) {
             case 'html':
-                return htmlentities($value);
+                return new SugarEscaped(htmlentities($value));
             case 'xml':
-                return SugarUtil::xmlentities($value);
+                return new SugarEscaped(SugarUtil::xmlentities($value));
             case 'js':
-                return SugarUtil::jsValue($value);
+                return new SugarEscaped(SugarUtil::jsValue($value));
             case 'url':
-                return urlencode($value);
+                return new SugarEscaped(urlencode($value));
             default:
                 return null;
         }
@@ -116,13 +116,13 @@ class SugarStdlib {
         $sugar->register('urlEncodeAll', array('SugarStdlib', 'urlEncodeAll'));
         $sugar->register('urlEncode', array('SugarStdlib', 'urlEncode'));
         $sugar->register('jsValue', array('SugarStdlib', 'jsValue'));
-        $sugar->register('default', array('SugarStdlib', 'defaultValue'));
+        $sugar->register('default', array('SugarStdlib', '_default'));
         $sugar->register('date', array('SugarStdlib', 'date'));
         $sugar->register('format', array('SugarStdlib', 'format'));
         $sugar->register('count', array('SugarStdlib', 'count'));
         $sugar->register('selected', array('SugarStdlib', 'selected'));
         $sugar->register('checked', array('SugarStdlib', 'checked'));
-        $sugar->register('switch', array('SugarStdlib', 'switchVAlue'));
+        $sugar->register('switch', array('SugarStdlib', '_switch'));
         $sugar->register('basename', 'basename', SUGAR_FUNC_NATIVE);
         $sugar->register('truncate', array('SugarStdlib', 'truncate'));
         $sugar->register('escape', array('SugarStdlib', 'escape'));

@@ -479,7 +479,7 @@ class SugarParser {
                 $ops = $this->compileExpr($this->tokens);
 
                 if (SugarParser::isData($ops))
-                    $this->appendEcho(SugarRuntime::showValue($ops[1]));
+                    $this->appendEcho($this->sugar->escape(SugarRuntime::showValue($ops[1])));
                 else
                     $block[1] = array_merge($block[1], $ops, array('print'));
             }
