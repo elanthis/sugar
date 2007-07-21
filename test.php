@@ -14,7 +14,11 @@ if (isset($_GET['t']))
 $templates = preg_replace('/[.]tpl$/', '', preg_grep('/^[^.].*[.]tpl$/', scandir('templates')));
 
 // create parser
+$begin_create = microtime(true);
 $sugar = new Sugar();
+$end_create = microtime(true);
+
+// setup
 $sugar->set('t', $file);
 $sugar->set('templates', $templates);
 
@@ -77,7 +81,9 @@ $sugar->displayCache('file:'.$file.'.tpl');
 $end_display = microtime(true);
 
 $end = microtime(true);
-printf('<p>total: %0.6f seconds</p>', $end-$start);
 printf('<p>include: %0.6f seconds</p>', $end_load-$begin_load);
+printf('<p>construct: %0.6f seconds</p>', $end_create-$begin_create);
 printf('<p>display: %0.6f seconds</p>', $end_display-$begin_display);
+printf('<p>other: %0.6f seconds</p>', ($end-$start)-($end_load-$begin_load)-($end_create-$begin_create)-($end_display-$begin_display));
+printf('<p>total: %0.6f seconds</p>', $end-$start);
 ?>
