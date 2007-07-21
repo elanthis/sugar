@@ -33,6 +33,11 @@ class SugarCacheHandler {
         array_push($this->bc, 'cinvoke', $func, $args);
     }
 
+    public function addBlock ($block) {
+        $this->compact();
+        array_push($this->bc, 'nocache', $block);
+    }
+
     public function getOutput () {
         $this->compact();
         return $this->bc;
