@@ -1,22 +1,23 @@
 <?php
-require_once dirname(__FILE__).'/Sugar/Exception.php';
-require_once dirname(__FILE__).'/Sugar/Util.php';
-require_once dirname(__FILE__).'/Sugar/Ref.php';
-require_once dirname(__FILE__).'/Sugar/Parser.php';
-require_once dirname(__FILE__).'/Sugar/Storage.php';
-require_once dirname(__FILE__).'/Sugar/Tokenizer.php';
-require_once dirname(__FILE__).'/Sugar/Runtime.php';
-require_once dirname(__FILE__).'/Sugar/Stdlib.php';
-require_once dirname(__FILE__).'/Sugar/Cache.php';
-require_once dirname(__FILE__).'/Sugar/Escaped.php';
+define('SUGAR_ROOTDIR', dirname(__FILE__));
 
-require_once dirname(__FILE__).'/Sugar/StorageFile.php';
-require_once dirname(__FILE__).'/Sugar/CacheFile.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Exception.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Util.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Ref.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Parser.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Storage.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Tokenizer.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Cache.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Escaped.php';
+
+require_once SUGAR_ROOTDIR.'/Sugar/StorageFile.php';
+require_once SUGAR_ROOTDIR.'/Sugar/CacheFile.php';
 
 // function registration flags
 define('SUGAR_FUNC_NATIVE', 1);
-define('SUGAR_FUNC_NO_CACHE', 2);
-define('SUGAR_FUNC_SUPPRESS_RETURN', 4);
+define('SUGAR_FUNC_SUPPRESS_RETURN', 2);
 
 // different cache types
 define('SUGAR_CACHE_TPL', 'ctpl');

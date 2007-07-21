@@ -32,16 +32,6 @@ class SugarRuntime {
         }
     }
 
-    public static function cacheInvoke (&$sugar, $func, $args) {
-        // lookup function
-        $invoke =& $sugar->getFunction($func);
-        if (!$invoke)
-            throw new SugarException ('unknown function: '.$func);
-
-        // run it
-        SugarRuntime::invoke($sugar, $invoke[0], $invoke[1], $args);
-    }
-
     public static function execute (&$sugar, $code) {
         $stack = array();
 
@@ -162,11 +152,6 @@ class SugarRuntime {
                     $v1 = array_pop($stack);
                     $stack []= (is_array($v2) && in_array($v1, $v2));
                     break;
-                case 'cinvoke':
-                    $func = $code[++$i];
-                    $args = $code[++$i];
-                    SugarRuntime::cacheInvoke($sugar, $func, $args);
-                    break;
                 case 'call':
                     $func = $code[++$i];
                     $args = $code[++$i];
@@ -181,23 +166,8 @@ class SugarRuntime {
                     foreach($args as $name=>$pcode)
                         $params[$name] = SugarRuntime::execute($sugar, $pcode);
 
-                    // if we're caching and this is a no-cache function,
-                    // append these opcodes to the cache
-                    if ($sugar->cacheHandler && ($invoke[1] & SUGAR_FUNC_NO_CACHE))
-                        $sugar->cacheHandler->addCall($func, $params);
-
-                    // caching wrapper
-                    if ($sugar->cacheHandler)
-                        $sugar->cacheHandler->beginCache();
-
                     // exception net
                     $ret = SugarRuntime::invoke($sugar, $invoke[0], $invoke[1], $params);
-
-                    // process caching
-                    if ($sugar->cacheHandler) {
-                        // only cache output from cacheable functions
-                        $sugar->cacheHandler->endCache($invoke[1] & SUGAR_FUNC_NO_CACHE);
-                    }
 
                     // store return value
                     $stack []= $ret;
@@ -221,16 +191,8 @@ class SugarRuntime {
                     foreach($args as $pcode)
                         $params [] = SugarRuntime::execute($sugar, $pcode);
 
-                    // caching wrapper
-                    if ($sugar->cacheHandler)
-                        $sugar->cacheHandler->beginCache();
-
                     // invoke
                     $stack []= SugarRuntime::invoke($sugar, array($obj, $func), SUGAR_FUNC_NATIVE, $params);
-
-                    // process caching
-                    if ($sugar->cacheHandler)
-                        $sugar->cacheHandler->endCache();
                     break;
                 case 'if':
                     $test = array_pop($stack);

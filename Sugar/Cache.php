@@ -28,11 +28,6 @@ class SugarCacheHandler {
         $this->output .= $text;
     }
 
-    public function addCall ($func, $args) {
-        $this->compact();
-        array_push($this->bc, 'cinvoke', $func, $args);
-    }
-
     public function addBlock ($block) {
         $this->compact();
         array_push($this->bc, 'nocache', $block);
@@ -41,16 +36,6 @@ class SugarCacheHandler {
     public function getOutput () {
         $this->compact();
         return $this->bc;
-    }
-
-    public function beginCache () {
-        ob_start();
-    }
-
-    public function endCache ($ignore = false) {
-        if (!$ignore)
-            $this->output .= ob_get_contents();
-        ob_end_clean();
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

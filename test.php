@@ -20,12 +20,12 @@ $sugar->set('templates', $templates);
 
 // various test functions
 function showHtml(&$sugar, $args) {
-	echo $args['html'];
+	return new SugarEscaped($args['html']);
 }
 $sugar->register('showHtml');
 
 function showText(&$sugar, $args) {
-	echo $args['text'];
+	return $args['text'];
 }
 $sugar->register('showText');
 
@@ -35,13 +35,9 @@ function one($str='') {
 $sugar->register('one', 'one', SUGAR_FUNC_NATIVE);
 
 function random() {
-	echo rand()%1000;
+	return rand()%1000;
 }
 $sugar->register('random', 'random', SUGAR_FUNC_NATIVE);
-function randomNC() {
-	echo rand()%1000;
-}
-$sugar->register('randomNC', 'randomNC', SUGAR_FUNC_NATIVE|SUGAR_FUNC_NO_CACHE);
 
 // test class
 class Test {
