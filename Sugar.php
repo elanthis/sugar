@@ -242,7 +242,7 @@ class Sugar {
                 $this->cache->store($ref, SUGAR_CACHE_HTML, $cache);
 
                 // display cache
-                $this->execute($data);
+                $this->execute($cache);
 
             // cache handler already running - just display normally
             } else {
