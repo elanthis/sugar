@@ -179,7 +179,7 @@ class SugarRuntime {
                     // compile args
                     $params = array();
                     foreach($args as $name=>$pcode)
-                        $params[$name] = SugarRuntime::execute($sugar, $pcode, $cache);
+                        $params[$name] = SugarRuntime::execute($sugar, $pcode);
 
                     // if we're caching and this is a no-cache function,
                     // append these opcodes to the cache
@@ -219,7 +219,7 @@ class SugarRuntime {
                     // compile args
                     $params = array();
                     foreach($args as $pcode)
-                        $params [] = SugarRuntime::execute($sugar, $pcode, $cache);
+                        $params [] = SugarRuntime::execute($sugar, $pcode);
 
                     // caching wrapper
                     if ($sugar->cacheHandler)
@@ -237,9 +237,9 @@ class SugarRuntime {
                     $true = $code[++$i];
                     $false = $code[++$i];
                     if ($test && $true)
-                        SugarRuntime::execute($sugar, $true, $cache);
+                        SugarRuntime::execute($sugar, $true);
                     elseif (!$test && $false)
-                        SugarRuntime::execute($sugar, $false, $cache);
+                        SugarRuntime::execute($sugar, $false);
                     break;
                 case 'range':
                     $step = array_pop($stack);
@@ -256,7 +256,7 @@ class SugarRuntime {
                     $index = $lower;
                     while (($step < 0 && $index >= $upper) || ($step > 0 && $index <= $upper)) {
                         $sugar->set($name, $index);
-                        SugarRuntime::execute($sugar, $block, $cache);
+                        SugarRuntime::execute($sugar, $block);
                         $index += $step;
                     }
                     break;
@@ -270,15 +270,22 @@ class SugarRuntime {
                             if ($key)
                                 $sugar->set($key, $k);
                             $sugar->set($name, $v);
-                            SugarRuntime::execute($sugar, $block, $cache);
+                            SugarRuntime::execute($sugar, $block);
                         }
                     }
                     break;
                 case 'while':
                     $test = $code[++$i];
                     $block = $code[++$i];
-                    while (SugarRuntime::execute($sugar, $test, $cache))
-                        SugarRuntime::execute($sugar, $block, $cache);
+                    while (SugarRuntime::execute($sugar, $test))
+                        SugarRuntime::execute($sugar, $block);
+                    break;
+                case 'nocache':
+                    $block = $code[++$i];
+                    if ($sugar->cacheHandler)
+                        $sugar->cacheHandler->addBlock($block);
+                    else
+                        SugarRuntime::execute($sugar, $block);
                     break;
                 case '.':
                     $index = array_pop($stack);
@@ -298,7 +305,7 @@ class SugarRuntime {
                     $elems = $code[++$i];
                     $array = array();
                     foreach ($elems as $elem)
-                        $array []= SugarRuntime::execute($sugar, $elem, $cache);
+                        $array []= SugarRuntime::execute($sugar, $elem);
                     $stack []= $array;
                     break;
                 default:
