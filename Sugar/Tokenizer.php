@@ -95,7 +95,7 @@ class SugarTokenizer {
             elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
                 return array('var', substr($ar[2], 1), $this->file, $line);
             // keyword or special symbol
-            elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while')))
+            elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache')))
                 return array($ar[2], null, $this->file, $line);
             // integer
             elseif (preg_match('/^\d+$/', $ar[2]))

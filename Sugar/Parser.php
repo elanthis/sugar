@@ -390,6 +390,13 @@ class SugarParser {
                 // store foreach block
                 $this->blocks []= array('foreach', array(), $key, $name, $ops);
 
+            // inhibit cahing
+            } elseif ($token[0] == 'nocache') {
+                $this->tokens->pop();
+
+                // store foreach block
+                $this->blocks []= array('nocache', array());
+
             // pop the block
             } elseif ($token[0] == 'end') {
                 $this->tokens->pop();
@@ -411,6 +418,9 @@ class SugarParser {
                         break;
                     case 'while':
                         $bc = array('while', $block[2], $block[1]);
+                        break;
+                    case 'nocache':
+                        $bc = array('nocache', $block[1]);
                         break;
                     case 'if':
                     case 'elif':
