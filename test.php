@@ -1,7 +1,9 @@
 <?php
 $start = microtime(true);
 
+$begin_load = microtime(true);
 require './Sugar.php';
+$end_load = microtime(true);
 
 // determine file to load
 $file = 'index';
@@ -72,9 +74,14 @@ $sugar->set('random', rand()%1000);
 // display file
 $sugar->debug = false;
 $sugar->methods = true;
-//$sugar->displayCache('file:'.$file.'.tpl');
-$sugar->display($file);
+
+$begin_display = microtime(true);
+$sugar->displayCache('file:'.$file.'.tpl');
+//$sugar->display($file);
+$end_display = microtime(true);
 
 $end = microtime(true);
-printf('<p>%0.6f seconds</p>', $end-$start);
+printf('<p>total: %0.6f seconds</p>', $end-$start);
+printf('<p>include: %0.6f seconds</p>', $end_load-$begin_load);
+printf('<p>display: %0.6f seconds</p>', $end_display-$begin_display);
 ?>
