@@ -91,12 +91,12 @@ by a method name, then a list of comma-separated parameters within
   <% $obj->foobar(1, $var, "test") %>
 
 The value of a variable is always HTML-escaped by default.  To
-display the value of a variable with no escaping, use the echo
-keyword.
+display the value of a variable with no escaping, use the raw
+function.
 
   <% $html = "<b>bold</b>" %>
   <% $html %> = &lt;b&gt;bold&lt;/b&gt;
-  <% echo $html %> = <b>bold</b>
+  <% raw $html %> = <b>bold</b>
 
 A function can be called by giving the name of the function, and
 then listing the parameters.  Function parameters are always given
@@ -106,6 +106,9 @@ optionally separate parameters.  Example:
   <% myFunc %>
   <% myFunc value=$var %>
   <% myFunc value=$var*2 other="test" last=4+($i*7) %>
+
+	<% myFunc "arg1" "arg2" %>
+	<% myFunc 1, 2 %>
 
 Functions may also be called within an expression.  In this case,
 the function call is written as the function name, followed by the
@@ -155,23 +158,38 @@ range loop statement.  The range loop is given a start number, an end
 number, and an optional step value.  The follow example displays the
 numbers 1 through 5.
 
-  <% loop $i in 1..5 %>
+  <% loop $i in 1,5 %>
 		<% $i %>
 	<% end %>
 
 This example displays the numbers 6, 4, and 2.
 
-  <% loop $i in 3*2 .. 1 .. -2 %>
+  <% loop $i in 3*2,1,-2 %>
 		<% $i %>
 	<% end %>
 
 Other template files can be included using the include function.  Code
 can be executed using the eval function.
 
-  <% include header %>
+  <% include "header" %>
   <% include 'some/other/template' %>
   <% eval 'var is <% $var+1 %>' %>
   <% eval getCode() %>
+
+Caching can be suppressed for part of a template by using the nocache
+block directive.
+
+  <% nocache %>
+	  This value is not cached: <% $value %>
+	<% end %>
+
+The semi-colon (;) character can be used to separate statements within
+Sugar tags.  The following two blocks of Sugar code function
+identically:
+
+  <% if $value %>Value: <% $value %><% end %>
+
+	<% if $value ; 'Value: '; $value; end %>
 
 -----------------------------------------------------------------------
 IV.  Sugar API
@@ -196,37 +214,54 @@ Registering new function requires the register() method.  The first
 parameter is the name of the function as used within templates.  The
 second optional parameter is the callback to use when invoking the
 function; if ommitted, the PHP function of the same name as the first
-argument will be invoked.  The final optional argument is a list of
-flags: SUGAR_FUNC_NATIVE, SUGAR_FUNC_NO_CACHE, or
-SUGAR_FUNC_SUPPRESS_RETURN.
+argument will be invoked.  The third optional parameter may be the
+flag SUGAR_FUNC_NATIVE.
 
   $sugar->register('myFunc');
   $sugar->register('foo', 'some_function');
   $sugar->register('getCost', array($cart, 'get_cost'));
   $sugar->register('size, 'count', SUGAR_FUNC_NATIVE);
-  $sugar->register('dynamic', 'dynamic', SUGAR_FUNC_NO_CACHE);
+  $sugar->register('dynamic', 'dynamic');
 
 Normal functions receive two arguments: the Sugar object and a keyed
 array with the parameters.  Functions registered with
 SUGAR_FUNC_NATIVE will instead receive a list of parameters like a
 regular PHP function.
 
-Functions can display data by using echo or print like normal, and
-they can return a value as normal.  Function return values will be
-displayed like a regular expression by Sugar, so functions should
-not both return a value and display output.  Returned values are
-escaped when displayed by default, but output is not altered.
+  function mySugarFunc ($sugar, $params) {
+		$arg1 = SugarUtil::getArg($params, 'arg1', 0);
+		$arg2 = SugarUtil::getArg($params, 'arg2', 1);
 
-Method support can be enabled by setting the $methods property to
-true.
+		return "arg1=$arg1, arg2=$arg2";
+	}
+	$sugar->register('printArgs', 'mySugarFunc'
 
-  $sugar->methods = true;
+The SugarUtil::getArg() function is a utility function to help make
+writing Sugar function handlers easier.  The first parameter is the
+$params array received by the Sugar function handler, the second
+parameter is the name of the parameter (when named parameters are
+used), the third parameter is the index of the parameter (when
+unnamed parameters are used), and the fourth parameter is the default
+value to return if the argument was not specified.
+
+Function return values will be passed back into the calling
+expression.  As with all expressions, the result of a function call
+that is to be displayed will be escaped by default.  To negate this
+behavior, return an instance of the SugarEscaped class, which takes
+the return value as its sole constructor parameter.
+
+  return new SugarEscaped('This is <b>raw</b> HTML.');
 
 By default, object methods cannot be invoked within a template for
 security reasons; there is no way to know which methods are safe
 for templates to execute.  It is highly recommended that this
 behavior be left at the default, and that programmers avoid the need
 for templates to access any object methods.
+
+Method support can be enabled by setting the $methods property to
+true.
+
+  $sugar->methods = true;
 
 To render a template, use either the display() or the displayString()
 methods, or the displayCache() method described below.  The display()
@@ -239,21 +274,20 @@ passed to display().
   $sugar->display('myTemplate'); // loads templates/myTemplate.tpl
   $sugar->displayString('Var = <% $var %>');
 
-By default, compiled templates are saved in the compile directory
-(./templates/compiled/), unless the $debug property of the Sugar
-object is set to true.
+By default, compiled templates and caches are stored in
+templates/cache/.
 
 The template directory can be by setting the $templateDir
-property of the Sugar object.  The compilation cache directory can
-be changed by setting the $compileDir property.
+property of the Sugar object.  The cache directory can be changed
+by setting the $cacheDir property.
 
   $sugar->templateDir = '/var/myapp/tpl/';
-  $sugar->compileDir = '/var/myapp/ctpl/';
-  $sugar->debug = true; // disable caching
+  $sugar->cacheDir = '/var/myapp/ctpl/';
+  $sugar->debug = true; // force recompilation and caching
 
 Caching can be performed on a template by using the displayCache()
-method.  This method takes a second parameter, which is a cache
-identifier, which is used to differentiate between multiple
+method.  This method takes a second optional parameter, which is a
+cache identifier, which is used to differentiate between multiple
 instances of the same template.  For example, a product template
 in an eCommerce application would use a different cache identifier
 for each product.  The second parameter can be ommitted if desired.
@@ -263,12 +297,9 @@ for each product.  The second parameter can be ommitted if desired.
 
 The cache lifetime can be changed by setting the $cacheLimit property
 to the number of seconds desired.  The cache lifetime is the number
-of seconds a cache will exist before being forced to re-cache.  The
-cache directory can be changed by setting the $cacheDir property.
+of seconds a cache will exist before being forced to re-cache.
 
   $sugar->cacheLimit = 60*5; // five minutes
-  $sugar->cacheDir = './cache';
-
 
 It is possible to check if a valid cache exists for a given template
 and cache identifier using the isCached() method.  This allows the
@@ -277,13 +308,6 @@ when the results are already cached.
 
   if (!$sugar->isCached('life', 42))
     $sugar->set('results', $db->queryData());
-
-Template behavior will change slightly when a page is cached.  Any
-function registered with the SUGAR_FUNC_NO_CACHE flag will still
-execute, but the parameters to the function will be cached, and the
-return value from the function will be cached.  However, any echo
-or print commands from the function will still be displayed as
-normal.
 
 -----------------------------------------------------------------------
 V.   Extending Sugar
