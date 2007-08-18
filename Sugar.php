@@ -42,6 +42,9 @@ require_once SUGAR_ROOTDIR.'/Sugar/Escaped.php';
 require_once SUGAR_ROOTDIR.'/Sugar/StorageFile.php';
 require_once SUGAR_ROOTDIR.'/Sugar/CacheFile.php';
 
+// sugar version
+define('SUGAR_VERSION', '0.70');
+
 // function registration flags
 define('SUGAR_FUNC_NATIVE', 1);
 define('SUGAR_FUNC_SUPPRESS_RETURN', 2);
