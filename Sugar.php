@@ -43,7 +43,7 @@ require_once SUGAR_ROOTDIR.'/Sugar/StorageFile.php';
 require_once SUGAR_ROOTDIR.'/Sugar/CacheFile.php';
 
 // sugar version
-define('SUGAR_VERSION', '0.70');
+define('SUGAR_VERSION', '0.71');
 
 // function registration flags
 define('SUGAR_FUNC_NATIVE', 1);

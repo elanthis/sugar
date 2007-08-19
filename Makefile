@@ -1,4 +1,4 @@
-VERSION := 0.70
+VERSION := 0.71
 
 dist:
 	-[ -d php-sugar-$(VERSION) ] && rm -fr php-sugar-$(VERSION)/
