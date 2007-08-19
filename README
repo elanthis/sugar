@@ -168,6 +168,14 @@ This example displays the numbers 6, 4, and 2.
     <% $i %>
   <% end %>
 
+Arrays can be constructed by placing the desired array elements within
+square brackets [] and separated by commas.  The following code prints
+1 = 1 up through 5 = 5.
+
+  <% foreach $i,$v in [1, 2, 4-1, 6/2+1, 5] %>
+	  <% $i+1 %> = <% $v %><br />
+	<% end %>
+
 Other template files can be included using the include function.  Code
 can be executed using the eval function.
 
