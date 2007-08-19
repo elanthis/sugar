@@ -1,5 +1,5 @@
 <% $title = 'Range Loop Tests' %>
-<% include header %>
+<% include 'header' %>
 
 <p>1..3</p>
 <ul>
@@ -45,4 +45,4 @@
 <% end %>
 </ul>
 
-<% include footer %>
+<% include 'footer' %>

@@ -1,5 +1,5 @@
 <% $title = 'Cache Tests' %>
-<% include header %>
+<% include 'header' %>
 
 <p>cache:</p>
 <p>$i = random(); $i * 2: <% $i = random(); $i * 2 %></p>
@@ -9,4 +9,4 @@
 <p>$i = random(); $i * 2: <% $i = random(); $i * 2 %></p>
 <% end %>
 
-<% include footer %>
+<% include 'footer' %>

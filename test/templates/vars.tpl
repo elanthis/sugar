@@ -1,5 +1,5 @@
 <% $title = 'Variable Tests' %>
-<% include header %>
+<% include 'header' %>
 
 <p>$test: <b><% $test %></b></p>
 <p>$i: <b><% $i %></b></p>
@@ -7,4 +7,4 @@
 <p><% $html %> <% echo $html %></p>
 <p>$test+$i: <% $test+$i %> $i+$test: <% $i+$test %></p>
 
-<% include footer %>
+<% include 'footer' %>

@@ -1,5 +1,5 @@
 <% $title = 'Array Tests' %>
-<% include header %>
+<% include 'header' %>
 
 <p>[1,2,3]: <% [1,2,3] %>
 <p>['foo','bar','baz']: <% ['foo','bar','baz'] %>
@@ -9,4 +9,4 @@
 <p>"one" in $list: <b><% "one" in $list %></b>
 <p>$c=2 $list.$c <b><% $c=2 %><% $list.$c %></b></p>
 
-<% include footer %>
+<% include 'footer' %>

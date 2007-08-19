@@ -1,5 +1,5 @@
 <% $title = 'stdlib tests' %>
-<% include header %>
+<% include 'header' %>
 
 <p>date 'Y-m-d': <% date 'Y-m-d' %></p>
 <p>date format='m/d/Y' date='next Tuesday': <% date format='Y-m-d' date='next Tuesday' %></p>
@@ -18,4 +18,4 @@
 <p>escape '&lt;url&gt;' 'html': <% escape '<test>' 'url' %></p>
 <p>escape '&lt;js&gt;' 'html': <% escape '<test>' 'js' %></p>
 
-<% include footer %>
+<% include 'footer' %>

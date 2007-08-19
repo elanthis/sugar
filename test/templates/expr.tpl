@@ -1,5 +1,5 @@
 <% $title = 'Expression Tests' %>
-<% include header %>
+<% include 'header' %>
 
 <% $a = 4 %>
 <% $b = 15 %>
@@ -10,4 +10,4 @@
 <p>Result: <% 0||0+1 %> (true)</p>
 <p>Result: <% 3*(-8+$a/2)/-2 %> (9)</p>
 
-<% include footer %>
+<% include 'footer' %>

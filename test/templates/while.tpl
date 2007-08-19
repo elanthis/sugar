@@ -1,5 +1,5 @@
 <% $title = 'While Tests' %>
-<% include header %>
+<% include 'header' %>
 
 <p>print 0 through 9</p>
 <p>$i = 0; while $i < 10; $i ; $i = $i + 1; end</p>
@@ -9,4 +9,4 @@
 <p>$i = 1; while $i in [ 1, 2, 4, 8, 16, 32, 60, 128 ]; $i ; $i = $i * 2; end</p>
 <% $i = 1; while $i in [ 1, 2, 4, 8, 16, 32, 60, 128 ]; $i ; $i = $i * 2; end %>
 
-<% include footer %>
+<% include 'footer' %>

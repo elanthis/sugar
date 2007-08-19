@@ -1,5 +1,5 @@
 <% $title = 'If Tests' %>
-<% include header %>
+<% include 'header' %>
 
 <% $test=24 %>
 <p>$test: <% $test %></p>
@@ -24,4 +24,4 @@
 	<% end %>
 </p>
 
-<% include footer %>
+<% include 'footer' %>

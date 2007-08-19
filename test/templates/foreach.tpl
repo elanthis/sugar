@@ -1,5 +1,5 @@
 <% $title = 'Foreach Tests' %>
-<% include header %>
+<% include 'header' %>
 
 <ul>
 <% foreach $i in $list %>
@@ -17,4 +17,4 @@
 <% end %>
 </ul>
 
-<% include footer %>
+<% include 'footer' %>
