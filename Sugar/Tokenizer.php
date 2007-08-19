@@ -28,40 +28,40 @@ DAMAGE.
 
 class SugarTokenizer {
     private $src;
-    private $tokens = array();
+    private $token = null;
     private $pos = 0;
     private $inCmd = false;
-    private $eof = false;
     private $file;
     private $line = 1;
 
     public function __construct ($src, $file = '<input>') {
         $this->src = $src;
         $this->file = $file;
+
+        $this->token = $this->next();
     }
 
     // display a user-friendly name for a particular token
     public static function tokenName ($token) {
-        if (!$token)
-            return '<eof>';
         switch($token[0]) {
+            case 'eof': return '<eof>';
             case 'name': return 'name '.$token[1];
             case 'var': return 'variable $'.$token[1];
             case 'string': return 'string "'.addslashes($token[1]).'"';
             case 'int': return 'integer '.($token[1]);
             case 'float': return 'number '.($token[1]);
+            case 'term': return $token[1];
             default: return $token[0];
         }
     }
 
     // get next token
-    private function getNext () {
+    private function next () {
         static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|\/\*.*?\*\/|\/\/.*?($|%>)|==|!=|<=|>=|\|\||&&|->|\.\.|.)/ms';
 
         // EOF
         if ($this->pos >= strlen($this->src)) {
-            $this->eof = true;
-            return null;
+            return array('eof', null, $this->file, $this->line);
         }
 
         // outside of a command?
@@ -121,6 +121,9 @@ class SugarTokenizer {
             // variable
             elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
                 return array('var', substr($ar[2], 1), $this->file, $line);
+            // terminator
+            elseif ($ar[2] == '%>' || $ar[2] == ';')
+                return array('term', $ar[2], $this->file, $line);
             // keyword or special symbol
             elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache')))
                 return array($ar[2], null, $this->file, $line);
@@ -139,44 +142,54 @@ class SugarTokenizer {
         }
     }
 
-    // get next token
-    public function get () {
-        // got one pending?
-        if ($this->tokens)
-            return array_shift($this->tokens);
+    // if the requested token is available, pop it and return true; else return false
+    // store the token data in the optional second parameter, which should be passed
+    // a reference
+    public function accept ($accept, $data = null) {
+        // return false if it's the wrong token
+        if ($this->token[0] != $accept)
+            return false;
 
-        // none pending; fetch
-        return $this->getNext();
+        // store data
+        $data = $this->token[1];
+
+        // get next token
+        $this->token = $this->next();
+        return true;
     }
 
-    // peek at the next token
-    public function peek ($i = 0) {
-        // need to fill cache to $i+1 items
-        while (count($this->tokens) <= $i) {
-            $token = $this->getNext();
-            if (!$token) // eof
-                return null;
-            $this->tokens []= $token;
+    // ensures that the requested token is next, throws an error if it isn't.
+    // store the token data in the optional second parameter, which should be passed
+    // a reference
+    public function expect ($expect, $data = null) {
+        // throw an error if it's the wrong token
+        if ($this->token[0] != $expect)
+            throw new SugarParseException($this->token[2], $this->token[3], 'unexpected '.SugarTokenizer::tokenName($this->token).'; expected '.$expect);
+
+        // store value
+        $data = $this->token[1];
+
+        // get next token
+        $this->token = $this->next();
+    }
+
+    // get an operator token
+    public function getOp () {
+        $op = $this->token[0];
+
+        // convert == to = for operators
+        if ($op == '==')
+            $op = '=';
+
+        // if it's a valid operator, return it
+        if (isset(SugarParser::$precedence[ $op])) {
+            // get next token
+            $this->token = $this->next();
+
+            return $op;
+        } else {
+            return false;
         }
-
-        // and return cache value
-        return $this->tokens[$i];
-    }
-
-    // pop X tokens
-    public function pop ($n = 1) {
-        // clear cache up to $n items
-        while ($n-- > 0 && !empty($this->tokens))
-            array_shift($this->tokens);
-
-        // consume more items
-        while ($n-- > 0)
-            $this->getNext();
-    }
-
-    // return true if at eof
-    public function eof () {
-        return $this->eof;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

@@ -33,16 +33,16 @@ class SugarParser {
     private $blocks = array();
     private $sugar;
 
-    static $precedence = array(
-        '.' => 0, '->' => 0,
+    static public $precedence = array(
+        '.' => 0, '->' => 0, 'method' => 0,
         '!' => 1, 'negate' => 1,
         '*' => 2, '/' => 2, '%' => 2,
         '+' => 3, '-' => 3,
         '..' => 4,
-        '==' => 5, '=' => 5, '<' => 5, '>' => 5,
+        '=' => 5, '<' => 5, '>' => 5,
         '!=' => 5, '<=' => 5, '>=' => 5, 'in' => 5,
         '||' => 6, '&&' => 6,
-        '(' => 11, '[' => 11
+        '(' => 100 // safe wrapper
     );
 
     public function __construct (&$sugar) {
@@ -50,7 +50,7 @@ class SugarParser {
     }
 
     private function collapseOps ($level) {
-        while ($this->stack && SugarParser::$precedence[$this->stack[count($this->stack)-1]] <= $level) {
+        while ($this->stack && SugarParser::$precedence[end($this->stack)] <= $level) {
             // get operator
             $op = array_pop($this->stack);
 
@@ -70,11 +70,8 @@ class SugarParser {
                 $right = array_pop($this->output);
                 $left = array_pop($this->output);
 
-                // create method call
-                if ($op == '->' && $right[0] == 'call')
-                    $this->output []= array_merge($left, array('method', $right[1], $right[2]));
                 // optimize away if both operands are constant data
-                elseif (SugarParser::isData($left) && SugarParser::isData($right))
+                if (SugarParser::isData($left) && SugarParser::isData($right))
                     $this->output []= array('push', SugarRuntime::execute($this->sugar, array_merge($left, $right, array($op))));
                 // can't optimize away - emit opcodes
                 else
@@ -87,41 +84,93 @@ class SugarParser {
         return (count($node) == 2 && $node[0] == 'push');
     }
 
-    private function E () {
-        // expect one
-        $this->P();
+    private function compileExpr ($skip = false) {
+        // wrap operator stack
+        $this->stack []= '(';
+
+        // if skip is true (only used for our hacky variable assignment
+        // handling), don't do this part
+        if (!$skip)
+            $this->compileTerminal();
 
         // while we have a binary operator, continue chunking along
-        while (($op = $this->tokens->peek()) && array_key_exists($op[0], SugarParser::$precedence)) {
-            $this->B();
-            $this->P();
+        while ($op = $this->tokens->getOp()) {
+            // pop higher precedence operators
+            $this->collapseOps(SugarParser::$precedence[$op]);
+
+            // push op
+            $this->stack []= $op;
+
+            // if it's an array . op, we can take a name
+            if ($op == '.' && $this->tokens->accept('name', &$name)) {
+                $this->output []= array('push', $name);
+
+            // if it's an object -> op, we can also take a name
+            } elseif ($op == '->' && $this->tokens->accept('name', &$name)) {
+                // check if this is a method call
+                if ($this->tokens->accept('(')) {
+                    $method = $name;
+
+                    // read args
+                    $params = array();
+                    while (!$this->tokens->accept(')')) {
+                        // check for name= assignment
+                        if ($this->tokens->accept('name', &$name)) {
+                            $this->tokens->expect('=');
+                            $params [$name]= $this->compileExpr();
+                        // regular parameter
+                        } else {
+                            $params []= $this->compileExpr();
+                        }
+
+                        // consume optional ,
+                        $this->tokens->accept(',');
+                    }
+
+                    // remove -> operator, create method call
+                    array_pop($this->stack);
+                    $this->output []= array_merge(array_pop($this->output), array('method', $method, $params));
+
+                // not a method call
+                } else {
+                    $this->output []= array('push', $name);
+                }
+
+            // regular case, just go
+            } else {
+                $this->compileTerminal();
+            }
         }
 
         // pop remaining operators
         $this->collapseOps(10);
+
+        // peel operator stack
+        array_pop($this->stack);
+
+        // return output
+        return array_pop($this->output);
     }
 
-    private function P () {
-        $t = $this->tokens->peek();
+    private function compileTerminal () {
+        // unary -
+        if ($this->tokens->accept('-')) {
+            $this->stack []= 'negate';
+            $this->compileTerminal();
+            return;
 
-        // unary operator
-        if ($t[0] == '-' || $t[0] == '!') {
-            $this->U();
+        // unary !
+        } elseif ($this->tokens->accept('!')) {
+            $this->stack []= '!';
+            $this->compileTerminal();
             return;
 
         // array constructor
-        } elseif ($t[0] == '[') {
-            // consume
-            $this->tokens->pop();
-
-            // push ( to mark array constructor
-            $this->stack []= '[';
-
+        } elseif ($this->tokens->accept('[')) {
             // read in elements
             $elems = array();
             $data = true;
-            $end = $this->tokens->peek();
-            while ($end[0] != ']') {
+            while (!$this->tokens->accept(']')) {
                 // read in element
                 $elem = $this->compileExpr();
                 $elems []= $elem;
@@ -130,12 +179,13 @@ class SugarParser {
                 if ($data && !$this->isData($elem))
                     $data = $false;
 
-                // consume comma
-                $end = $this->tokens->get();
-                if ($end[0] != ',' && $end[0] != ']')
-                    throw new SugarParseException($end[2], $end[3], 'unexpected '.SugarTokenizer::tokenName($end).'; expected , or ]');
+                // if we have a ], end
+                if ($this->tokens->accept(']'))
+                    break;
+
+                // require a comma before next item
+                $this->tokens->expect(',');
             }
-            $this->tokens->pop();
 
             // if the data flag is true, all elements are pure data,
             // so we can push this as a value instead of an opcode
@@ -147,122 +197,54 @@ class SugarParser {
                 $this->output []= array('array', $elems);
             }
 
-            // pop [
-            array_pop($this->stack);
-
         // sub-expression
-        } elseif ($t[0] == '(') {
-            // consume paren
-            $this->tokens->pop();
-
-            // push ( to mark sub-expression
-            $this->stack []= '(';
-
+        } elseif ($this->tokens->accept('(')) {
             // compile sub-expression
             $this->output []= $this->compileExpr();
 
-            // pop (
-            array_pop($this->stack);
-
             // ensure trailing )
-            $end = $this->tokens->get();
-            if ($end[0] != ')')
-                throw new SugarParseException($end[2], $end[3], 'unexpected '.SugarTokenizer::tokenName($end).'; expected )');
+            $this->tokens->expect(')');
 
-        // function call OR static name
-        } elseif ($t[0] == 'name') {
-            // store name
-            $name = $t[1];
-            $this->tokens->pop();
-
+        // function call
+        } elseif ($this->tokens->accept('name', &$name)) {
             // if it's not followed by a (, its not a function call
-            $t = $this->tokens->peek();
-            if ($t[0] != '(') {
-                $this->output []= array('push', $name);
-                return;
-            }
-            $this->tokens->pop();
+            $this->tokens->expect('(');
 
             // read args
             $params = array();
-            $token = $this->tokens->peek();
-            $this->stack []= '(';
-            while ($token[0] != ')') {
+            while (!$this->tokens->accept(')')) {
                 // check for name= assignment
-                $check = $this->tokens->peek(1);
-                if ($token[0] == 'name' && $check[0] == '=') {
-                    $this->tokens->pop(2);
-                    $params [$token[1]]= $this->compileExpr();
+                if ($this->tokens->accept('name', &$name)) {
+                    $this->tokens->expect('=');
+                    $params [$name]= $this->compileExpr();
                 // regular parameter
                 } else {
                     $params []= $this->compileExpr();
                 }
 
                 // consume optional ,
-                $token = $this->tokens->peek();
-                if ($token[0] == ',')
-                    $this->tokens->pop();
+                $this->tokens->accept(',');
             }
-            $this->tokens->pop();
-            array_pop($this->stack);
 
             // return new function all
             $this->output []= array('call', $name, $params);
 
-        // ints
-        } elseif ($t[0] == 'data') {
-            $this->output []= array('push', $t[1]);
-            $this->tokens->pop();
+        // static values
+        } elseif ($this->tokens->accept('data', &$data)) {
+            $this->output []= array('push', $data);
 
         // vars
-        } elseif ($t[0] == 'var') {
-            $this->output []= array('lookup', $t[1]);
-            $this->tokens->pop();
+        } elseif ($this->tokens->accept('var', &$name)) {
+            $this->output []= array('lookup', $name);
 
         // error
-        } else
-            throw new SugarParseException($t[2], $t[3], 'unexpected '.SugarTokenizer::tokenName($t).'; expected value');
+        } else {
+            // HACK: value is not a real type
+            $this->tokens->expect('value');
+        }
     }
 
-    private function B () {
-        $op = $this->tokens->get();
-        $op = $op[0];
-
-        // pop higher precedence operators
-        $this->collapseOps(SugarParser::$precedence[$op]);
-
-        // convert = to ===
-        if ($op == '=') $op = '==';
-
-        // push op
-        $this->stack []= $op;
-    }
-
-    private function U () {
-        $op = $this->tokens->get();
-        $op = $op[0];
-
-        // push correct unary operator
-        if ($op == '-')
-            $this->stack []= 'negate';
-        elseif ($op == '!')
-            $this->stack []= '!';
-
-        // need another P
-        $this->P();
-    }
-
-    private function compileExpr () {
-        $this->E();
-        return array_pop($this->output);
-    }
-
-    private function isExprNext () {
-        $token = $this->tokens->peek();
-        return in_array($token[0], array('(', '[', '-', '!', 'name', 'var', 'data'));
-    }
-
-    private function appendEcho ($text) {
+    private function pushLiteral ($text) {
         $block =& $this->blocks[count($this->blocks)-1];
 
         // if block ends in an echo, concat them; otherwise, add op
@@ -282,157 +264,114 @@ class SugarParser {
         $this->tokens = new SugarTokenizer($src, $file);
 
         // build byte-code
-        while (!$this->tokens->eof()) {
+        while (!$this->tokens->accept('eof')) {
             $block =& $this->blocks[count($this->blocks)-1];
 
-            // peek at token
-            $token = $this->tokens->peek();
-
-            // eof
-            if (!$token) {
-                break;
-
             // raw string
-            } elseif ($token[0] == 'literal') {
-                $this->tokens->pop();
-                $this->appendEcho($token[1]);
+            if ($this->tokens->accept('literal', &$literal)) {
+                $this->pushLiteral($literal);
                 continue;
 
             // if the command is empty, ignore
-            } elseif ($token[0] == '%>' || $token[0] == ';') {
-                // do nothing
+            } elseif ($this->tokens->accept('term')) {
+                continue;
 
             // print raw value
-            } elseif ($token[0] == 'if') {
-                $this->tokens->pop();
+            } elseif ($this->tokens->accept('if')) {
+                // get test
+                $ops = $this->compileExpr();
 
-                $ops = $this->compileExpr($this->tokens);
-
+                // push block
                 $this->blocks []= array('if', array(), array(array($ops, null)));
 
             // else for if
-            } elseif ($token[0] == 'else' || $token[0] == 'elif') {
-                $this->tokens->pop();
-
+            } elseif ($this->tokens->accept('else')) {
                 // get top block; must be an if or elif
                 if ($block[0] != 'if' && $block[0] != 'elif')
                     throw new SugarParseException($token[2], $token[3], 'else missing if');
 
                 // update block
-                $block[0] = $token[0];
+                $block[0] = 'else';
                 $block[2][count($block[2])-1][1] = $block[1];
                 $block[1] = array();
                 $block[2] []= array(null, null);
 
-                // elif test
-                if ($token[0] == 'elif')
-                    $block[2][count($block[2])-1][0] = $this->compileExpr($this->tokens);
+            // elseif for if
+            } elseif ($this->tokens->accept('elif')) {
+                // get top block; must be an if or elif
+                if ($block[0] != 'if' && $block[0] != 'elif')
+                    throw new SugarParseException($token[2], $token[3], 'elif missing if');
+
+                // test
+                $ops = $this->compileExpr();
+
+                // update block
+                $block[0] = 'elif';
+                $block[2][count($block[2])-1][1] = $block[1];
+                $block[1] = array();
+                $block[2] []= array($ops, null);
 
             // while loop
-            } elseif ($token[0] == 'while') {
-                $this->tokens->pop(1);
-
+            } elseif ($this->tokens->accept('while')) {
                 // get expression
-                $test = $this->compileExpr($this->tokens);
+                $test = $this->compileExpr();
 
                 // push block
                 $this->blocks []= array('while', array(), $test);
 
             // range loop
-            } elseif ($token[0] == 'loop') {
-                $this->tokens->pop(1);
+            } elseif ($this->tokens->accept('loop')) {
+                // name in lower,upper
+                $this->tokens->expect('var', &$name);
+                $this->tokens->expect('in');
+                $lower = $this->compileExpr();
+                $this->tokens->expect(',');
+                $upper = $this->compileExpr();
 
-                // lead with name
-                $name = $this->tokens->get();
-                if ($name[0] != 'var')
-                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($name).'; expected variable');
-
-                // require in keyword
-                $in = $this->tokens->get();
-                if ($in[0] != 'in')
-                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($in).'; expected in');
-
-                // parse lower-bound
-                $lower = $this->compileExpr($this->tokens);
-
-                // expect .. keyword
-                $range = $this->tokens->get();
-                if ($range[0] != ',')
-                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($range).'; expected ,');
-
-                // parse upper bound
-                $upper = $this->compileExpr($this->tokens);
-
-                // parse optional step
-                $range = $this->tokens->peek();
-                if ($range[0] == ',') {
-                    $this->tokens->pop();
-                    $step = $this->compileExpr($this->tokens);
-                } else {
+                // optional: ,step
+                if ($this->tokens->accept(','))
+                    $step = $this->compileExpr();
+                else
                     $step = array('push', 1);
-                }
 
                 // push block
-                $this->blocks []= array('loop', array(), $name[1], $lower, $upper, $step);
+                $this->blocks []= array('loop', array(), $name, $lower, $upper, $step);
 
             // loop over an array
-            } elseif ($token[0] == 'foreach') {
-                $name = $this->tokens->peek(1);
-                $sep = $this->tokens->peek(2);
-                $name2 = $this->tokens->peek(3);
-                $eq = $this->tokens->peek(4);
+            } elseif ($this->tokens->accept('foreach')) {
+                $key = null;
+                $name = null;
 
-                // lead with name
-                if ($name[0] != 'var')
-                    throw new SugarParseException($name[2], $name[3], 'unexpected '.SugarTokenizer::tokenName($name).'; expected variable');
+                // get name
+                $this->tokens->expect('var', &$name);
 
-                // var = expression?
-                if ($sep[0] == 'in') {
-                    $key = null;
-                    $name = $name[1];
-                    $this->tokens->pop(3);
-
-                // var , var = expression ?
-                } elseif ($sep[0] == ',') {
-                    // need a second name
-                    if ($name2[0] != 'var')
-                        throw new SugarParseException($name2[2], $name2[3], 'unexpected '.SugarTokenizer::tokenName($name2).'; expected variable');
-
-                    // and follow with an =
-                    if ($eq[0] != 'in')
-                        throw new SugarParseException($eq[2], $eq[3], 'unexpected '.SugarTokenizer::tokenName($eq).'; expected in');
-                
-                    $key = $name[1];
-                    $name = $name2[1];
-                    $this->tokens->pop(5);
-
-                // invalid
-                } else {
-                    throw new SugarParseException($sep[2], $sep[3], 'unexpected '.SugarTokenizer::tokenName($sep).'; expected , or in');
+                // is it a key,name pair?
+                if ($this->tokens->accept(',')) {
+                    $key = $name;
+                    $this->tokens->expect('var', &$name);
                 }
 
-                // compile expression
-                $ops = $this->compileExpr($this->tokens);
+                // now we need the in
+                $this->tokens->expect('in');
+
+                // compile array expression
+                $ops = $this->compileExpr();
 
                 // store foreach block
                 $this->blocks []= array('foreach', array(), $key, $name, $ops);
 
             // inhibit cahing
-            } elseif ($token[0] == 'nocache') {
-                $this->tokens->pop();
-
+            } elseif ($this->tokens->accept('nocache')) {
                 // store foreach block
                 $this->blocks []= array('nocache', array());
 
             // pop the block
-            } elseif ($token[0] == 'end') {
-                $this->tokens->pop();
-
+            } elseif ($this->tokens->accept('end')) {
                 // can't end if we're in the main block
                 if ($block[0] == 'main')
                     throw new SugarParseException($token[2], $token[3], 'end without an if or loop');
 
-                // new top block
+                // pop top block
                 array_pop($this->blocks);
 
                 // compile
@@ -474,23 +413,24 @@ class SugarParser {
                 $block =& $this->blocks[count($this->blocks)-1];
                 $block[1] = array_merge($block[1], $bc);
 
-            // if we have a var then a =, we have an assignment
-            } elseif ($token[0] == 'var' && ($t2 = $this->tokens->peek(1)) && $t2[0] == '=') {
-                // remember name value
-                $name = $token[1];
-            
-                // remove tokens, parse
-                $this->tokens->pop(2);
-                $ops = $this->compileExpr($this->tokens);
+            // if we have a var, we might have an assignment... or just an expression
+            } elseif ($this->tokens->accept('var', &$name)) {
+                // if it's followed by a =, it's an assignment
+                if ($this->tokens->accept('=')) {
+                    $ops = $this->compileExpr();
+                    $block[1] = array_merge($block[1], $ops, array('assign', strtolower($name)));
 
-                $block[1] = array_merge($block[1], $ops, array('assign', strtolower($name)));
+                // otherwise, it's an expression
+                } else {
+                    // push the variable request, compile expr skipping first term
+                    // DIRTY HACK
+                    $this->output []= array('lookup', $name);
+                    $ops = $this->compileExpr(true);
+                    $block[1] = array_merge($block[1], $ops, array('print'));
+                }
 
             // function call?
-            } elseif ($token[0] == 'name') {
-                // remember name value
-                $func = $token[1];
-                $this->tokens->pop();
-
+            } elseif ($this->tokens->accept('name', &$func)) {
                 // lookup function
                 $invoke = $this->sugar->getFunction($func);
                 if (!$invoke)
@@ -498,23 +438,19 @@ class SugarParser {
 
                 // parse out parameters
                 $params = array();
-                $token = $this->tokens->peek();
-                while ($token[0] != '%>' && $token[0] != ';') {
+                while (!$this->tokens->accept('term')) {
                     // check for name= syntax
-                    $check = $this->tokens->peek(1);
-                    if ($token[0] == 'name' && $check[0] == '=') {
-                        $this->tokens->pop(2);
-                        $params [$token[1]]= $this->compileExpr($this->tokens);
+                    if ($this->tokens->accept('name', &$name)) {
+                        $this->tokens->expect('=');
+                        $params [$name]= $this->compileExpr();
 
                     // regular parameter
                     } else {
-                        $params []= $this->compileExpr($this->tokens);
+                        $params []= $this->compileExpr();
                     }
 
                     // pop optional ,
-                    $token = $this->tokens->peek();
-                    if ($token[0] == ',')
-                        $this->tokens->pop();
+                    $this->tokens->accept(',');
                 }
 
                 // build function call
@@ -524,25 +460,26 @@ class SugarParser {
                 if ( !($invoke[2] & SUGAR_FUNC_SUPPRESS_RETURN))
                     $block[1] []= 'print';
 
+                // note that we already accepted the terminator token
+                continue;
+
             // we have a statement
             } else {
-                $ops = $this->compileExpr($this->tokens);
+                $ops = $this->compileExpr();
 
                 if (SugarParser::isData($ops))
-                    $this->appendEcho($this->sugar->escape(SugarRuntime::showValue($ops[1])));
+                    $this->pushLiteral($this->sugar->escape(SugarRuntime::showValue($ops[1])));
                 else
                     $block[1] = array_merge($block[1], $ops, array('print'));
             }
 
             // we should have the end token now
-            $end = $this->tokens->get();
-            if ($end[0] != '%>' && $end[0] != ';')
-                throw new SugarParseException($end[2], $end[3], 'unexpected '.SugarTokenizer::tokenName($end).'; expected %>');
+            $this->tokens->expect('term');
         }
 
-        // still in a block?
+        // still in a block? throw an error
         if (count($this->blocks) != 1)
-            throw new SugarParseException($end[2], $end[3], 'unxpected end of file; expected end');
+            $this->tokens->expect('end');
 
         // free tokenizer
         $this->tokens = null;
