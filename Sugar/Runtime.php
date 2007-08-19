@@ -27,11 +27,11 @@ DAMAGE.
 ****************************************************************************/
 
 class SugarRuntime {
-    public static function showValue (&$value) {
+    public static function showValue ($value) {
         if (is_bool($value))
             return $value?'true':'false';
         elseif (is_array($value))
-            return print_r($value, true);
+            return SugarUtil::jsValue($value);
         else
             return $value;
     }
@@ -45,7 +45,7 @@ class SugarRuntime {
             return $left . $right;
     }
 
-    public static function invoke (&$sugar, $invoke, $flags, $args) {
+    public static function invoke ($sugar, $invoke, $flags, $args) {
         // exception net
         try {
             // call function, using appropriate method
@@ -59,7 +59,7 @@ class SugarRuntime {
         }
     }
 
-    public static function execute (&$sugar, $code) {
+    public static function execute ($sugar, $code) {
         $stack = array();
 
         for ($i = 0; $i < count($code); ++$i) {
@@ -184,7 +184,7 @@ class SugarRuntime {
                     $args = $code[++$i];
 
                     // lookup function
-                    $invoke =& $sugar->getFunction($func);
+                    $invoke = $sugar->getFunction($func);
                     if (!$invoke)
                         throw new SugarException ('unknown function: '.$func);
 
@@ -212,6 +212,7 @@ class SugarRuntime {
 
                     if (!method_exists($obj, $func))
                         throw new SugarException ('unknown method on object: '.$func);
+
 
                     // compile args
                     $params = array();

@@ -55,7 +55,7 @@ class SugarUtil {
         return true;
     }
 
-    public static function jsValue (&$value) {
+    public static function jsValue ($value) {
         switch (gettype($value)) {
             case 'integer':
             case 'float':
