@@ -1,0 +1,18 @@
+==================
+** Version 0.71 **
+==================
+
++ Removed the automatic conversion of names to strings
++ Massive cleanups to compiler
+
+==================
+** Version 0.70 **
+==================
+
++ Modified loop syntax
++ Added a while loop
++ Added nocache block directive
++ Revamped internal API
++ Added many stdlib functions
++ Added array constructor
++ Added PHP-style commenting syntax
