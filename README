@@ -260,6 +260,12 @@ the return value as its sole constructor parameter.
 
   return new SugarEscaped('This is <b>raw</b> HTML.');
 
+The character set used by the escape routines is ISO-8859-1 (latin1)
+by default.  This can be changed by setting the $charset member of
+the $sugar object.
+
+  $sugar->charset = 'UTF-8';
+
 By default, object methods cannot be invoked within a template for
 security reasons; there is no way to know which methods are safe
 for templates to execute.  It is highly recommended that this
