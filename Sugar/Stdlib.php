@@ -36,7 +36,7 @@ class SugarStdlib {
     }
 
     public static function _echo (&$sugar, $params) {
-        return new SugarEscaped(SugarRuntime::showValue(SugarUtil::getArg($params, 'val')));
+        return new SugarEscaped(SugarRuntime::showValue(SugarUtil::getArg($params, 'value')));
     }
 
     public static function urlEncodeAll ($sugar, $params) {
@@ -50,11 +50,11 @@ class SugarStdlib {
     }
 
     public static function urlEncode ($sugar, $params) {
-        return urlencode(SugarUtil::getArg($params, 'val'));
+        return urlencode(SugarUtil::getArg($params, 'value'));
     }
 
     public static function jsValue ($sugar, $params) {
-        return SugarUtil::jsValue(SugarUtil::getArg($params, 'val'));
+        return SugarUtil::jsValue(SugarUtil::getArg($params, 'value'));
     }
 
     public static function date ($sugar, $params) {

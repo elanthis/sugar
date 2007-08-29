@@ -95,6 +95,10 @@ class SugarParser {
 
         // while we have a binary operator, continue chunking along
         while ($op = $this->tokens->getOp()) {
+            // convert = to ==
+            if ($op == '=')
+                $op = '==';
+
             // pop higher precedence operators
             $this->collapseOps(SugarParser::$precedence[$op]);
 
