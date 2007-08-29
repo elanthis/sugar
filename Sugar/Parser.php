@@ -49,6 +49,32 @@ class SugarParser {
         $this->sugar =& $sugar;
     }
 
+    private function parseFunctionArgs ($term) {
+        // read args
+        $params = array();
+        while (!$this->tokens->accept($term)) {
+            // check for name= assignment
+            if ($this->tokens->accept('name', &$name)) {
+                // if followed by a (, then it's actually a function call
+                if ($this->tokens->accept('(')) {
+                    $nparams = $this->parseFunctionArgs(')');
+                    $params []= array('call', $name, $nparams);
+                // otherwise, we expect a name= construct
+                } else {
+                    $this->tokens->expect('=');
+                    $params [$name]= $this->compileExpr();
+                }
+            // regular parameter
+            } else {
+                $params []= $this->compileExpr();
+            }
+
+            // consume optional ,
+            $this->tokens->accept(',');
+        }
+        return $params;
+    }
+
     private function collapseOps ($level) {
         while ($this->stack && SugarParser::$precedence[end($this->stack)] <= $level) {
             // get operator
@@ -114,22 +140,7 @@ class SugarParser {
                 // check if this is a method call
                 if ($this->tokens->accept('(')) {
                     $method = $name;
-
-                    // read args
-                    $params = array();
-                    while (!$this->tokens->accept(')')) {
-                        // check for name= assignment
-                        if ($this->tokens->accept('name', &$name)) {
-                            $this->tokens->expect('=');
-                            $params [$name]= $this->compileExpr();
-                        // regular parameter
-                        } else {
-                            $params []= $this->compileExpr();
-                        }
-
-                        // consume optional ,
-                        $this->tokens->accept(',');
-                    }
+                    $params = $this->parseFunctionArgs(')');
 
                     // remove -> operator, create method call
                     array_pop($this->stack);
@@ -214,21 +225,7 @@ class SugarParser {
             // if it's not followed by a (, its not a function call
             $this->tokens->expect('(');
 
-            // read args
-            $params = array();
-            while (!$this->tokens->accept(')')) {
-                // check for name= assignment
-                if ($this->tokens->accept('name', &$name)) {
-                    $this->tokens->expect('=');
-                    $params [$name]= $this->compileExpr();
-                // regular parameter
-                } else {
-                    $params []= $this->compileExpr();
-                }
-
-                // consume optional ,
-                $this->tokens->accept(',');
-            }
+            $params = $this->parseFunctionArgs(')');
 
             // return new function all
             $this->output []= array('call', $name, $params);
@@ -440,22 +437,8 @@ class SugarParser {
                 if (!$invoke)
                     throw new SugarParseException($token[2], $token[3], 'unknown function: '.$func);
 
-                // parse out parameters
-                $params = array();
-                while (!$this->tokens->accept('term')) {
-                    // check for name= syntax
-                    if ($this->tokens->accept('name', &$name)) {
-                        $this->tokens->expect('=');
-                        $params [$name]= $this->compileExpr();
-
-                    // regular parameter
-                    } else {
-                        $params []= $this->compileExpr();
-                    }
-
-                    // pop optional ,
-                    $this->tokens->accept(',');
-                }
+                // get args
+                $params = $this->parseFunctionArgs('term');
 
                 // build function call
                 array_push($block[1], 'call', $func, $params);

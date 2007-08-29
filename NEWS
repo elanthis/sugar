@@ -4,6 +4,9 @@
 
 + Removed the automatic conversion of names to strings
 + Massive cleanups to compiler
++ Added a character set option for escaping
++ Fixed bugs in jsValue encoding with strings
++ Decode \n sequences in input strings
 
 ==================
 ** Version 0.70 **
