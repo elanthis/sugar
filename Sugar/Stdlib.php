@@ -123,9 +123,9 @@ class SugarStdlib {
 
         switch ($mode) {
             case 'html':
-                return new SugarEscaped(htmlentities($value));
+                return new SugarEscaped(htmlentities($value, ENT_QUOTES, $sugar->charset));
             case 'xml':
-                return new SugarEscaped(SugarUtil::xmlentities($value));
+                return new SugarEscaped(htmlspecialchars($value, ENT_QUOTES, $sugar->charset));
             case 'js':
                 return new SugarEscaped(SugarUtil::jsValue($value));
             case 'url':

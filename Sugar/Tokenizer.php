@@ -55,6 +55,13 @@ class SugarTokenizer {
         }
     }
 
+    // handle slashes in input strings
+    public static function decodeSlashes ($string) {
+        $string = str_replace('\\n', "\n", $string);
+        $string = stripslashes($string);
+        return $string;
+    }
+
     // get next token
     private function next () {
         static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|\/\*.*?\*\/|\/\/.*?($|%>)|==|!=|<=|>=|\|\||&&|->|\.\.|.)/ms';
@@ -115,9 +122,9 @@ class SugarTokenizer {
 
             // string
             if ($ar[3])
-                return array('data', stripslashes($ar[3]), $this->file, $line);
+                return array('data', SugarTokenizer::decodeSlashes($ar[3]), $this->file, $line);
             elseif ($ar[4])
-                return array('data', stripslashes($ar[4]), $this->file, $line);
+                return array('data', SugarTokenizer::decodeSlashes($ar[4]), $this->file, $line);
             // variable
             elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
                 return array('var', substr($ar[2], 1), $this->file, $line);

@@ -80,6 +80,7 @@ class Sugar {
     public $cacheLimit = 3600; // one hour
     public $templateDir = './templates';
     public $cacheDir = './templates/cache';
+    public $charset = 'ISO-8859-1';
 
     public function __construct () {
         $this->storage ['file']= new SugarStorageFile($this);
@@ -132,9 +133,9 @@ class Sugar {
         switch ($this->output) {
             case SUGAR_OUTPUT_HTML:
             case SUGAR_OUTPUT_XHTML:
-                return htmlentities($output);
+                return htmlentities($output, ENT_QUOTES, $this->charset);
             case SUGAR_OUTPUT_XML:
-                return SugarUtil::xmlentities($output);
+                return htmlspecialchars($output, ENT_QUOTES, $this->charset);
             case SUGAR_OUTPUT_TEXT:
             default:
                 return $output;
