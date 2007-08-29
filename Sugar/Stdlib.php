@@ -135,7 +135,12 @@ class SugarStdlib {
         }
     }
 
-    public static function initialize (&$sugar) {
+    public static function _var ($sugar, $params) {
+        $name = SugarUtil::getArg($params, 'name', 0);
+        return $sugar->getVariable($name);
+    }
+
+    public static function initialize ($sugar) {
         $sugar->register('include', array('SugarStdlib', '_include'));
         $sugar->register('eval', array('SugarStdlib', '_eval'));
         $sugar->register('echo', array('SugarStdlib', '_echo'));
@@ -153,6 +158,7 @@ class SugarStdlib {
         $sugar->register('basename', 'basename', SUGAR_FUNC_NATIVE);
         $sugar->register('truncate', array('SugarStdlib', 'truncate'));
         $sugar->register('escape', array('SugarStdlib', 'escape'));
+        $sugar->register('var', array('SugarStdlib', '_var'));
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
