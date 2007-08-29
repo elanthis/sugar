@@ -140,6 +140,11 @@ class SugarTokenizer {
             // float
             elseif (preg_match('/^\d+[.]\d+$/', $ar[2]))
                 return array('data', floatval($ar[2]), $this->file, $line);
+            // true and false
+            elseif ($ar[2] == 'true')
+                return array('data', true, $this->file, $line);
+            elseif ($ar[2] == 'false')
+                return array('data', false, $this->file, $line);
             // name
             elseif (preg_match('/^\w+$/', $ar[2]))
                 return array('name', $ar[2], $this->file, $line);
