@@ -5,7 +5,7 @@
 <p>date format='m/d/Y' date='next Tuesday': <% date format='Y-m-d' date='next Tuesday' %></p>
 <p>date: <% date %></p>
 
-<p>jsValue [12/4,['one'],2*3]: <% jsValue [12/4,['one'],2*3] %></p>
+<p>jsValue array(12/4,array('one'),2*3): <% jsValue array(12/4,array('one'),2*3) %></p>
 <p>jsValue 'sally sells sea shells': <% jsValue 'sally sells sea shells' %></p>
 
 <p>eval source='&lt;% $x = 4; $x*$x %&gt;': <% eval source='<% $x = 4; $x*$x %>' %></p>

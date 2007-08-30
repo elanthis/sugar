@@ -12,7 +12,7 @@
 <% end %>
 </ul>
 <ul>
-<% foreach $i in [ 1, 'one', 'bar', 42 ] %>
+<% foreach $i in array( 1, 'one', 'bar', 42 ) %>
 	<li><% $i %></li>
 <% end %>
 </ul>

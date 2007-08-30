@@ -73,12 +73,23 @@ an expression.  Example:
   <% $test = $s+$i %>
   <% $test %> is test7
 
-Array keys can be accessed using the . operator.  Example:
+Array keys can be accessed using the . operator or the [] array
+subscript operator.  Examples:
 
   <% $array.key %>
+  <% $array."the key" %>
   <% $array.0 %>
+  <% $array.8 %>
   <% $array.$var %>
-  <% $array.($var-1) %>
+  <% $array[$var] %>
+  <% $array[$var-6] %>
+  <% $array["key"] %>
+
+Arrays can be constructed using the array() initializer function.
+Examples:
+
+  <% $vector = array(1, 2, 5) %>
+  <% $hash = array(first=1, second=2, third=5) %>
 
 Object properties can be accessed using the -> operator.  Object
 methods, if enabled, can be invoked using the -> operator followed
@@ -119,6 +130,35 @@ no arguments, just put () after the function name.  Examples:
   <% "show "+getTime('tomorrow') %>
   <% 12*1+foobar(test="enable", time="now") %>
 
+Care must be taken when calling a function using unnamed parameters.
+The following functions call will have unexpected results:
+
+  <% func 1 -2 %>
+	<% func ($var+2)*3 %>
+
+The first call will invoke the function func with a single argument,
+-1, because Sugar can not tell if the following tokens are meant to
+be a single subtraction expression or two separate numbers.  This
+can be fixed by separating the numbers with a comma, using named
+parameters, or changing the second parameter to not begin with a
+minus sign (such as putting the parameter in parenthesis).
+
+The second function will result in a parse error.  Sugar will
+interpret the parenthesis following the function name as part of the
+function call syntax and not as a sub-expression, and will consider
+the trailing right parenthesis as the end of the function call,
+making the *3 unexpected.  This can be fixed by using named
+parameters or altering the expression so that the opening
+parenthesis is not the first token, which in this case can be done
+by moving the multiplication to the beginning of the expression.
+Examples:
+
+  <% func 1, -2 %>
+	<% func start=1 size=-2 %>
+
+  <% func start=($var+2)*3 %>
+	<% func 3*($var+2) %>
+
 Conditional execution can be performed using the if, elif, and else
 statements.  Example:
 
@@ -153,6 +193,11 @@ values can be iterated over.
     <% $k %>=<% $i %>
   <% end %>
 
+	Inline array:
+	<% foreach $k in array(1,2,3) %>
+		<% $k %>
+	<% end %>
+
 A code block can be expected a specific number of times by using the
 range loop statement.  The range loop is given a start number, an end
 number, and an optional step value.  The follow example displays the
@@ -167,14 +212,6 @@ This example displays the numbers 6, 4, and 2.
   <% loop $i in 3*2,1,-2 %>
     <% $i %>
   <% end %>
-
-Arrays can be constructed by placing the desired array elements within
-square brackets [] and separated by commas.  The following code prints
-1 = 1 up through 5 = 5.
-
-  <% foreach $i,$v in [1, 2, 4-1, 6/2+1, 5] %>
-	  <% $i+1 %> = <% $v %><br />
-	<% end %>
 
 Other template files can be included using the include function.  Code
 can be executed using the eval function.

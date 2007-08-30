@@ -7,6 +7,8 @@
 + Added a character set option for escaping
 + Fixed bugs in jsValue encoding with strings
 + Decode \n sequences in input strings
++ Changed the array constructor to a function call to array()
++ Added a [] array subscript operator
 
 ==================
 ** Version 0.70 **

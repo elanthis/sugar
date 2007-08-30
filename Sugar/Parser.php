@@ -34,7 +34,7 @@ class SugarParser {
     private $sugar;
 
     static public $precedence = array(
-        '.' => 0, '->' => 0, 'method' => 0,
+        '.' => 0, '->' => 0, 'method' => 0, '[' => 0,
         '!' => 1, 'negate' => 1,
         '*' => 2, '/' => 2, '%' => 2,
         '+' => 3, '-' => 3,
@@ -147,6 +147,16 @@ class SugarParser {
                     $this->output []= array('push', $name);
                 }
 
+            // if it's an array [] operator, we need to handle the trailing ]
+            } elseif ($op == '[') {
+                // replace [ with .
+                array_pop($this->stack);
+                $this->stack []= '.';
+
+                // compile rest of expression
+                $this->compileTerminal();
+                $this->tokens->expect(']');
+
             // regular case, just go
             } else {
                 $this->compileTerminal();
@@ -175,38 +185,6 @@ class SugarParser {
             $this->stack []= '!';
             $this->compileTerminal();
             return;
-
-        // array constructor
-        } elseif ($this->tokens->accept('[')) {
-            // read in elements
-            $elems = array();
-            $data = true;
-            while (!$this->tokens->accept(']')) {
-                // read in element
-                $elem = $this->compileExpr();
-                $elems []= $elem;
-
-                // if not pure data, unmark data flag
-                if ($data && !$this->isData($elem))
-                    $data = $false;
-
-                // if we have a ], end
-                if ($this->tokens->accept(']'))
-                    break;
-
-                // require a comma before next item
-                $this->tokens->expect(',');
-            }
-
-            // if the data flag is true, all elements are pure data,
-            // so we can push this as a value instead of an opcode
-            if ($data) {
-                foreach ($elems as $i=>$v)
-                    $elems[$i] = $v[1];
-                $this->output []= array('push', $elems);
-            } else {
-                $this->output []= array('array', $elems);
-            }
 
         // sub-expression
         } elseif ($this->tokens->accept('(')) {
@@ -433,8 +411,13 @@ class SugarParser {
                 if (!$invoke)
                     throw new SugarParseException($token[2], $token[3], 'unknown function: '.$func);
 
+                // if followed by a (, then that's our terminator
+                $term = 'term';
+                if ($this->tokens->accept('('))
+                    $term = ')';
+
                 // get args
-                $params = $this->parseFunctionArgs('term');
+                $params = $this->parseFunctionArgs($term);
 
                 // build function call
                 array_push($block[1], 'call', $func, $params);
