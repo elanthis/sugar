@@ -39,7 +39,7 @@ class SugarParser {
         '*' => 2, '/' => 2, '%' => 2,
         '+' => 3, '-' => 3,
         '..' => 4,
-        '=' => 5, '<' => 5, '>' => 5,
+        '==' => 5, '<' => 5, '>' => 5,
         '!=' => 5, '<=' => 5, '>=' => 5, 'in' => 5,
         '||' => 6, '&&' => 6,
         '(' => 100 // safe wrapper
@@ -54,7 +54,7 @@ class SugarParser {
         $params = array();
         while (!$this->tokens->accept($term)) {
             // check for name= assignment
-            if ($this->tokens->accept('name', &$name)) {
+            if ($this->tokens->accept('name', $name)) {
                 // if followed by a (, then it's actually a function call
                 if ($this->tokens->accept('(')) {
                     $nparams = $this->parseFunctionArgs(')');
@@ -121,10 +121,6 @@ class SugarParser {
 
         // while we have a binary operator, continue chunking along
         while ($op = $this->tokens->getOp()) {
-            // convert = to ==
-            if ($op == '=')
-                $op = '==';
-
             // pop higher precedence operators
             $this->collapseOps(SugarParser::$precedence[$op]);
 
@@ -132,11 +128,11 @@ class SugarParser {
             $this->stack []= $op;
 
             // if it's an array . op, we can take a name
-            if ($op == '.' && $this->tokens->accept('name', &$name)) {
+            if ($op == '.' && $this->tokens->accept('name', $name)) {
                 $this->output []= array('push', $name);
 
             // if it's an object -> op, we can also take a name
-            } elseif ($op == '->' && $this->tokens->accept('name', &$name)) {
+            } elseif ($op == '->' && $this->tokens->accept('name', $name)) {
                 // check if this is a method call
                 if ($this->tokens->accept('(')) {
                     $method = $name;
@@ -221,7 +217,7 @@ class SugarParser {
             $this->tokens->expect(')');
 
         // function call
-        } elseif ($this->tokens->accept('name', &$name)) {
+        } elseif ($this->tokens->accept('name', $name)) {
             // if it's not followed by a (, its not a function call
             $this->tokens->expect('(');
 
@@ -231,11 +227,11 @@ class SugarParser {
             $this->output []= array('call', $name, $params);
 
         // static values
-        } elseif ($this->tokens->accept('data', &$data)) {
+        } elseif ($this->tokens->accept('data', $data)) {
             $this->output []= array('push', $data);
 
         // vars
-        } elseif ($this->tokens->accept('var', &$name)) {
+        } elseif ($this->tokens->accept('var', $name)) {
             $this->output []= array('lookup', $name);
 
         // error
@@ -269,7 +265,7 @@ class SugarParser {
             $block =& $this->blocks[count($this->blocks)-1];
 
             // raw string
-            if ($this->tokens->accept('literal', &$literal)) {
+            if ($this->tokens->accept('literal', $literal)) {
                 $this->pushLiteral($literal);
                 continue;
 
@@ -323,7 +319,7 @@ class SugarParser {
             // range loop
             } elseif ($this->tokens->accept('loop')) {
                 // name in lower,upper
-                $this->tokens->expect('var', &$name);
+                $this->tokens->expect('var', $name);
                 $this->tokens->expect('in');
                 $lower = $this->compileExpr();
                 $this->tokens->expect(',');
@@ -344,12 +340,12 @@ class SugarParser {
                 $name = null;
 
                 // get name
-                $this->tokens->expect('var', &$name);
+                $this->tokens->expect('var', $name);
 
                 // is it a key,name pair?
                 if ($this->tokens->accept(',')) {
                     $key = $name;
-                    $this->tokens->expect('var', &$name);
+                    $this->tokens->expect('var', $name);
                 }
 
                 // now we need the in
@@ -415,7 +411,7 @@ class SugarParser {
                 $block[1] = array_merge($block[1], $bc);
 
             // if we have a var, we might have an assignment... or just an expression
-            } elseif ($this->tokens->accept('var', &$name)) {
+            } elseif ($this->tokens->accept('var', $name)) {
                 // if it's followed by a =, it's an assignment
                 if ($this->tokens->accept('=')) {
                     $ops = $this->compileExpr();
@@ -431,7 +427,7 @@ class SugarParser {
                 }
 
             // function call?
-            } elseif ($this->tokens->accept('name', &$func)) {
+            } elseif ($this->tokens->accept('name', $func)) {
                 // lookup function
                 $invoke = $this->sugar->getFunction($func);
                 if (!$invoke)

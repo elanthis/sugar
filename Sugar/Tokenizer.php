@@ -157,7 +157,7 @@ class SugarTokenizer {
     // if the requested token is available, pop it and return true; else return false
     // store the token data in the optional second parameter, which should be passed
     // a reference
-    public function accept ($accept, $data = null) {
+    public function accept ($accept, &$data = null) {
         // return false if it's the wrong token
         if ($this->token[0] != $accept)
             return false;
@@ -173,7 +173,7 @@ class SugarTokenizer {
     // ensures that the requested token is next, throws an error if it isn't.
     // store the token data in the optional second parameter, which should be passed
     // a reference
-    public function expect ($expect, $data = null) {
+    public function expect ($expect, &$data = null) {
         // throw an error if it's the wrong token
         if ($this->token[0] != $expect)
             throw new SugarParseException($this->token[2], $this->token[3], 'unexpected '.SugarTokenizer::tokenName($this->token).'; expected '.$expect);
@@ -189,12 +189,12 @@ class SugarTokenizer {
     public function getOp () {
         $op = $this->token[0];
 
-        // convert == to = for operators
-        if ($op == '==')
-            $op = '=';
+        // convert = to == for operators
+        if ($op == '=')
+            $op = '==';
 
         // if it's a valid operator, return it
-        if (isset(SugarParser::$precedence[ $op])) {
+        if (isset(SugarParser::$precedence[$op])) {
             // get next token
             $this->token = $this->next();
 
