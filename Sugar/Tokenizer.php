@@ -120,7 +120,7 @@ class SugarTokenizer {
                 // if the comment ends in %> (only for // comments), return that
                 if (substr($ar[2], -2, 2) == '%>') {
                     $this->inCmd = false;
-                    return array('%>', null, $this->file, $line);
+                    return array('term', '%>', $this->file, $line);
                 }
                 // otherwise, continue to next token
                 continue;
