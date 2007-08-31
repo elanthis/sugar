@@ -182,7 +182,7 @@ class SugarTokenizer {
     public function expect ($expect, &$data = null) {
         // throw an error if it's the wrong token
         if ($this->token[0] != $expect)
-            throw new SugarParseException($this->token[2], $this->token[3], 'unexpected '.SugarTokenizer::tokenName($this->token).'; expected '.$expect);
+            throw new SugarParseException($this->token[2], $this->token[3], 'expected '.$expect.'; found '.SugarTokenizer::tokenName($this->token));
 
         // store value
         $data = $this->token[1];
