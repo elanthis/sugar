@@ -47,9 +47,15 @@ class SugarTokenizer {
             case 'eof': return '<eof>';
             case 'name': return 'name '.$token[1];
             case 'var': return 'variable $'.$token[1];
-            case 'string': return 'string "'.addslashes($token[1]).'"';
-            case 'int': return 'integer '.($token[1]);
-            case 'float': return 'number '.($token[1]);
+            case 'data':
+                if (is_string($token[1]))
+                    return 'string "'.addslashes($token[1]).'"';
+                elseif (is_float($token[1]))
+                    return 'float '.$token[1];
+                elseif (is_int($token[1]))
+                    return 'integer '.$token[1];
+                else
+                    return gettype($token[1]);
             case 'term': return $token[1];
             default: return $token[0];
         }
