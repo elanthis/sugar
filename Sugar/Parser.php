@@ -49,15 +49,25 @@ class SugarParser {
         $this->sugar =& $sugar;
     }
 
-    private function parseFunctionArgs ($term) {
-        // read args
+    private function parseFunctionArgs ($parens) {
+        // if parents is true, then the args are
+        // parenthesized, and require commas and a
+        // trailing comma
+
         $params = array();
-        while (!$this->tokens->accept($term)) {
+        $first = true;
+        while (!$this->tokens->accept($parens?')':'term')) {
+            // after the first arg, require a separating comma
+            if ($first)
+                $first = false;
+            elseif ($parens)
+                $this->tokens->expect(',');
+
             // check for name= assignment
             if ($this->tokens->accept('name', $name)) {
                 // if followed by a (, then it's actually a function call
                 if ($this->tokens->accept('(')) {
-                    $nparams = $this->parseFunctionArgs(')');
+                    $nparams = $this->parseFunctionArgs(true);
                     $params []= array('call', $name, $nparams);
                 // otherwise, we expect a name= construct
                 } else {
@@ -68,9 +78,6 @@ class SugarParser {
             } else {
                 $params []= $this->compileExpr();
             }
-
-            // consume optional ,
-            $this->tokens->accept(',');
         }
         return $params;
     }
@@ -136,7 +143,7 @@ class SugarParser {
                 // check if this is a method call
                 if ($this->tokens->accept('(')) {
                     $method = $name;
-                    $params = $this->parseFunctionArgs(')');
+                    $params = $this->parseFunctionArgs(true);
 
                     // remove -> operator, create method call
                     array_pop($this->stack);
@@ -186,6 +193,38 @@ class SugarParser {
             $this->compileTerminal();
             return;
 
+        // array constructor
+        } elseif ($this->tokens->accept('[')) {
+            // read in elements
+            $elems = array();
+            $data = true;
+            while (!$this->tokens->accept(']')) {
+                // read in element
+                $elem = $this->compileExpr();
+                $elems []= $elem;
+
+                // if not pure data, unmark data flag
+                if ($data && !$this->isData($elem))
+                    $data = $false;
+
+                // if we have a ], end
+                if ($this->tokens->accept(']'))
+                    break;
+
+                // require a comma before next item
+                $this->tokens->expect(',');
+            }
+
+            // if the data flag is true, all elements are pure data,
+            // so we can push this as a value instead of an opcode
+            if ($data) {
+                foreach ($elems as $i=>$v)
+                    $elems[$i] = $v[1];
+                $this->output []= array('push', $elems);
+            } else {
+                $this->output []= array('array', $elems);
+            }
+
         // sub-expression
         } elseif ($this->tokens->accept('(')) {
             // compile sub-expression
@@ -199,7 +238,7 @@ class SugarParser {
             // if it's not followed by a (, its not a function call
             $this->tokens->expect('(');
 
-            $params = $this->parseFunctionArgs(')');
+            $params = $this->parseFunctionArgs(true);
 
             // return new function all
             $this->output []= array('call', $name, $params);
@@ -411,13 +450,11 @@ class SugarParser {
                 if (!$invoke)
                     throw new SugarParseException($token[2], $token[3], 'unknown function: '.$func);
 
-                // if followed by a (, then that's our terminator
-                $term = 'term';
+                // check if we're parenthesized, and get args
                 if ($this->tokens->accept('('))
-                    $term = ')';
-
-                // get args
-                $params = $this->parseFunctionArgs($term);
+                    $params = $this->parseFunctionArgs(true);
+                else
+                    $params = $this->parseFunctionArgs(false);
 
                 // build function call
                 array_push($block[1], 'call', $func, $params);
