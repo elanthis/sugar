@@ -1,12 +1,13 @@
 <% $title = 'Cache Tests' %>
 <% include 'header' %>
 
-<p>cache:</p>
-<p>$i = random(); $i * 2: <% $i = random(); $i * 2 %></p>
+<p>Reload the page.  The cache value should not change, but the nocache value should.</p>
+<p>This test only works correctly if caching is turned on.</p>
 
-<p>nocache:</p>
+<p>cache: <% random() %></p>
+
 <% nocache %>
-<p>$i = random(); $i * 2: <% $i = random(); $i * 2 %></p>
+<p>nocache: <% random() %></p>
 <% end %>
 
 <% include 'footer' %>

@@ -1,14 +1,23 @@
 <% $title = 'Array Tests' %>
 <% include 'header' %>
 
-<p>Result: <% array(1,2,3) %> ([1,2,3])
-<p>Result: <% [1,2,3] %> ([1,2,3])
-<p>Result: <% ['foo','bar','baz'] %> ["foo","bar","baz"]
-<p>$list: <% $list %></p>
-<p>$list.1: <b><% $list.1 %></b></p>
-<p>$list.foo: <b><% $list.foo %></b></p>
-<p>"one" in $list: <b><% "one" in $list %></b>
-<p>$c=2 $list.$c <b><% $c=2 %><% $list.$c %></b></p>
-<p>$c=2 $list[$c] <b><% $c=2 %><% $list[$c] %></b></p>
+<p>Expect: [1,2,3]<br>
+Result: <% array(1,2,3) %>
+<p>Expect: [1,2,3]<br>
+Result: <% [1,2,3] %>
+<p>Expect: ['foo','bar','baz']<br>
+Result: <% ['foo','bar','baz'] %>
+<p>Expect: {0:'one',1:'two',2:'three','foo':'bar'}<br>
+Result: <% $list %>
+<p>Expect: two<br>
+Result: <% $list.1 %>
+<p>Expect: bar<br>
+Result: <% $list.foo %>
+<p>Expect: true<br>
+Result: <% "one" in $list %>
+<p>Expect: three<br>
+Result: <% $c=2 %><% $list.$c %>
+<p>Expect: three<br>
+Result: <% $c=2 %><% $list[$c] %>
 
 <% include 'footer' %>

@@ -1,10 +1,13 @@
 <% $title = 'Raw Text Tests' %>
 <% include 'header' %>
 
-<p>Note: you will have to View Source to check the correct output.</p>
+<p>Expect: &lt;foo&gt;<br/>
+Result: <% '<foo>' %></p>
 
-<p>'&lt;foo&gt;' = <% '<foo>' %></p>
-<p>' checked="checked" ' = <% ' checked="checked" ' %></p>
-<p>checked(1) = <% checked(1) %></p>
+<p>Expect: checked="checked"<br/>
+Result: <% ' checked="checked" ' %></p>
+
+<p>Expect: checked="checked"<br/>
+Result: <% checked(1) %></p>
 
 <% include 'footer' %>

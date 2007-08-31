@@ -1,9 +1,17 @@
 <% $title = 'jsValue Tests' %>
 <% include 'header' %>
 
-<p>jsValue($test): <b><% jsValue $test %></b></p>
-<p>jsValue($list): <b><% jsValue $list %></b></p>
-<p>jsValue($i): <b><% jsValue $i %></b></p>
-<p>jsValue($obj): <b><% jsValue $obj %></b></p>
+<p>Expect: 'dancing mice'<br>
+Result: <% jsValue $test %>
+
+<p>Expect: {0:'one',1:'two',2:'three','foo':'bar'}<br>
+Result: <% jsValue $list %>
+
+<p>Expect: 10<br>
+Result: <% jsValue $i %>
+
+<p>Expect: {'phpType':'Test','bar':'BAR'}<br>
+Result: <% jsValue $obj %>
+
 
 <% include 'footer' %>

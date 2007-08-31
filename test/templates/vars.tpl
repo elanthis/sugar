@@ -1,10 +1,19 @@
 <% $title = 'Variable Tests' %>
 <% include 'header' %>
 
-<p>$test: <b><% $test %></b></p>
-<p>$i: <b><% $i %></b></p>
-<p>$i*5=<% $i*5 %> $i=7<% $i=7 %> $i*5=<% $i*5 %></p>
-<p><% $html %> <% echo $html %></p>
-<p>$test+$i: <% $test+$i %> $i+$test: <% $i+$test %></p>
+<p>Expect: dancing mice<br>
+Result: <% $test %>
+
+<p>Expect: 10<br>
+Result: <% $i %>
+
+<p>Expect: 50<br/>
+Result: <% $i*5 %></p>
+
+<p>Expect: 7<br/>
+Result: <% $i=7 ; $i %></p>
+
+<p>Expect: 35<br/>
+Result: <% $i*5 %></p>
 
 <% include 'footer' %>
