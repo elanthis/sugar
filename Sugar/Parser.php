@@ -68,7 +68,8 @@ class SugarParser {
                 // if followed by a (, then it's actually a function call
                 if ($this->tokens->accept('(')) {
                     $nparams = $this->parseFunctionArgs(true);
-                    $params []= array('call', $name, $nparams);
+                    $this->output []= array('call', $name, $nparams);
+                    $params []= $this->compileExpr(true);
                 // otherwise, we expect a name= construct
                 } else {
                     $this->tokens->expect('=');
