@@ -2,6 +2,7 @@
 <% include 'header' %>
 
 <p>array(1,2,3): <% array(1,2,3) %>
+<p>[1,2,3]: <% [1,2,3] %>
 <p>array('foo','bar','baz'): <% array('foo','bar','baz') %>
 <p>$list: <% $list %></p>
 <p>$list.1: <b><% $list.1 %></b></p>
