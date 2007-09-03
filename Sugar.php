@@ -166,7 +166,7 @@ class Sugar {
         $this->vars []= array();
 
         try {
-            $rs = SugarRuntime::execute($this, $data);
+            $rs = SugarRuntime::execute($this, $data['bytecode']);
 
             // cleanup
             array_pop($this->vars);
@@ -185,22 +185,25 @@ class Sugar {
         if ($sstamp === false)
             throw new SugarException('template not found: '.$ref->full);
 
-        // if compiled version does not exist or is out of date, compile it
+        // if debug is off and the stamp is good, load compiled version
         $cstamp = $this->cache->stamp($ref, SUGAR_CACHE_TPL);
-        if ($this->debug || $sstamp >= $cstamp) {
-            // compile
-            $source = $ref->storage->load($ref);
-
-            $parser = new SugarParser($this);
-            $data = $parser->compile($source, $ref->storage->path($ref));
-            $parser = null;
-
-            // store
-            $this->cache->store($ref, SUGAR_CACHE_TPL, $data);
-        // load compiled version
-        } else {
+        if (!$this->debug && $cstamp > $sstamp) {
             $data = $this->cache->load($ref, SUGAR_CACHE_TPL);
+            // if version checks out, run it
+            if ($data['version'] == SUGAR_VERSION) {
+                $this->execute($data);
+                return;
+            }
         }
+
+        // compile
+        $source = $ref->storage->load($ref);
+        $parser = new SugarParser($this);
+        $data = $parser->compile($source, $ref->storage->path($ref));
+        $parser = null;
+
+        // store
+        $this->cache->store($ref, SUGAR_CACHE_TPL, $data);
 
         // execute
         $this->execute($data);
@@ -255,11 +258,14 @@ class Sugar {
             // get cache stamp
             $cstamp = $this->cache->stamp($ref, SUGAR_CACHE_HTML);
 
-            // if cache exists and is up-to-date amd debug is off, run the cache
+            // if cache exists and is up-to-date and debug is off, load cache
             if (!$this->debug && $cstamp > $stamp) {
                 $data = $this->cache->load($ref, SUGAR_CACHE_HTML);
-                $this->execute($data);
-                return true;
+                // if it is the right version, run it and return
+                if ($data['version'] == SUGAR_VERSION) {
+                    $this->execute($data);
+                    return true;
+                }
             }
 
             // create cache handler if necessary

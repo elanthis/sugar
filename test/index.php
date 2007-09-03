@@ -81,9 +81,10 @@ $sugar->displayCache('file:'.$file.'.tpl');
 $end_display = microtime(true);
 
 $end = microtime(true);
-printf('<p style="font-size: small; color: #666;">includes: %0.6f seconds<br/>', $end_load-$begin_load);
+printf('<p style="font-size: small; color: #666; white-space: pre;">');
+printf('includes:    %0.6f seconds<br/>', $end_load-$begin_load);
 printf('constructor: %0.6f seconds<br/>', $end_create-$begin_create);
-printf('display(): %0.6f seconds<br/>', $end_display-$begin_display);
-printf('misc.: %0.6f seconds<br/>', ($end-$start)-($end_load-$begin_load)-($end_create-$begin_create)-($end_display-$begin_display));
-printf('TOTAL: %0.6f seconds</p>', $end-$start);
+printf('display():   %0.6f seconds<br/>', $end_display-$begin_display);
+printf('misc.:       %0.6f seconds<br/>', ($end-$start)-($end_load-$begin_load)-($end_create-$begin_create)-($end_display-$begin_display));
+printf('TOTAL:       %0.6f seconds</p>', $end-$start);
 ?>

@@ -488,7 +488,9 @@ class SugarParser {
         // free tokenizer
         $this->tokens = null;
 
-        return $this->blocks[0][1];
+        // create meta-block
+        $code = array('type' => 'ctpl', 'version' => SUGAR_VERSION, 'bytecode' => $this->blocks[0][1]);
+        return $code;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
