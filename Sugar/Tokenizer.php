@@ -33,6 +33,7 @@ class SugarTokenizer {
     private $inCmd = false;
     private $file;
     private $line = 1;
+    private $tokline;
 
     public function __construct ($src, $file = '<input>') {
         $this->src = $src;
@@ -73,9 +74,8 @@ class SugarTokenizer {
         static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|\/\*.*?\*\/|\/\/.*?($|%>)|==|!=|<=|>=|\|\||&&|->|\.\.|.)/ms';
 
         // EOF
-        if ($this->pos >= strlen($this->src)) {
-            return array('eof', null, $this->file, $this->line);
-        }
+        if ($this->pos >= strlen($this->src))
+            return array('eof', null);
 
         // outside of a command?
         if (!$this->inCmd) {
@@ -89,10 +89,10 @@ class SugarTokenizer {
             // just a literal?
             if ($next > $this->pos) {
                 $text = substr($this->src, $this->pos, $next - $this->pos);
-                $line = $this->line;
+                $this->tokline = $this->line;
                 $this->line += substr_count($this->src, "\n", $this->pos, $next - $this->pos);
                 $this->pos = $next;
-                return array('literal', $text, $this->file, $line);
+                return array('literal', $text);
             }
 
             // setup inside command
@@ -108,8 +108,8 @@ class SugarTokenizer {
             $this->pos += strlen($ar[0]);
 
             // calc line count
-            $line = $this->line + substr_count($ar[1], "\n");
-            $this->line = $line + substr_count($ar[2], "\n");
+            $this->tokline = $this->line + substr_count($ar[1], "\n");
+            $this->line = $this->tokline + substr_count($ar[2], "\n");
 
             // if at end, mark that
             if ($ar[2] == '%>')
@@ -120,7 +120,7 @@ class SugarTokenizer {
                 // if the comment ends in %> (only for // comments), return that
                 if (substr($ar[2], -2, 2) == '%>') {
                     $this->inCmd = false;
-                    return array('term', '%>', $this->file, $line);
+                    return array('term', '%>', $line);
                 }
                 // otherwise, continue to next token
                 continue;
@@ -128,35 +128,35 @@ class SugarTokenizer {
 
             // string
             if ($ar[3])
-                return array('data', SugarTokenizer::decodeSlashes($ar[3]), $this->file, $line);
+                return array('data', SugarTokenizer::decodeSlashes($ar[3]));
             elseif ($ar[4])
-                return array('data', SugarTokenizer::decodeSlashes($ar[4]), $this->file, $line);
+                return array('data', SugarTokenizer::decodeSlashes($ar[4]));
             // variable
             elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
-                return array('var', substr($ar[2], 1), $this->file, $line);
+                return array('var', substr($ar[2], 1));
             // terminator
             elseif ($ar[2] == '%>' || $ar[2] == ';')
-                return array('term', $ar[2], $this->file, $line);
+                return array('term', $ar[2]);
             // keyword or special symbol
             elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache')))
-                return array($ar[2], null, $this->file, $line);
+                return array($ar[2], null);
             // integer
             elseif (preg_match('/^\d+$/', $ar[2]))
-                return array('data', intval($ar[2]), $this->file, $line);
+                return array('data', intval($ar[2]));
             // float
             elseif (preg_match('/^\d+[.]\d+$/', $ar[2]))
-                return array('data', floatval($ar[2]), $this->file, $line);
+                return array('data', floatval($ar[2]));
             // true and false
             elseif ($ar[2] == 'true')
-                return array('data', true, $this->file, $line);
+                return array('data', true);
             elseif ($ar[2] == 'false')
-                return array('data', false, $this->file, $line);
+                return array('data', false);
             // name
             elseif (preg_match('/^\w+$/', $ar[2]))
-                return array('name', $ar[2], $this->file, $line);
+                return array('name', $ar[2]);
             // generic operator
             else
-                return array($ar[2], null, $this->file, $line);
+                return array($ar[2], null);
         }
     }
 
@@ -182,7 +182,7 @@ class SugarTokenizer {
     public function expect ($expect, &$data = null) {
         // throw an error if it's the wrong token
         if ($this->token[0] != $expect)
-            throw new SugarParseException($this->token[2], $this->token[3], 'expected '.$expect.'; found '.SugarTokenizer::tokenName($this->token));
+            throw new SugarParseException($this->file, $this->tokline, 'expected '.$expect.'; found '.SugarTokenizer::tokenName($this->token));
 
         // store value
         $data = $this->token[1];
@@ -208,6 +208,16 @@ class SugarTokenizer {
         } else {
             return false;
         }
+    }
+
+    // return current line
+    public function getLine () {
+        return $this->line;
+    }
+
+    // return current file
+    public function getFile () {
+        return $this->file;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
