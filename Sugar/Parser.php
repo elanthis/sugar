@@ -68,7 +68,7 @@ class SugarParser {
                 // if followed by a (, then it's actually a function call
                 if ($this->tokens->accept('(')) {
                     $nparams = $this->parseFunctionArgs(true);
-                    $this->output []= array('call', $name, $nparams);
+                    $this->output []= array('call', $name, $nparams, $this->tokens->getFile(), $this->tokens->getLine());
                     $params []= $this->compileExpr(true);
                 // otherwise, we expect a name= construct
                 } else {
@@ -148,7 +148,7 @@ class SugarParser {
 
                     // remove -> operator, create method call
                     array_pop($this->stack);
-                    $this->output []= array_merge(array_pop($this->output), array('method', $method, $params));
+                    $this->output []= array_merge(array_pop($this->output), array('method', $method, $params, $this->tokens->getFile(), $this->tokens->getLine()));
 
                 // not a method call
                 } else {
@@ -242,7 +242,7 @@ class SugarParser {
             $params = $this->parseFunctionArgs(true);
 
             // return new function all
-            $this->output []= array('call', $name, $params);
+            $this->output []= array('call', $name, $params, $this->tokens->getFile(), $this->tokens->getLine());
 
         // static values
         } elseif ($this->tokens->accept('data', $data)) {
@@ -303,7 +303,7 @@ class SugarParser {
             } elseif ($this->tokens->accept('else')) {
                 // get top block; must be an if or elif
                 if ($block[0] != 'if' && $block[0] != 'elif')
-                    throw new SugarParseException($token[2], $token[3], 'else missing if');
+                    throw new SugarParseException($this->tokens->getFile(), $this->tokens->getLine(), 'else missing if');
 
                 // update block
                 $block[0] = 'else';
@@ -315,7 +315,7 @@ class SugarParser {
             } elseif ($this->tokens->accept('elif')) {
                 // get top block; must be an if or elif
                 if ($block[0] != 'if' && $block[0] != 'elif')
-                    throw new SugarParseException($token[2], $token[3], 'elif missing if');
+                    throw new SugarParseException($this->tokens->getFile(), $this->tokens->getLine(), 'elif missing if');
 
                 // test
                 $ops = $this->compileExpr();
@@ -384,7 +384,7 @@ class SugarParser {
             } elseif ($this->tokens->accept('end')) {
                 // can't end if we're in the main block
                 if ($block[0] == 'main')
-                    throw new SugarParseException($token[2], $token[3], 'end without an if or loop');
+                    throw new SugarParseException($this->tokens->getFile(), $this->tokens->getLine(), 'end without an if or loop');
 
                 // pop top block
                 array_pop($this->blocks);
@@ -449,7 +449,7 @@ class SugarParser {
                 // lookup function
                 $invoke = $this->sugar->getFunction($func);
                 if (!$invoke)
-                    throw new SugarParseException($token[2], $token[3], 'unknown function: '.$func);
+                    throw new SugarParseException($this->tokens->getFile(), $this->tokens->getLine(), 'unknown function `'.$func.'`');
 
                 // check if we're parenthesized, and get args
                 if ($this->tokens->accept('('))
@@ -458,7 +458,7 @@ class SugarParser {
                     $params = $this->parseFunctionArgs(false);
 
                 // build function call
-                array_push($block[1], 'call', $func, $params);
+                array_push($block[1], 'call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
 
                 // if the function does not have SUPPRESS_RETURN, print return val
                 if ( !($invoke[2] & SUGAR_FUNC_SUPPRESS_RETURN))

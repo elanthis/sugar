@@ -182,11 +182,13 @@ class SugarRuntime {
                 case 'call':
                     $func = $code[++$i];
                     $args = $code[++$i];
+                    $debug_file = $code[++$i];
+                    $debug_line = $code[++$i];
 
                     // lookup function
                     $invoke = $sugar->getFunction($func);
                     if (!$invoke)
-                        throw new SugarException ('unknown function: '.$func);
+                        throw new SugarRuntimeException($debug_file, $debug_line, 'unknown function `'.$func.'`');
 
                     // compile args
                     $params = array();
@@ -203,15 +205,17 @@ class SugarRuntime {
                     $obj = array_pop($stack);
                     $func = $code[++$i];
                     $args = $code[++$i];
+                    $debug_file = $code[++$i];
+                    $debug_line = $code[++$i];
 
                     if (!$sugar->methods)
-                        throw new SugarException ('method invocation is disabled');
+                        throw new SugarRuntimeException($debug_file, $debug_line, 'method invocation disabled');
 
                     if (!is_object($obj))
-                        throw new SugarException ('method call on non-object');
+                        throw new SugarRuntimeException($debug_file, $debug_line, 'method call on non-object type `'.gettype($obj).'`');
 
                     if (!method_exists($obj, $func))
-                        throw new SugarException ('unknown method on object: '.$func);
+                        throw new SugarRuntimeException($debug_file, $debug_line, 'unknown method `'.$func.'` on type `'.gettype($obj).'`');
 
 
                     // compile args
@@ -299,7 +303,7 @@ class SugarRuntime {
                     $stack []= $array;
                     break;
                 default:
-                    throw new SugarException ('unknown opcode: '.$code[$i]);
+                    throw new SugarException ('internal error: unknown opcode `'.$code[$i].'`');
             }
         }
 

@@ -44,4 +44,16 @@ class SugarParseException extends SugarException {
     }
 }
 
+class SugarRuntimeException extends SugarException {
+    var $file = '<input>';
+    var $line = 1;
+    var $msg;
+
+    public function __construct ($file, $line, $msg) {
+        parent::__construct('runtime error at '.$file.','.$line.': '.$msg);
+        $this->file = $file;
+        $this->line = $line;
+    }
+}
+
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
