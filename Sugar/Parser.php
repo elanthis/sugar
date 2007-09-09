@@ -26,6 +26,9 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGE.
 ****************************************************************************/
 
+require_once SUGAR_ROOTDIR.'/Sugar/Tokenizer.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
+
 class SugarParser {
     private $tokens = null;
     private $output = array();

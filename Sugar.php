@@ -26,21 +26,25 @@ OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
 DAMAGE.
 ****************************************************************************/
 
+// include directory
 define('SUGAR_ROOTDIR', dirname(__FILE__));
 
+// core includes
 require_once SUGAR_ROOTDIR.'/Sugar/Exception.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Util.php';
 require_once SUGAR_ROOTDIR.'/Sugar/Ref.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Parser.php';
 require_once SUGAR_ROOTDIR.'/Sugar/Storage.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Tokenizer.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
 require_once SUGAR_ROOTDIR.'/Sugar/Cache.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Escaped.php';
 
+// drivers
 require_once SUGAR_ROOTDIR.'/Sugar/StorageFile.php';
 require_once SUGAR_ROOTDIR.'/Sugar/CacheFile.php';
+
+// utility includes
+require_once SUGAR_ROOTDIR.'/Sugar/Escaped.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Util.php';
+
+// standard library functions
+require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
 
 // sugar version
 define('SUGAR_VERSION', '0.71');
@@ -166,6 +170,10 @@ class Sugar {
         $this->vars []= array();
 
         try {
+            // load runtime
+            require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
+
+            // execute bytecode
             $rs = SugarRuntime::execute($this, $data['bytecode']);
 
             // cleanup
@@ -195,6 +203,9 @@ class Sugar {
                 return;
             }
         }
+
+        // load compiler
+        require_once SUGAR_ROOTDIR.'/Sugar/Parser.php';
 
         // compile
         $source = $ref->storage->load($ref);
@@ -297,6 +308,9 @@ class Sugar {
     // compile and display given source
     function displayString ($source) {
         try {
+            // load compiler
+            require_once SUGAR_ROOTDIR.'/Sugar/Parser.php';
+
             // compile
             $parser = new SugarParser($this);
             $data = $parser->compile($source);
