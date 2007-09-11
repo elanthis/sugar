@@ -32,7 +32,6 @@ class SugarCacheFile implements ISugarCache {
 
     public function __construct (&$sugar) {
         $this->sugar =& $sugar;
-        $this->useJson = function_exists('json_encode');
     }
 
     private function makePath (SugarRef $ref, $type) {
@@ -62,13 +61,7 @@ class SugarCacheFile implements ISugarCache {
         if (file_exists($path) && is_file($path) && is_readable($path) && time()-filemtime($path)<=$this->sugar->cacheLimit) {
             // load, deserialize
             $data = file_get_contents($path);
-            // decode 
-            if (substr($data, 0, 1) == '[') // indicates json
-                $data = json_decode($data);
-            else // must be PHP serialized
-                $data = unserialize($data);
-
-            // execute
+            $data = unserialize($data);
             return $data;
         } else 
             return false;
@@ -88,10 +81,7 @@ class SugarCacheFile implements ISugarCache {
             throw new SugarException('cache directory is not writable: '.$this->sugar->cacheDir);
 
         // encode, save
-        if ($this->useJson)
-            $data = json_encode($data);
-        else
-            $data = serialize($data);
+        $data = serialize($data);
         file_put_contents($path, $data);
         return true; 
     }
