@@ -69,10 +69,17 @@ class SugarTokenizer {
         return $string;
     }
 
+    // fetch a regular expression match set, updating pos and line counts
+    private function getRegex ($regex) {
+        if (!preg_match($regex, $this->src, $ar, 0, $this->pos))
+            return false;
+        $this->pos += strlen($ar[0]);
+        $this->line += substr_count($ar[0], "\n");
+        return $ar;
+    }
+
     // get next token
     private function next () {
-        static $pattern = '/(\s*)(%>|\$\w+|\d+(?:[.]\d+)?|\w+|"((?:[^"\\\\]*\\\\.)*[^"]*)"|\'((?:[^\'\\\\]*\\\\.)*[^\']*)\'|\/\*.*?\*\/|\/\/.*?($|%>)|==|!=|<=|>=|\|\||&&|->|\.\.|.)/ms';
-
         // EOF
         if ($this->pos >= strlen($this->src))
             return array('eof', null);
@@ -100,64 +107,62 @@ class SugarTokenizer {
             $this->pos = $next + 2;
         }
 
-        // keep looping until we get something valid - used mainly for comments
-        while (true) {
-            // get next token
-            if (!preg_match($pattern, $this->src, $ar, 0, $this->pos))
-                throw new SugarParseException($this->file, $this->line, 'garbage at: '.substr($this->src, $this->pos, 12));
-            $this->pos += strlen($ar[0]);
-
-            // calc line count
-            $this->tokline = $this->line + substr_count($ar[1], "\n");
-            $this->line = $this->tokline + substr_count($ar[2], "\n");
-
-            // if at end, mark that
-            if ($ar[2] == '%>')
+        // skip spaces and comments
+        while ($this->getRegex('/(\s+|(?:\/\*.*?\*\/|\/\/.*?($|%>)))/msA') !== false) {
+            // line comment ended with a %>
+            if ($ar[1] == '%>') {
                 $this->inCmd = false;
-
-            // comments
-            if (substr($ar[2], 0, 2) == '/*' || substr($ar[2], 0, 2) == '//') {
-                // if the comment ends in %> (only for // comments), return that
-                if (substr($ar[2], -2, 2) == '%>') {
-                    $this->inCmd = false;
-                    return array('term', '%>', $line);
-                }
-                // otherwise, continue to next token
-                continue;
+                return array('term', '%>');
             }
-
-            // string
-            if ($ar[3])
-                return array('data', SugarTokenizer::decodeSlashes($ar[3]));
-            elseif ($ar[4])
-                return array('data', SugarTokenizer::decodeSlashes($ar[4]));
-            // variable
-            elseif (strlen($ar[2]) > 1 && $ar[2][0] == '$') 
-                return array('var', substr($ar[2], 1));
-            // terminator
-            elseif ($ar[2] == '%>' || $ar[2] == ';')
-                return array('term', $ar[2]);
-            // keyword or special symbol
-            elseif (in_array($ar[2], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache')))
-                return array($ar[2], null);
-            // integer
-            elseif (preg_match('/^\d+$/', $ar[2]))
-                return array('data', intval($ar[2]));
-            // float
-            elseif (preg_match('/^\d+[.]\d+$/', $ar[2]))
-                return array('data', floatval($ar[2]));
-            // true and false
-            elseif ($ar[2] == 'true')
-                return array('data', true);
-            elseif ($ar[2] == 'false')
-                return array('data', false);
-            // name
-            elseif (preg_match('/^\w+$/', $ar[2]))
-                return array('name', $ar[2]);
-            // generic operator
-            else
-                return array($ar[2], null);
         }
+
+        // get next token
+        $this->tokline = $this->line;
+        if (($token = $this->getRegex('/(?:%>|\$\w+|\d+(?:[.]\d+)?|\w+|==|!=|<=|>=|\|\||&&|->|\.\.|.)/msA')) === false)
+            throw new SugarParseException($this->file, $this->line, 'garbage at: '.substr($this->src, $this->pos, 12));
+        $token = $token[0];
+
+        // if at end, mark that
+        if ($token == '%>')
+            $this->inCmd = false;
+
+        // string
+        if ($token == '"') {
+            if (($string = $this->getRegex('/((?:[^"\\\\]*\\\\.)*[^"]*)"/msA')) === false)
+                throw new SugarParseException($this->file, $this->line, 'unterminated string constant at: '.substr($this->src, $this->pos, 12));
+            return array('data', SugarTokenizer::decodeSlashes($string[1]));
+        } elseif ($token == '\'') {
+            if (($string = $this->getRegex('/((?:[^\'\\\\]*\\\\.)*[^\']*)\'/msA')) === false)
+                throw new SugarParseException($this->file, $this->line, 'unterminated string constant at: '.substr($this->src, $this->pos, 12));
+            return array('data', SugarTokenizer::decodeSlashes($string[1]));
+        }
+
+        // variable
+        if (strlen($token) > 1 && $token[0] == '$') 
+            return array('var', substr($token, 1));
+        // terminator
+        elseif ($token == '%>' || $token == ';')
+            return array('term', $token);
+        // keyword or special symbol
+        elseif (in_array($token, array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache')))
+            return array($token, null);
+        // integer
+        elseif (preg_match('/^\d+$/', $token))
+            return array('data', intval($token));
+        // float
+        elseif (preg_match('/^\d+[.]\d+$/', $token))
+            return array('data', floatval($token));
+        // true and false
+        elseif ($token == 'true')
+            return array('data', true);
+        elseif ($token == 'false')
+            return array('data', false);
+        // name
+        elseif (preg_match('/^\w+$/', $token))
+            return array('name', $token);
+        // generic operator
+        else
+            return array($token, null);
     }
 
     // if the requested token is available, pop it and return true; else return false
