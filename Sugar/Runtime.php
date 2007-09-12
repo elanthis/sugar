@@ -179,6 +179,11 @@ class SugarRuntime {
                     $v1 = array_pop($stack);
                     $stack []= (is_array($v2) && in_array($v1, $v2));
                     break;
+                case '!in':
+                    $v2 = array_pop($stack);
+                    $v1 = array_pop($stack);
+                    $stack []= (is_array($v2) && !in_array($v1, $v2));
+                    break;
                 case 'call':
                     $func = $code[++$i];
                     $args = $code[++$i];
