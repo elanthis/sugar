@@ -181,6 +181,11 @@ class SugarTokenizer {
         return true;
     }
 
+    // if one of the requested tokens is available, return true; else return false
+    public function peekAny (array $accept) {
+        return in_array($this->token[0], $accept);
+    }
+
     // ensures that the requested token is next, throws an error if it isn't.
     // store the token data in the optional second parameter, which should be passed
     // a reference

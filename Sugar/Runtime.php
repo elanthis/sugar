@@ -227,13 +227,13 @@ class SugarRuntime {
                     $stack []= SugarRuntime::invoke($sugar, array($obj, $func), SUGAR_FUNC_NATIVE, $params);
                     break;
                 case 'if':
-                    $test = array_pop($stack);
-                    $true = $code[++$i];
-                    $false = $code[++$i];
-                    if ($test && $true)
-                        SugarRuntime::execute($sugar, $true);
-                    elseif (!$test && $false)
-                        SugarRuntime::execute($sugar, $false);
+                    $clauses = $code[++$i];
+                    foreach ($clauses as $clause) {
+                        if ($clause[0] === false || SugarRuntime::execute($sugar, $clause[0])) {
+                            SugarRuntime::execute($sugar, $clause[1]);
+                            break;
+                        }
+                    }
                     break;
                 case 'range':
                     $step = array_pop($stack);
