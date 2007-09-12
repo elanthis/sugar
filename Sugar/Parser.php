@@ -262,31 +262,19 @@ class SugarParser {
         }
     }
 
-    private function pushLiteral ($text) {
-        // if block ends in an echo, concat them; otherwise, add op
-        if ($this->block[count($this->block)-2] == 'echo')
-            $this->block[count($this->block)-1] .= $text;
-        // otherwise, just append the ops
-        else
-            array_push($this->block, 'echo', $text);
-    }
-
     // compile a block of code
     public function compileBlock () {
-        // new block to work with
-        $old_block = $this->block;
-        $this->block = array();
+        $block = array();
 
         // build byte-code
         while (!$this->tokens->peekAny(array('eof', 'else', 'elif', 'end'))) {
             // raw string
             if ($this->tokens->accept('literal', $literal)) {
-                $this->pushLiteral($literal);
-                continue;
+                $block []= array('echo', $literal);
 
             // if the command is empty, ignore
             } elseif ($this->tokens->accept('term')) {
-                continue;
+                // do nothing
 
             // print raw value
             } elseif ($this->tokens->accept('if')) {
@@ -311,9 +299,10 @@ class SugarParser {
                 }
 
                 $this->tokens->expect('end');
+                $this->tokens->expect('term');
 
                 // push block
-                $this->block = array_merge($this->block, array('if', $clauses));
+                $block []= array('if', $clauses);
 
             // while loop
             } elseif ($this->tokens->accept('while')) {
@@ -324,9 +313,10 @@ class SugarParser {
                 // get body
                 $body = $this->compileBlock();
                 $this->tokens->expect('end');
+                $this->tokens->expect('term');
 
                 // push block
-                $this->block = array_merge($this->block, array('while', $test, $body));
+                $block = array_merge($block, array('while', $test, $body));
 
             // range loop
             } elseif ($this->tokens->accept('loop')) {
@@ -348,9 +338,13 @@ class SugarParser {
                 // block
                 $block = $this->compileBlock();
                 $this->tokens->expect('end');
+                $this->tokens->expect('term');
 
                 // push block
-                $this->block = array_merge($this->block, $lower, $upper, $step, array('range', $name, $block));
+                $block []= $lower;
+                $block []= $upper;
+                $block []= $step;
+                $block []= array('range', $name, $block);
 
             // loop over an array
             } elseif ($this->tokens->accept('foreach')) {
@@ -374,9 +368,11 @@ class SugarParser {
                 // and the block itself
                 $block = $this->compileBlock();
                 $this->tokens->expect('end');
+                $this->tokens->expect('term');
 
                 // store foreach block
-                $this->block = array_merge($this->block, $ops, array('foreach', $key, $name, $block));
+                $block []= $ops;
+                $block []= array('foreach', $key, $name, $block);
 
             // inhibit cahing
             } elseif ($this->tokens->accept('nocache')) {
@@ -384,14 +380,17 @@ class SugarParser {
                 $block = $this->compileBlock();
                 $this->tokens->expect('end');
 
-                $this->block = array_merge($this->block, array('nocache', $block));
+                $block []= array('nocache', $block);
 
             // if we have a var, we might have an assignment... or just an expression
             } elseif ($this->tokens->accept('var', $name)) {
                 // if it's followed by a =, it's an assignment
                 if ($this->tokens->accept('=')) {
                     $ops = $this->compileExpr();
-                    $this->block = array_merge($this->block, $ops, array('assign', strtolower($name)));
+                    $this->tokens->expect('term');
+
+                    $block []= $ops;
+                    $block []= array('assign', strtolower($name));
 
                 // otherwise, it's an expression
                 } else {
@@ -399,7 +398,10 @@ class SugarParser {
                     // DIRTY HACK
                     $this->output []= array('lookup', $name);
                     $ops = $this->compileExpr(true);
-                    $this->block = array_merge($this->block, $ops, array('print'));
+                    $this->tokens->expect('term');
+
+                    $block []= $ops;
+                    $block []= array('print');
                 }
 
             // function call?
@@ -416,41 +418,35 @@ class SugarParser {
                     $params = $this->parseFunctionArgs(false);
 
                 // build function call
-                array_push($this->block, 'call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
+                $block []= array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
 
                 // if the function does not have SUPPRESS_RETURN, print return val
                 if ( !($invoke[2] & SUGAR_FUNC_SUPPRESS_RETURN))
-                    $this->block []= 'print';
-
-                // note that we already accepted the terminator token
-                continue;
+                    $block []= array('print');
 
             // we have a statement
             } else {
                 $ops = $this->compileExpr();
+                $this->tokens->expect('term');
 
-                if (SugarParser::isData($ops))
-                    $this->pushLiteral($this->sugar->escape(SugarRuntime::showValue($ops[1])));
-                else
-                    $this->block = array_merge($this->block, $ops, array('print'));
+                if (SugarParser::isData($ops)) {
+                    $block []= array('echo', $this->sugar->escape(SugarRuntime::showValue($ops[1])));
+                } else {
+                    $block []= $ops;
+                    $block []= array('print');
+                }
             }
-
-            // we should have the end token now
-            $this->tokens->expect('term');
         }
 
-        // swap back old block, return compiled block
-        $block = $this->block;
-        $this->block = $old_block;
+        // merge the block together
+        $block = call_user_func_array('array_merge', $block);
+
         return $block;
     }
 
     // compile the given source code into bytecode
     public function compile ($src, $file = '<input>') {
-        $this->blocks = array(
-            array('main', array())
-        );
-
+        // create tokenizer
         $this->tokens = new SugarTokenizer($src, $file);
 
         // build byte-code
