@@ -82,6 +82,7 @@ $end_display = microtime(true);
 
 $end = microtime(true);
 printf('<p style="font-size: small; color: #666; white-space: pre;">');
+printf('debug:       %s<br/>', $sugar->debug?'ON (no caching)':'OFF');
 printf('includes:    %0.6f seconds<br/>', $end_load-$begin_load);
 printf('constructor: %0.6f seconds<br/>', $end_create-$begin_create);
 printf('display():   %0.6f seconds<br/>', $end_display-$begin_display);
