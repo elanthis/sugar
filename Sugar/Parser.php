@@ -316,7 +316,7 @@ class SugarParser {
                 $this->tokens->expect('term');
 
                 // push block
-                $block = array_merge($block, array('while', $test, $body));
+                $block []= array('while', $test, $body);
 
             // range loop
             } elseif ($this->tokens->accept('loop')) {
@@ -336,7 +336,7 @@ class SugarParser {
                 $this->tokens->expect('term');
 
                 // block
-                $block = $this->compileBlock();
+                $body = $this->compileBlock();
                 $this->tokens->expect('end');
                 $this->tokens->expect('term');
 
@@ -344,7 +344,7 @@ class SugarParser {
                 $block []= $lower;
                 $block []= $upper;
                 $block []= $step;
-                $block []= array('range', $name, $block);
+                $block []= array('range', $name, $body);
 
             // loop over an array
             } elseif ($this->tokens->accept('foreach')) {
@@ -366,21 +366,21 @@ class SugarParser {
                 $this->tokens->expect('term');
 
                 // and the block itself
-                $block = $this->compileBlock();
+                $body = $this->compileBlock();
                 $this->tokens->expect('end');
                 $this->tokens->expect('term');
 
                 // store foreach block
                 $block []= $ops;
-                $block []= array('foreach', $key, $name, $block);
+                $block []= array('foreach', $key, $name, $body);
 
             // inhibit cahing
             } elseif ($this->tokens->accept('nocache')) {
                 // get block
-                $block = $this->compileBlock();
+                $body = $this->compileBlock();
                 $this->tokens->expect('end');
 
-                $block []= array('nocache', $block);
+                $block []= array('nocache', $body);
 
             // if we have a var, we might have an assignment... or just an expression
             } elseif ($this->tokens->accept('var', $name)) {
