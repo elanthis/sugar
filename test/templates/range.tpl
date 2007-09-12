@@ -1,48 +1,20 @@
 <% $title = 'Range Loop Tests' %>
 <% include 'header' %>
 
-<p>1..3</p>
-<ul>
-<% loop $i in 1, 3 %>
-	<li><% $i %></li>
-<% end %>
-</ul>
+<p>Test: loop $i in 1,3 ; $i ; end<br/>
+Expect: 123<br/>
+Result: <% loop $i in 1,3 ; $i ; end %></p>
 
-<p>3..1 step -1</p>
-<ul>
-<% loop $i in 3, 1, -1 %>
-	<li><% $i %></li>
-<% end %>
-</ul>
+<p>Test: loop $i in 3,1,-1 ; $i ; end<br/>
+Expect: 321<br/>
+Result: <% loop $i in 3,1,-1 ; $i ; end %></p>
 
-<% $i = 6 %>
-<p>$i = <% $i %></p>
-<p>3..$i step 1</p>
-<ul>
-<% loop $i in 3, $i %>
-	<li><% $i %></li>
-<% end %>
-</ul>
+<p>Test: loop $i in 3,4*6,7 ; $i ; end<br/>
+Expect: 3101724<br/>
+Result: <% loop $i in 3,4*6,7 ; $i ; end %></p>
 
-<p>3..$i*2 step 2</p>
-<ul>
-<% loop $i in 3, $i*2, 2 %>
-	<li><% $i %></li>
-<% end %>
-</ul>
-
-<p>3..1 step 1</p>
-<ul>
-<% loop $i in 3, 1 %>
-	<li><% $i %></li>
-<% end %>
-</ul>
-
-<p>3..1 step -2</p>
-<ul>
-<% loop $i in 3, 1, -2 %>
-	<li><% $i %></li>
-<% end %>
-</ul>
+<p>Test: loop $i in 2,1 ; $i ; end <br/>
+Expect: <br/>
+Result: <% loop $i in 2,1 ; $i ; end %></p>
 
 <% include 'footer' %>
