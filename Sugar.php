@@ -362,7 +362,9 @@ class Sugar {
         $this->vars []= array();
 
         try {
-            // load runtime
+            /**
+             * Runtime.
+             */
             require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
 
             // execute bytecode
@@ -401,7 +403,9 @@ class Sugar {
             }
         }
 
-        // load compiler
+        /**
+         * Compiler.
+         */
         require_once SUGAR_ROOTDIR.'/Sugar/Parser.php';
 
         // compile
@@ -497,6 +501,11 @@ class Sugar {
 
             // create cache handler if necessary
             if (!$this->cacheHandler) {
+                /**
+                 * Cache handler.
+                 */
+                require_once SUGAR_ROOTDIR.'/Sugar/CacheHandler.php';
+
                 // create cache
                 $this->cacheHandler = new SugarCacheHandler($this);
                 $this->loadExecute($ref);
@@ -529,7 +538,9 @@ class Sugar {
      */
     function displayString ($source) {
         try {
-            // load compiler
+            /**
+             * Compiler.
+             */
             require_once SUGAR_ROOTDIR.'/Sugar/Parser.php';
 
             // compile

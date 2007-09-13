@@ -26,65 +26,88 @@
  * THE SOFTWARE.
  *
  * @package Sugar
- * @subpackage Drivers
+ * @subpackage Internals
  * @author Sean Middleditch <sean@awesomeplay.com>
  * @copyright 2007 AwesomePlay Productions, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
 
 /**
- * Interface for Sugar cache drivers.  These are used for storing and
- * retrieving bytecode and HTML caches.
+ * Handlers the creation of Sugar caches, including non-cached bytecode
+ * chunks.
  *
  * @package Sugar
- * @subpackage Drivers
+ * @subpackage Internals
  */
-interface ISugarCache {
+class SugarCacheHandler {
     /**
-     * Returns the timestamp for the given reference, or zero if the file
-     * is not in the cache.
+     * Sugar reference.
      *
-     * @param SugarRef $ref File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
-     * @return int Timestamp, or 0 if the file does not exist.
-     * @abstract
+     * @var Sugar $sugar
      */
-    function stamp (SugarRef $ref, $type);
+    private $sugar;
 
     /**
-     * Returns the bytecode for the requested reference.
+     * Text output.
      *
-     * @param SugarRef $ref File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
-     * @return array Bytecode, or false if not in the cache.
-     * @abstract
+     * @var string $output
      */
-    function load (SugarRef $ref, $type);
+    private $output;
 
     /**
-     * Adds the bytecode to the cache.
+     * Bytecode result.
      *
-     * @param SugarRef $ref File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
-     * @param array $data Bytecode.
-     * @abstract
+     * @var array $bc
      */
-    function store (SugarRef $ref, $type, $data);
+    private $bc;
 
     /**
-     * Erases the bytecode for the requested reference.
-     *
-     * @param SugarRef $ref File reference for the bytecode to erase.
-     * @param string $type Either 'ctpl' or 'chtml'.
-     * @abstract
+     * Compresses the text output gathered so far onto the bytecode stack.
      */
-    function erase (SugarRef $ref, $type);
+    private function compact () {
+        if ($this->output) {
+            $this->bc []= 'echo';
+            $this->bc []= $this->output;
+            $this->output = '';
+        }
+    }
 
     /**
-     * Clears all caches the driver is responsible for.
+     * Constructor.
      *
-     * @abstract
+     * @param Sugar $sugar Sugar reference.
      */
-    function clear ();
+    public function __construct ($sugar) {
+        $this->sugar = $sugar;
+    }
+
+    /**
+     * Adds text to the cache.
+     *
+     * @param string $text Text to append to cache.
+     */
+    public function addOutput ($text) {
+        $this->output .= $text;
+    }
+
+    /**
+     * Adds bytecode to the cache.
+     *
+     * @param array $block Bytecode to append to cache.
+     */
+    public function addBlock ($block) {
+        $this->compact();
+        array_push($this->bc, 'nocache', $block);
+    }
+
+    /**
+     * Returns the complete cache.
+     *
+     * @return array Cache.
+     */
+    public function getOutput () {
+        $this->compact();
+        return array('type' => 'chtml', 'version' => SUGAR_VERSION, 'bytecode' => $this->bc);
+    }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
