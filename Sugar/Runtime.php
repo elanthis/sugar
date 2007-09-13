@@ -1,32 +1,53 @@
 <?php
-/****************************************************************************
-PHP-Sugar
-Copyright (c) 2007  AwesomePlay Productions, Inc. and
-contributors.  All rights reserved.
+/**
+ * PHP-Sugar Template Engine
+ *
+ * Copyright (c) 2007  AwesomePlay Productions, Inc. and
+ * contributors.  All rights reserved.
+ *
+ * LICENSE:
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package Sugar
+ * @subpackage Internals
+ * @author Sean Middleditch <sean@awesomeplay.com>
+ * @copyright 2007 AwesomePlay Productions, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ */
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGE.
-****************************************************************************/
-
+/**
+ * This class is a namespace containing static function relevant to 
+ * executing Sugar bytecode.
+ *
+ * @package Sugar
+ * @subpackage Internals
+ */
 class SugarRuntime {
+    /**
+     * Converts a PHP value into something nice for a user to see.  Mainly
+     * this is intended for arrays, objects, and boolean values, which are
+     * not natively user-visible formats.
+     *
+     * @param mixed $value Value to convert.
+     * @return string User-visible rendition of the value.
+     */
     public static function showValue ($value) {
         if (is_bool($value))
             return $value?'true':'false';
@@ -36,6 +57,16 @@ class SugarRuntime {
             return $value;
     }
 
+    /**
+     * Attempts to add two PHP values together.  If both types are, this
+     * performs a regular addition.  If both types are arrays, this
+     * performs an array_merge() on the arrays.  Otherwise, both values
+     * are concatenated with the dot operator.
+     *
+     * @param mixed $left The left-hand operand to add.
+     * @param mixed $right The right-hand operand to add.
+     * @return mixed The result of the addition.
+     */
     public static function addValues ($left, $right) {
         if (is_numeric($left) && is_numeric($right))
             return $left + $right;
@@ -45,6 +76,19 @@ class SugarRuntime {
             return $left . $right;
     }
 
+    /**
+     * Invokes a PHP-Sugar registered function.  This function is
+     * responsible for handling certain function flags, and also
+     * provides a generic exception wrapper to allow template-called
+     * functions which throw exceptions to be handled by the normal
+     * Sugar error handlers.
+     *
+     * @param Sugar $sugar Sugar instance in use.
+     * @param callback $invoke Function to invoke.
+     * @param int $flags Function flags.
+     * @param array $args The arguments to the function.
+     * @return mixed Function return value.
+     */
     public static function invoke ($sugar, $invoke, $flags, $args) {
         // exception net
         try {
@@ -59,6 +103,15 @@ class SugarRuntime {
         }
     }
 
+    /**
+     * Executes the given bytecode.  The return value is the last item on
+     * the stack, if any.  For complete templates, this should be nothing
+     * (null).
+     *
+     * @param Sugar $sugar Sugar instance.
+     * @param array $code Bytecode to execute.
+     * @return mixed Last value on stack.
+     */
     public static function execute ($sugar, $code) {
         $stack = array();
 

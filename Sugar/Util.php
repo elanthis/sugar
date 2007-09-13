@@ -1,42 +1,72 @@
 <?php
-/****************************************************************************
-PHP-Sugar
-Copyright (c) 2007  AwesomePlay Productions, Inc. and
-contributors.  All rights reserved.
+/**
+ * PHP-Sugar Template Engine
+ *
+ * Copyright (c) 2007  AwesomePlay Productions, Inc. and
+ * contributors.  All rights reserved.
+ *
+ * LICENSE:
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package Sugar
+ * @author Sean Middleditch <sean@awesomeplay.com>
+ * @copyright 2007 AwesomePlay Productions, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ */
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGE.
-****************************************************************************/
-
+/**
+ * Namespace for utility functions useful in Sugar functions.
+ *
+ * @package Sugar
+ */
 class SugarUtil {
-    public static function getArg (&$params, $name, $index = 0, $default = null) {
+    /**
+     * Returns an argument from a function parameter list, supporting both
+     * position and named parameters and default values.
+     *
+     * @param array $params Function parameter list.
+     * @paran string $name Parameter name.
+     * @param int $index Parameter position.
+     * @param mixed $default Default value if parameter is not specified.
+     * @return mixed Value of parameter if given, or the default value otherwise.
+     */
+    public static function getArg ($params, $name, $index = -1, $default = null) {
         if (isset($params[$name]))
             return $params[$name];
-        elseif (isset($params[$index]))
+        elseif ($index >= 0 && isset($params[$index]))
             return $params[$index];
         else
             return $default;
     }
 
-    public static function isVector (&$array) {
+    /**
+     * Checks if an array is a "vector," or an array with only integral
+     * indexes starting at zero and incrementally increasing.  Used only
+     * for nice exporting to JavaScript.
+     *
+     * Only really used for {@link SugarUtil::jsValue}.
+     *
+     * @param array $array Array to check.
+     * @return bool True if array is a vector.
+     */
+    public static function isVector ($array) {
         if (!is_array($array))
             return false;
         $next = 0;
@@ -48,6 +78,15 @@ class SugarUtil {
         return true;
     }
 
+    /**
+     * Formats a PHP value in JavaScript format.
+     *
+     * We can probably juse use json_encode() instead of this, except
+     * json_encode() is PHP 5.2 only.
+     *
+     * @param mixed $value Value to format.
+     * @return string Formatted result.
+     */
     public static function jsValue ($value) {
         switch (gettype($value)) {
             case 'integer':
@@ -81,6 +120,15 @@ class SugarUtil {
         }
     }
 
+    /**
+     * Convert a value into a timestamp.  This is essentially strtotime(),
+     * except that if an integer timestamp is passed in it is returned
+     * verbatim, and if the value cannot be parsed, it returns the current
+     * timestamp.
+     *
+     * @param mixed $value Time value to parse.
+     * @return int Timestamp.
+     */
     function valueToTime ($value) {
         // raw int?  it's a timestamp
         if (is_int($value))

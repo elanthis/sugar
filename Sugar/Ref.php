@@ -1,38 +1,89 @@
 <?php
-/****************************************************************************
-PHP-Sugar
-Copyright (c) 2007  AwesomePlay Productions, Inc. and
-contributors.  All rights reserved.
+/**
+ * PHP-Sugar Template Engine
+ *
+ * Copyright (c) 2007  AwesomePlay Productions, Inc. and
+ * contributors.  All rights reserved.
+ *
+ * LICENSE:
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package Sugar
+ * @subpackage Drivers
+ * @author Sean Middleditch <sean@awesomeplay.com>
+ * @copyright 2007 AwesomePlay Productions, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ */
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGE.
-****************************************************************************/
-
+/**
+ * References a Sugar file, complete with storage driver and cache ID.
+ *
+ * @package Sugar
+ * @subpackage Drivers
+ */
 class SugarRef {
+    /**
+     * Full user-given file reference.
+     *
+     * @var string $full
+     */
     public $full;
+
+    /**
+     * Storage driver name.
+     *
+     * @var string $storageName
+     */
 	public $storageName;
+
+    /**
+     * Storage driver for this reference.
+     *
+     * @var ISugarStorage $storage
+     */
 	public $storage;
+
+    /**
+     * File name.
+     *
+     * @var string $name
+     */
 	public $name;
+
+    /**
+     * Cache identifier.
+     *
+     * @var string $cacheId
+     */
 	public $cacheId;
 
+    /**
+     * Public constructor.  Parses the user-provided template path
+     * and returns a SugarReg object.  This is used internally by
+     * Sugar.
+     *
+     * @param string $path Path.
+     * @param Sugar $sugar Sugar instance.
+     * @param string $cacheId Optional cache ID.
+     * @return SugarRef
+     */
 	static function create ($path, Sugar $sugar, $cacheId = null) {
 		$storage = $sugar->defaultStorage;
 		$name = $path;
@@ -64,6 +115,15 @@ class SugarRef {
 		return new SugarRef($path, $storage, $sugar->storage[$storage], $name, $cacheId);
 	}
 
+    /**
+     * Constructor.
+     *
+     * @param string $full User-given path.
+     * @param string $storageName Name of the storage driver in the path.
+     * @param ISugarStorage $storage Storage driver.
+     * @param string $name The file name of the path.
+     * @param string $cacheId The cache ID for the reference.
+     */
 	private function __construct ($full, $storageName, ISugarStorage $storage, $name, $cacheId) {
         $this->full = $full;
 		$this->storageName = $storageName;

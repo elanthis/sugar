@@ -1,40 +1,100 @@
 <?php
-/****************************************************************************
-PHP-Sugar
-Copyright (c) 2007  AwesomePlay Productions, Inc. and
-contributors.  All rights reserved.
+/**
+ * PHP-Sugar Template Engine
+ *
+ * Copyright (c) 2007  AwesomePlay Productions, Inc. and
+ * contributors.  All rights reserved.
+ *
+ * LICENSE:
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package Sugar
+ * @subpackage Internals
+ * @author Sean Middleditch <sean@awesomeplay.com>
+ * @copyright 2007 AwesomePlay Productions, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ */
 
-Redistribution and use in source and binary forms, with or without
-modification, are permitted provided that the following conditions are met:
-
- * Redistributions of source code must retain the above copyright notice,
-   this list of conditions and the following disclaimer.
- * Redistributions in binary form must reproduce the above copyright
-   notice, this list of conditions and the following disclaimer in the
-   documentation and/or other materials provided with the distribution.
-
-THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE
-ARE DISCLAIMED. IN NO EVENT SHALL THE REGENTS OR CONTRIBUTORS BE LIABLE FOR
-ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT
-LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY
-OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH
-DAMAGE.
-****************************************************************************/
-
+/**
+ * Tokenizes a source file for use by {@link SugarParser}.
+ *
+ * @package Sugar
+ * @subpackage Internals
+ */
 class SugarTokenizer {
+    /**
+     * Source code to be tokenized.
+     *
+     * @var string $src
+     */
     private $src;
+
+    /**
+     * Next token.
+     *
+     * @var array $token
+     */
     private $token = null;
+
+    /**
+     * Index into the source code.
+     *
+     * @var int $pos
+     */
     private $pos = 0;
+
+    /**
+     * Flag indicating whether the tokenizer is currently working
+     * within a pair of <% %> tags.
+     *
+     * @var bool $inCmd
+     */
     private $inCmd = false;
+
+    /**
+     * The name of the source file being tokenized.
+     *
+     * @var string $file
+     */
     private $file;
+
+    /**
+     * Current line number of the source being tokenized.
+     *
+     * @var int $line
+     */
     private $line = 1;
+
+    /**
+     * Line number of the next token.
+     *
+     * @var int $tokline
+     */
     private $tokline;
 
+    /**
+     * Constructor.
+     *
+     * @param string $src The source code to tokenizer.
+     * @param string $file The name of the file being tokenized.
+     */
     public function __construct ($src, $file = '<input>') {
         $this->src = $src;
         $this->file = $file;
@@ -42,7 +102,12 @@ class SugarTokenizer {
         $this->token = $this->next();
     }
 
-    // display a user-friendly name for a particular token
+    /**
+     * Returns a user-friendly name for a token, used for error messages.
+     *
+     * @param array $token Token to name.
+     * @return string Nice name for the token.
+     */
     public static function tokenName ($token) {
         switch($token[0]) {
             case 'eof': return '<eof>';
@@ -62,14 +127,29 @@ class SugarTokenizer {
         }
     }
 
-    // handle slashes in input strings
+    /**
+     * Converts backslash escape sequences in strings to the proper value.
+     * Only supports double-backslash and backslash-n (newline) currently.
+     *
+     * @param string $string String to decode.
+     * @return string Decoded string.
+     */
     public static function decodeSlashes ($string) {
         $string = str_replace('\\n', "\n", $string);
         $string = stripslashes($string);
         return $string;
     }
 
-    // fetch a regular expression match set, updating pos and line counts
+    /**
+     * Checks to see if the requested regular expression matches at the
+     * current position of the source file, and returns the matched
+     * expressions if it does.  Additionally, this moves the source
+     * position forward by the length of the matched expression and updates
+     * the line count as appropriate.
+     *
+     * @param string $regex Regular expression to check for.
+     * @return mixed Array of subexpression matches on successful, or false if no match.
+     */
     private function getRegex ($regex) {
         if (!preg_match($regex, $this->src, $ar, 0, $this->pos))
             return false;
@@ -78,7 +158,11 @@ class SugarTokenizer {
         return $ar;
     }
 
-    // get next token
+    /**
+     * Retrieves the next token in the input stream.
+     *
+     * @return array Next token.
+     */
     private function next () {
         // EOF
         if ($this->pos >= strlen($this->src))
@@ -165,9 +249,16 @@ class SugarTokenizer {
             return array($token, null);
     }
 
-    // if the requested token is available, pop it and return true; else return false
-    // store the token data in the optional second parameter, which should be passed
-    // a reference
+    /**
+     * Checks to the see if the next token matches the requested token
+     * type.  If it does, the token is consumed.  The token data is
+     * stored in the second parameter.  True is returned if the token
+     * was consumed, and false otherwise.
+     *
+     * @param string $accept Which token type to accept.
+     * @param mixed $data Token token.
+     * @return bool True if the token matched.
+     */
     public function accept ($accept, &$data = null) {
         // return false if it's the wrong token
         if ($this->token[0] != $accept)
@@ -181,14 +272,25 @@ class SugarTokenizer {
         return true;
     }
 
-    // if one of the requested tokens is available, return true; else return false
+    /**
+     * Checks to see if the next token is one of a list of given types.
+     *
+     * @param array $accept Tokens to accept.
+     * @return bool True if one of the given token types matches.
+     */
     public function peekAny (array $accept) {
         return in_array($this->token[0], $accept);
     }
 
-    // ensures that the requested token is next, throws an error if it isn't.
-    // store the token data in the optional second parameter, which should be passed
-    // a reference
+    /**
+     * Checks to the see if the next token matches the requested token
+     * type.  If it does, the token is consumed.  The token data is
+     * stored in the second parameter.  If the token does not match,
+     * a {@link SugarParseException} is raised.
+     *
+     * @param string $accept Which token type to accept.
+     * @param mixed $data Token token.
+     */
     public function expect ($expect, &$data = null) {
         // throw an error if it's the wrong token
         if ($this->token[0] != $expect)
@@ -201,7 +303,13 @@ class SugarTokenizer {
         $this->token = $this->next();
     }
 
-    // get an operator token
+    /**
+     * Similar to {@link SugarTokenizer::expect}, except that it checks for
+     * any of standard Sugar operators, and the matched operator (if any)
+     * is returned.
+     *
+     * @return mixed The operator if one matches, or false otherwise.
+     */
     public function getOp () {
         $op = $this->token[0];
 
@@ -220,12 +328,20 @@ class SugarTokenizer {
         }
     }
 
-    // return current line
+    /**
+     * Returns the current line the tokenizer is at.
+     *
+     * @return int Line number.
+     */
     public function getLine () {
         return $this->line;
     }
 
-    // return current file
+    /**
+     * Returns the file name given to the constructor.
+     *
+     * @return string File name.
+     */
     public function getFile () {
         return $this->file;
     }
