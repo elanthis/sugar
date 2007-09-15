@@ -162,6 +162,21 @@ class SugarStdlib {
     public static function _array ($sugar, $params) {
         return $params;
     }
+
+    public static function strtolower ($sugar, $params) {
+        return strtolower(SugarUtil::getArg($params, 'string', 0));
+    }
+
+    public static function strtoupper ($sugar, $params) {
+        return strtoupper(SugarUtil::getArg($params, 'string', 0));
+    }
+
+    public static function substr ($sugar, $params) {
+        $string = SugarUtil::getArg($params, 'string', 0);
+        $start = SugarUtil::getArg($params, 'start', 1);
+        $length = SugarUtil::getArg($params, 'length', 2);
+        return substr($string, $start, $length);
+    }
     /**#@-*/
 
     /**
@@ -189,6 +204,9 @@ class SugarStdlib {
         $sugar->register('escape', array('SugarStdlib', 'escape'));
         $sugar->register('var', array('SugarStdlib', '_var'));
         $sugar->register('array', array('SugarStdlib', '_array'));
+        $sugar->register('strtoupper', array('SugarStdlib', 'strtoupper'));
+        $sugar->register('strtolower', array('SugarStdlib', 'strtolower'));
+        $sugar->register('substr', array('SugarStdlib', 'substr'));
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
