@@ -42,7 +42,7 @@ class SugarUtil {
      * position and named parameters and default values.
      *
      * @param array $params Function parameter list.
-     * @paran string $name Parameter name.
+     * @param string $name Parameter name.
      * @param int $index Parameter position.
      * @param mixed $default Default value if parameter is not specified.
      * @return mixed Value of parameter if given, or the default value otherwise.

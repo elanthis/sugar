@@ -12,3 +12,6 @@ dist:
 	cp templates/*.tpl php-sugar-$(VERSION)/test/templates/
 	tar -zcf php-sugar-$(VERSION).tgz php-sugar-$(VERSION)/
 	rm -fr php-sugar-$(VERSION)/
+
+phpdoc:
+	phpdoc -o HTML:frames:earthli -f Sugar.php -d Sugar -t docs
