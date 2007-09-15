@@ -10,7 +10,8 @@
 + Changed the array constructor to a function call to array()
 + Added a [] array subscript operator
 + Changed license to the equivalent MIT license
-+ Added phpDocumentor support
++ Complete API documentation in phpDocumentor format
++ Methods for retrieving template output
 
 ==================
 ** Version 0.70 **

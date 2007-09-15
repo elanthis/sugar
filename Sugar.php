@@ -489,6 +489,21 @@ class Sugar {
     }
 
     /**
+     * Displays a template using {@link Sugar::display}, but returns
+     * the result as a string instead of displaying it to the user.
+     *
+     * @param string $file Template to process.
+     * @return string Template output.
+     */
+    public function fetch ($file) {
+        ob_start();
+        $this->display($file);
+        $result = ob_get_content();
+        ob_end_clean();
+        return $result;
+    }
+
+    /**
      * Check if a given template has a valid HTML cache.  If an HTML cache
      * already exists, applications can avoid expensive database queries
      * and other operations necessary to fill in template data.
@@ -570,6 +585,22 @@ class Sugar {
     }
 
     /**
+     * Displays a cached template using {@link Sugar::displayCache}, but
+     * returns the result as a string instead of displaying it to the user.
+     *
+     * @param string $file Template to process.
+     * @param string $cacheId Optional cache identifier.
+     * @return string Template output.
+     */
+    public function fetchCache ($file, $cacheId = null) {
+        ob_start();
+        $this->displayCache($file, $cacheId);
+        $result = ob_get_content();
+        ob_end_clean();
+        return $result;
+    }
+
+    /**
      * Compile and display the template source code given as a string.
      *
      * @param string $source Template code to display.
@@ -595,6 +626,21 @@ class Sugar {
             $this->handleError($e);
             return false;
         }
+    }
+
+    /**
+     * Processes template source using {@link Sugar::displayString}, but
+     * returns the result as a string instead of displaying it to the user.
+     *
+     * @param string $Source Template code to process.
+     * @return string Template output.
+     */
+    public function fetchString ($source) {
+        ob_start();
+        $this->displayString($source);
+        $result = ob_get_content();
+        ob_end_clean();
+        return $result;
     }
 
     /**
