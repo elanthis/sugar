@@ -116,7 +116,7 @@ class SugarUtil {
             case 'null':
                 return 'null';
             default:
-                return "'".str_replace("\n", '\\n', addslashes($value))."'";
+                return "'".str_replace(array("\n", "\r", "\r\n"), '\\n', addslashes($value))."'";
         }
     }
 

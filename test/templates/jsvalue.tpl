@@ -1,17 +1,24 @@
 <% $title = 'jsValue Tests' %>
 <% include 'header' %>
 
-<p>Expect: 'dancing mice'<br>
+<p>Test: jsValue $test<br>
+Expect: 'dancing mice'<br>
 Result: <% jsValue $test %>
 
-<p>Expect: {0:'one',1:'two',2:'three','foo':'bar'}<br>
+<p>Test: jsValue $list<br>
+Expect: {0:'one',1:'two',2:'three','foo':'bar'}<br>
 Result: <% jsValue $list %>
 
-<p>Expect: 10<br>
+<p>Test: jsValue $i<br>
+Expect: 10<br>
 Result: <% jsValue $i %>
 
-<p>Expect: {'phpType':'Test','bar':'BAR'}<br>
+<p>Test: jsValue $obj<br>
+Expect: {'phpType':'Test','bar':'BAR'}<br>
 Result: <% jsValue $obj %>
 
+<p>Test: jsValue $newlines<br>
+Expect: 'This\nhas\nnewlines!'<br>
+Result: <% jsValue $newlines %>
 
 <% include 'footer' %>

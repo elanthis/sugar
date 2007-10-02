@@ -70,6 +70,7 @@ $sugar->set('html', '<b>bold</b>');
 $sugar->set('list', array('one','two','three','foo'=>'bar'));
 $sugar->set('obj', new Test());
 $sugar->set('random', rand()%1000);
+$sugar->set('newlines', "This\nhas\nnewlines!");
 
 // display file
 $sugar->debug = true;
