@@ -1,9 +1,20 @@
 <% $title = 'Function Tests' %>
 <% include 'header' %>
 
-<p>showHtml html='&lt;b&gt;bold&lt;/b&gt;' : <% showHtml html='<b>bold</b>' %></p>
-<p>one test : <% one 'test' %></p>
-<p>showText text=1 : <% showText text=1 %></p>
-<p>showText text=one() : <% showText text=one() %></p>
+<p>Test: showHtml html='&lt;b&gt;bold&lt;/b&gt;'<br>
+Expect: <b>bold</b><br>
+Result: <% showHtml html='<b>bold</b>' %>
+
+<p>Test: one 'test'<br>
+Expect: Unotest<br>
+Result: <% one 'test' %>
+
+<p>Test: showText text=1<br>
+Expect: 1<br>
+Result: <% showText text=1 %>
+
+<p>Test: showText text=one()<br>
+Expect: Uno<br>
+Result: <% showText text=one() %>
 
 <% include 'footer' %>
