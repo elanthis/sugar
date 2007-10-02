@@ -73,7 +73,7 @@ class SugarStdlib {
     }
 
     public static function jsValue ($sugar, $params) {
-        return SugarUtil::jsValue(SugarUtil::getArg($params, 'value'));
+        return SugarUtil::jsValue(SugarUtil::getArg($params, 'value', 0));
     }
 
     public static function date ($sugar, $params) {
