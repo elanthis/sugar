@@ -524,7 +524,8 @@ class SugarParser {
         }
 
         // merge the block together
-        $block = call_user_func_array('array_merge', $block);
+        if (count($block) > 0)
+            $block = call_user_func_array('array_merge', $block);
 
         return $block;
     }
