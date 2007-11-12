@@ -207,6 +207,7 @@ class SugarStdlib {
         $sugar->register('strtoupper', array('SugarStdlib', 'strtoupper'));
         $sugar->register('strtolower', array('SugarStdlib', 'strtolower'));
         $sugar->register('substr', array('SugarStdlib', 'substr'));
+        $sugar->register('time', 'time', SUGAR_FUNC_NATIVE);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
