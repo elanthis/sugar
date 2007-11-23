@@ -185,29 +185,31 @@ class SugarStdlib {
      * @param Sugar $sugar Sugar instance.
      */
     public static function initialize ($sugar) {
-        $sugar->register('include', array('SugarStdlib', '_include'));
-        $sugar->register('eval', array('SugarStdlib', '_eval'));
-        $sugar->register('echo', array('SugarStdlib', '_echo'));
-        $sugar->register('raw', array('SugarStdlib', '_echo'));
-        $sugar->register('urlEncodeAll', array('SugarStdlib', 'urlEncodeAll'));
-        $sugar->register('urlEncode', array('SugarStdlib', 'urlEncode'));
-        $sugar->register('jsValue', array('SugarStdlib', 'jsValue'));
-        $sugar->register('default', array('SugarStdlib', '_default'));
-        $sugar->register('date', array('SugarStdlib', 'date'));
-        $sugar->register('format', array('SugarStdlib', 'format'));
-        $sugar->register('count', array('SugarStdlib', 'count'));
-        $sugar->register('selected', array('SugarStdlib', 'selected'));
-        $sugar->register('checked', array('SugarStdlib', 'checked'));
-        $sugar->register('switch', array('SugarStdlib', '_switch'));
-        $sugar->register('basename', 'basename', SUGAR_FUNC_NATIVE);
-        $sugar->register('truncate', array('SugarStdlib', 'truncate'));
-        $sugar->register('escape', array('SugarStdlib', 'escape'));
-        $sugar->register('var', array('SugarStdlib', '_var'));
-        $sugar->register('array', array('SugarStdlib', '_array'));
-        $sugar->register('strtoupper', array('SugarStdlib', 'strtoupper'));
-        $sugar->register('strtolower', array('SugarStdlib', 'strtolower'));
-        $sugar->register('substr', array('SugarStdlib', 'substr'));
-        $sugar->register('time', 'time', SUGAR_FUNC_NATIVE);
+        $sugar->registerList(array(
+            'include' => array(array('SugarStdlib', '_include'), 0),
+            'eval' => array(array('SugarStdlib', '_eval'), 0),
+            'echo' => array(array('SugarStdlib', '_echo'), 0),
+            'raw' => array(array('SugarStdlib', '_echo'), 0),
+            'urlEncodeAll' => array(array('SugarStdlib', 'urlEncodeAll'), 0),
+            'urlEncode' => array(array('SugarStdlib', 'urlEncode'), 0),
+            'jsValue' => array(array('SugarStdlib', 'jsValue'), 0),
+            'default' => array(array('SugarStdlib', '_default'), 0),
+            'date' => array(array('SugarStdlib', 'date'), 0),
+            'format' => array(array('SugarStdlib', 'format'), 0),
+            'count' => array(array('SugarStdlib', 'count'), 0),
+            'selected' => array(array('SugarStdlib', 'selected'), 0),
+            'checked' => array(array('SugarStdlib', 'checked'), 0),
+            'switch' => array(array('SugarStdlib', '_switch'), 0),
+            'basename' => array('basename', SUGAR_FUNC_NATIVE),
+            'truncate' => array(array('SugarStdlib', 'truncate'), 0),
+            'escape' => array(array('SugarStdlib', 'escape'), 0),
+            'var' => array(array('SugarStdlib', '_var'), 0),
+            'array' => array(array('SugarStdlib', '_array'), 0),
+            'strtoupper' => array(array('SugarStdlib', 'strtoupper'), 0),
+            'strtolower' => array(array('SugarStdlib', 'strtolower'), 0),
+            'substr' => array(array('SugarStdlib', 'substr'), 0),
+            'time' => array('time', SUGAR_FUNC_NATIVE),
+        ));
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
