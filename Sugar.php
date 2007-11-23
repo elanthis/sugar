@@ -164,6 +164,7 @@ class Sugar {
      * Map of all registered functions.  The key is the function name,
      * and the value is an array containing the callback and function
      * flags.
+     */
     private $funcs = array();
 
     /**
@@ -304,6 +305,22 @@ class Sugar {
             $invoke = $name;
         $this->funcs [strtolower($name)]= array($invoke, $flags);
         return true;
+    }
+
+    /**
+     * Registers a list of functions to be available within templates.
+     *
+     * The input array is an associative array mapping the function name
+     * to an array consisting of the callback in index 0 (zero) and the
+     * function flags in index 1.  Functions with no flags must pass in
+     * a 0 in index 1.
+     *
+     * @param array $funcs The list of functions to register.
+     * @return bool true on success
+     * @internal
+     */
+    public function registerList (array $funcs) {
+        $this->funcs = array_merge($this->funcs, $funcs);
     }
 
     /**
