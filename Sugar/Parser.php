@@ -120,7 +120,7 @@ class SugarParser {
             // after the first arg, require a separating comma
             if ($first)
                 $first = false;
-            elseif ($parens)
+            else
                 $this->tokens->expect(',');
 
             // check for name= assignment
