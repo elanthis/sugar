@@ -114,21 +114,21 @@ function.
   <% raw $html %> = <b>bold</b>
 
 A function can be called by giving the name of the function, and
-then listing the parameters.  Function parameters are always given
-as a parameter name followed by the parameter value.  Commas may
-optionally separate parameters.  Example:
+then listing the parameters.  Function parameters must each be
+separated by a comma, and may optionally have a parameter name
+preceding the parameter itself.  Example:
 
   <% myFunc %>
   <% myFunc value=$var %>
-  <% myFunc value=$var*2 other="test" last=4+($i*7) %>
+  <% myFunc value=$var*2, other="test" last=4+($i*7) %>
 
   <% myFunc "arg1" "arg2" %>
   <% myFunc 1, 2 %>
 
 Functions may also be called within an expression.  In this case,
 the function call is written as the function name, followed by the
-arguments, separated by commas, within paranthesis.  If there are
-no arguments, just put () after the function name.  Examples:
+arguments within parenthesis.  If there are no arguments, just put ()
+after the function name.  Examples:
 
   <% "show "+getTime() %>
   <% "show "+getTime('tomorrow') %>
@@ -212,26 +212,12 @@ identically:
   <% if $value ; 'Value: '; $value; end %>
 
 ** WARNING **  Care must be taken when calling a function using
-unnamed parameters.  The following functions call will have
-unexpected results:
+unnamed parameters.  The following function call will have
+result in an error:
 
-  <% func 1 -2 %>
   <% func ($var+2)*3 %>
-  <% func $var [1,2,3] %>
-  <% func $var [$element] %>
 
-The first call will invoke the function func with a single argument,
--1, because Sugar can not tell if the following tokens are meant to
-be a single subtraction expression or two separate numbers.  This
-can be fixed by separating the numbers with a comma, using named
-parameters, or changing the second parameter to not begin with a
-minus sign (such as putting the parameter in parenthesis).
-Examples:
-
-  <% func 1, -2 %>
-  <% func start=1 size=-2 %>
-
-The second function will result in a parse error.  Sugar will
+The function call will result in a parse error.  Sugar will
 interpret the parenthesis following the function name as part of the
 function call syntax and not as a sub-expression, and will consider
 the trailing right parenthesis as the end of the function call,
@@ -243,19 +229,6 @@ Examples:
 
   <% func start=($var+2)*3 %>
   <% func 3*($var+2) %>
-
-The third function will result in a parse error as well, while
-the fourth function will simply provide surprising results.  Sugar
-cannot distinguish either case from when the array subscript
-operator is used and when you are intending to pass two values,
-with the second value being an array initializer.  Using named
-parameters, a separating comma, or wrapping the array initializer
-in parenthesis will alleviate the problem.  You can also use the
-array() constructor syntax.
-Examples:
-
-  <% func $var, [1,2,3] %>
-  <% func $var ([1,2,3])
 
 -----------------------------------------------------------------------
 IV.  Sugar API
