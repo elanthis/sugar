@@ -69,7 +69,7 @@ class SugarStdlib {
     }
 
     public static function urlEncode ($sugar, $params) {
-        return urlencode(SugarUtil::getArg($params, 'value'));
+        return urlencode(SugarUtil::getArg($params, 'value', 0));
     }
 
     public static function jsValue ($sugar, $params) {
@@ -177,6 +177,12 @@ class SugarStdlib {
         $length = SugarUtil::getArg($params, 'length', 2);
         return substr($string, $start, $length);
     }
+
+    public static function cycle ($sugar, $params) {
+        $value = $sugar->getVariable('$sugar.cycle');
+        $sugar->set('$sugar.cycle', !$value);
+        return (int)$value;
+    }
     /**#@-*/
 
     /**
@@ -190,8 +196,8 @@ class SugarStdlib {
             'eval' => array(array('SugarStdlib', '_eval'), 0),
             'echo' => array(array('SugarStdlib', '_echo'), 0),
             'raw' => array(array('SugarStdlib', '_echo'), 0),
-            'urlEncodeAll' => array(array('SugarStdlib', 'urlEncodeAll'), 0),
-            'urlEncode' => array(array('SugarStdlib', 'urlEncode'), 0),
+            'urlencodeall' => array(array('SugarStdlib', 'urlEncodeAll'), 0),
+            'urlencode' => array(array('SugarStdlib', 'urlEncode'), 0),
             'jsValue' => array(array('SugarStdlib', 'jsValue'), 0),
             'default' => array(array('SugarStdlib', '_default'), 0),
             'date' => array(array('SugarStdlib', 'date'), 0),
@@ -209,6 +215,7 @@ class SugarStdlib {
             'strtolower' => array(array('SugarStdlib', 'strtolower'), 0),
             'substr' => array(array('SugarStdlib', 'substr'), 0),
             'time' => array('time', SUGAR_FUNC_NATIVE),
+            'cycle' => array(array('SugarStdlib', 'cycle'), 0),
         ));
     }
 }
