@@ -51,7 +51,7 @@ class SugarStdlib {
     }
 
     public static function _eval (&$sugar, $params) {
-        $sugar->displayString(SugarUtil::getArg($params, 'source'));
+        $sugar->displayString(SugarUtil::getArg($params, 'source', 0));
     }
 
     public static function _echo (&$sugar, $params) {
@@ -178,6 +178,11 @@ class SugarStdlib {
         return substr($string, $start, $length);
     }
 
+    public static function nl2br ($sugar, $params) {
+        $string = SugarUtil::getArg($params, 'string', 0);
+        return new SugarEscaped(nl2br($sugar->escape($string)));
+    }
+
     public static function cycle ($sugar, $params) {
         $value = $sugar->getVariable('$sugar.cycle');
         $sugar->set('$sugar.cycle', !$value);
@@ -215,6 +220,7 @@ class SugarStdlib {
             'strtolower' => array(array('SugarStdlib', 'strtolower'), 0),
             'substr' => array(array('SugarStdlib', 'substr'), 0),
             'time' => array('time', SUGAR_FUNC_NATIVE),
+            'nl2br' => array(array('SugarStdlib', 'nl2br'), 0),
             'cycle' => array(array('SugarStdlib', 'cycle'), 0),
         ));
     }
