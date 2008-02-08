@@ -535,7 +535,7 @@ class Sugar {
         if ($ref === false)
             throw new SugarException('illegal template name: '.$file);
 
-        return !$this->debug && $this->cache->exists($ref, SUGAR_CACHE_HTML);
+        return !$this->debug && $this->cache->stamp($ref, SUGAR_CACHE_HTML) !== false;
     }
 
     /**
