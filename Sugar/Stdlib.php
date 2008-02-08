@@ -55,7 +55,7 @@ class SugarStdlib {
     }
 
     public static function _echo (&$sugar, $params) {
-        return new SugarEscaped(SugarRuntime::showValue(SugarUtil::getArg($params, 'value')));
+        return new SugarEscaped(SugarRuntime::showValue(SugarUtil::getArg($params, 'value', 0)));
     }
 
     public static function urlEncodeAll ($sugar, $params) {
