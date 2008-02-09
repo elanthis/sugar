@@ -1,0 +1,34 @@
+==================
+** Version 0.72 **
+==================
+
++ Caching bug fixes.
++ New functions.
++ Include file timestamp checking for HTML caches.
+
+==================
+** Version 0.71 **
+==================
+
++ Removed the automatic conversion of names to strings
++ Massive cleanups to compiler
++ Added a character set option for escaping
++ Fixed bugs in jsValue encoding with strings
++ Decode \n sequences in input strings
++ Changed the array constructor to a function call to array()
++ Added a [] array subscript operator
++ Changed license to the equivalent MIT license
++ Complete API documentation in phpDocumentor format
++ Methods for retrieving template output
+
+==================
+** Version 0.70 **
+==================
+
++ Modified loop syntax
++ Added a while loop
++ Added nocache block directive
++ Revamped internal API
++ Added many stdlib functions
++ Added array constructor
++ Added PHP-style commenting syntax

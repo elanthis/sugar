@@ -1,0 +1,419 @@
+PHP-Sugar Template Engine
+=======================================================================
+Copyright (C) 2007  AwesomePlay Productions, Inc.
+Sean Middleditch <sean@awesomeplay.com>
+See LICENSE for copying and distribution details.
+
+-----------------------------------------------------------------------
+I.   About PHP-Sugar
+
+PHP-Sugar is a new template engine, inspired by the author's experience
+with the Smarty template engine.  PHP-Sugar aims to provide a simple
+but flexible API, a friendly and easy macro language, and intelligent
+and easy caching functionality.
+
+The engine is implemented as a mini-scripting language parser and
+runtime, allowing for both quite flexible language features and for
+powerful expressions that a regular-expression engine like Smarty is
+not capable of providing.
+
+-----------------------------------------------------------------------
+II.  Installation
+
+To install PHP-Sugar, simply copy the Sugar.php file into the PHP
+include path.  Then copy the Sugar/ folder and its contents into the
+same folder in which Sugar.php is installed.
+
+The default templates folder for the file storage driver is
+./templates/, relative to the working directory of the application.
+The compile directory is ./templates/compiled/ which must be writable
+by the application (e.g. the Apache user) in order to work.  The
+default cache directory is ./templates/cache/ which also must be
+writable to work.
+
+-----------------------------------------------------------------------
+III. Basic Syntax
+
+All PHP-Sugar code is put with the tags <% and %>.  For example:
+
+  <% if $count > 10 %>
+    <ul>
+    <% foreach $key,$value in $list %>
+      <li><% $key %>: <b><% $value %></b></li>
+    <% end %>
+    </ul>
+  <% end %>
+
+Variables are the dollar sign $ followed by letters, numbers, and/or
+underscores.  Variables can be assigned by the Sugar API or by using
+the equal = operator in a template.
+
+  <% $myvar = "a test" %>
+  My Var is <% $myvar %>.
+
+The above code will print:
+
+  My Var is a test.
+
+To print the value of a variable, simply place the name of the
+variable in script tags.  You can also perform various mathematical
+and logical operations on the variable in the tag, which is called
+an expression.  Example:
+
+  <% $i = 7 %>
+  <% $i %> is 7
+  <% 1+$i %> is 8
+  <% $i*($i%5) %> is 14
+
+  <% $s = "test" %>
+  <% $s %> is test
+  <% $s+7 %> is test7
+  <% $s+" again" %> is test again
+
+  <% $test = $s+$i %>
+  <% $test %> is test7
+
+Array keys can be accessed using the . operator or the [] array
+subscript operator.  Examples:
+
+  <% $array.key %>
+  <% $array."the key" %>
+  <% $array.0 %>
+  <% $array.8 %>
+  <% $array.$var %>
+  <% $array[$var] %>
+  <% $array[$var-6] %>
+  <% $array["key"] %>
+
+Arrays can be constructed using the array() initializer function
+or using the [] initializer syntax.  The array() function can
+make map arrays (arrays with arbitrary keys) while the [] syntax
+can only make vectors (arrays with consecutive integer keys).
+Examples:
+
+  <% $vector = array(1, 2, 5) %>
+    <% $vector = [1, 2, 5] %>
+  <% $map = array(first=1, second=2, third=5) %>
+
+Object properties can be accessed using the -> operator.  Object
+methods, if enabled, can be invoked using the -> operator followed
+by a method name, then a list of comma-separated parameters within
+().  Example:
+
+  <% $obj->name %>
+  <% $obj->$var %>
+  <% $obj->method() %>
+  <% $obj->foobar(1, $var, "test") %>
+
+The value of a variable is always HTML-escaped by default.  To
+display the value of a variable with no escaping, use the raw
+function.
+
+  <% $html = "<b>bold</b>" %>
+  <% $html %> = &lt;b&gt;bold&lt;/b&gt;
+  <% raw $html %> = <b>bold</b>
+
+A function can be called by giving the name of the function, and
+then listing the parameters.  Function parameters must each be
+separated by a comma, and may optionally have a parameter name
+preceding the parameter itself.  Example:
+
+  <% myFunc %>
+  <% myFunc value=$var %>
+  <% myFunc value=$var*2, other="test" last=4+($i*7) %>
+
+  <% myFunc "arg1" "arg2" %>
+  <% myFunc 1, 2 %>
+
+Functions may also be called within an expression.  In this case,
+the function call is written as the function name, followed by the
+arguments within parenthesis.  If there are no arguments, just put ()
+after the function name.  Examples:
+
+  <% "show "+getTime() %>
+  <% "show "+getTime('tomorrow') %>
+  <% 12*1+foobar(test="enable", time="now") %>
+
+Conditional execution can be performed using the if, elif, and else
+statements.  Example:
+
+  <% if $i > 7 %>
+    The value is greater than 7.
+  <% elif $i < -7 %>
+    The value is less than 7.
+  <% elif $i = $v %>
+    The value is equal to $v.
+  <% else %>
+    The value is <% $i %>
+    <% if $i < 0 %>
+      which is negative
+    <% elif $i > 0 %>
+      which is positive
+    <% else %>
+      which is zero
+    <% end %>
+  <% end %>
+
+An array or PHP iterator can be looped over using the foreach
+statement.  Either the array values or both the array keys and
+values can be iterated over.
+
+  Just the values:
+  <% foreach $i in $mylist %>
+    <% $i %>
+  <% end %>
+
+  Keys and values:
+  <% foreach $k,$i in $mylist %>
+    <% $k %>=<% $i %>
+  <% end %>
+
+    Inline array:
+    <% foreach $k in array(1,2,3) %>
+        <% $k %>
+    <% end %>
+
+A code block can be expected a specific number of times by using the
+range loop statement.  The range loop is given a start number, an end
+number, and an optional step value.  The follow example displays the
+numbers 1 through 5.
+
+  <% loop $i in 1,5 %>
+    <% $i %>
+  <% end %>
+
+This example displays the numbers 6, 4, and 2.
+
+  <% loop $i in 3*2,1,-2 %>
+    <% $i %>
+  <% end %>
+
+Other template files can be included using the include function.  Code
+can be executed using the eval function.
+
+  <% include "header" %>
+  <% include 'some/other/template' %>
+  <% eval 'var is <% $var+1 %>' %>
+  <% eval getCode() %>
+
+Caching can be suppressed for part of a template by using the nocache
+block directive.
+
+  <% nocache %>
+    This value is not cached: <% $value %>
+  <% end %>
+
+The semi-colon (;) character can be used to separate statements within
+Sugar tags.  The following two blocks of Sugar code function
+identically:
+
+  <% if $value %>Value: <% $value %><% end %>
+
+  <% if $value ; 'Value: '; $value; end %>
+
+** WARNING **  Care must be taken when calling a function using
+unnamed parameters.  The following function call will have
+result in an error:
+
+  <% func ($var+2)*3 %>
+
+The function call will result in a parse error.  Sugar will
+interpret the parenthesis following the function name as part of the
+function call syntax and not as a sub-expression, and will consider
+the trailing right parenthesis as the end of the function call,
+making the *3 unexpected.  This can be fixed by using named
+parameters or altering the expression so that the opening
+parenthesis is not the first token, which in this case can be done
+by moving the multiplication to the beginning of the expression.
+Examples:
+
+  <% func start=($var+2)*3 %>
+  <% func 3*($var+2) %>
+
+-----------------------------------------------------------------------
+IV.  Sugar API
+
+The PHP-Sugar engine is controlled mainly by the Sugar class.  To use
+PHP-Sugar, first include the Sugar.php file and instantiate an object
+of the Sugar class.
+
+  require_once 'Sugar.php';
+
+  $sugar = new Sugar();
+
+To declare variables for use by template files, use the set() method.
+The first parameter is the variable name (do not include the $) and the
+second parameter is the value to assign to the variable.
+
+  $sugar->set('life', 42);
+  $sugar->set('results', getDatabaseResults());
+  $sugar->set('name', $user->name);
+
+Registering new function requires the register() method.  The first
+parameter is the name of the function as used within templates.  The
+second optional parameter is the callback to use when invoking the
+function; if ommitted, the PHP function of the same name as the first
+argument will be invoked.  The third optional parameter may be the
+flag SUGAR_FUNC_NATIVE.
+
+  $sugar->register('myFunc');
+  $sugar->register('foo', 'some_function');
+  $sugar->register('getCost', array($cart, 'get_cost'));
+  $sugar->register('size, 'count', SUGAR_FUNC_NATIVE);
+  $sugar->register('dynamic', 'dynamic');
+
+Normal functions receive two arguments: the Sugar object and a keyed
+array with the parameters.  Functions registered with
+SUGAR_FUNC_NATIVE will instead receive a list of parameters like a
+regular PHP function.
+
+  function mySugarFunc ($sugar, $params) {
+    $arg1 = SugarUtil::getArg($params, 'arg1', 0);
+    $arg2 = SugarUtil::getArg($params, 'arg2', 1);
+
+    return "arg1=$arg1, arg2=$arg2";
+  }
+  $sugar->register('printArgs', 'mySugarFunc'
+
+The SugarUtil::getArg() function is a utility function to help make
+writing Sugar function handlers easier.  The first parameter is the
+$params array received by the Sugar function handler, the second
+parameter is the name of the parameter (when named parameters are
+used), the third parameter is the index of the parameter (when
+unnamed parameters are used), and the fourth parameter is the default
+value to return if the argument was not specified.
+
+Function return values will be passed back into the calling
+expression.  As with all expressions, the result of a function call
+that is to be displayed will be escaped by default.  To negate this
+behavior, return an instance of the SugarEscaped class, which takes
+the return value as its sole constructor parameter.
+
+  return new SugarEscaped('This is <b>raw</b> HTML.');
+
+The character set used by the escape routines is ISO-8859-1 (latin1)
+by default.  This can be changed by setting the $charset member of
+the $sugar object.
+
+  $sugar->charset = 'UTF-8';
+
+By default, object methods cannot be invoked within a template for
+security reasons; there is no way to know which methods are safe
+for templates to execute.  It is highly recommended that this
+behavior be left at the default, and that programmers avoid the need
+for templates to access any object methods.
+
+Method support can be enabled by setting the $methods property to
+true.
+
+  $sugar->methods = true;
+
+To render a template, use either the display() or the displayString()
+methods, or the displayCache() method described below.  The display()
+method will look up the file given it using the storage engine and
+render the result.  The displayString() method takes a string
+containing the template source to display.  The default storage
+engine loads the path templates/$file.tpl, where $file is the name
+passed to display().
+
+  $sugar->display('myTemplate'); // loads templates/myTemplate.tpl
+  $sugar->displayString('Var = <% $var %>');
+
+By default, compiled templates and caches are stored in
+templates/cache/.
+
+The template directory can be by setting the $templateDir
+property of the Sugar object.  The cache directory can be changed
+by setting the $cacheDir property.
+
+  $sugar->templateDir = '/var/myapp/tpl/';
+  $sugar->cacheDir = '/var/myapp/ctpl/';
+  $sugar->debug = true; // force recompilation and disable caching
+
+Caching can be performed on a template by using the displayCache()
+method.  This method takes a second optional parameter, which is a
+cache identifier, which is used to differentiate between multiple
+instances of the same template.  For example, a product template
+in an eCommerce application would use a different cache identifier
+for each product.  The second parameter can be ommitted if desired.
+
+  $sugar->displayCache('homepage');
+  $sugar->displayCache('product', $product->id);
+
+The cache lifetime can be changed by setting the $cacheLimit property
+to the number of seconds desired.  The cache lifetime is the number
+of seconds a cache will exist before being forced to re-cache.
+
+  $sugar->cacheLimit = 60*5; // five minutes
+
+It is possible to check if a valid cache exists for a given template
+and cache identifier using the isCached() method.  This allows the
+application to avoid expensive database queries or other operations
+when the results are already cached.
+
+  if (!$sugar->isCached('life', 42))
+    $sugar->set('results', $db->queryData());
+
+-----------------------------------------------------------------------
+V.   Extending Sugar
+
+PHP-Sugar offers two core means of extending its functionality.
+First, users may register new functions to be used by templates.
+Second, users may over-ride the storage and cache drivers used by the
+Sugar engine.
+
+Storage drivers are classes derived from ISugarStorage.  The following
+methods must be implemented.  All methods return true on success or
+false on error, unless stated otherwise.
+
+  stamp (SugarRef $name): returns the template's timestamp, or false if
+    the specified template does not exist.
+  load (SugarRef $name): returns the template source.
+  path (SugarRef $name): returns a user-friendly name for the template.
+
+The SugarRef class describes the requested template name.  It has the
+following member variables which are used to distinguish templates:
+
+  $full: the full path name
+  $storageName: the name of the storage driver
+  $storage: the ISugarStorage object associated with the driver name
+  $name: the base name of the template
+  $cacheId: an optional cache identifier (only used for caching)
+
+To register a new storage driver, use the addStorage() method of the
+Sugar object, passing in the desired name and an instance of the new
+driver.
+
+  $sugar->addStorage('db', new SugarDatabaseStorage($sugar));
+
+When loading a template, the template name may be prefixed by a
+storage driver name.
+
+  $sugar->display('db:homepage');
+
+If not storage driver is specified, the value of the
+defaultStorage member variable is used.  By default this is set to
+'file' which is the built-in file-based storage driver that comes
+with Sugar.  This can be changed.
+
+  $sugar->defaultStorage = 'db';
+
+Cache drivers are classes derived from ISugarCache.  The following
+methods must be implemented.  All methods return true on success or
+false on error, unless stated otherwise.
+
+  stamp (SugarRef $name, $type): returns the cache timestamp, or
+    false if the specified cache does not exist.
+  load (SugarRef $name, $type): loads the specified cache data.
+  store (SugarRef $name, $type, array $data): stores the specified
+    cache, or throw  a SugarException on failure.
+  erase (SugarRef $name, $type): erases the specified cache.
+  clear (): erases all caches.
+
+The $type parameter is a string, which will either be 'ctpl' for
+compiled templates or 'chtml' or template caches.
+
+To change the cache driver, set the $cache property of the Sugar
+object to an instance of the new driver.
+
+  $sugar->cache = new SugarCustomCache($sugar);
