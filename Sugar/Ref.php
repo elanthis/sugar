@@ -75,6 +75,13 @@ class SugarRef {
 	public $cacheId;
 
     /**
+     * Unique identifier.
+     *
+     * @var string $uid
+     */
+	public $uid;
+
+    /**
      * Public constructor.  Parses the user-provided template path
      * and returns a SugarReg object.  This is used internally by
      * Sugar.
@@ -130,6 +137,7 @@ class SugarRef {
 		$this->storage = $storage;
 		$this->name = $name;
 		$this->cacheId = $cacheId;
+        $this->uid = $full.';'.$cacheId;
 	}
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

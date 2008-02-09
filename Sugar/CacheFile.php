@@ -68,10 +68,10 @@ class SugarCacheFile implements ISugarCache {
     private function makePath (SugarRef $ref, $type) {
         $path = $this->sugar->cacheDir.'/';
         $cid = $type == SUGAR_CACHE_HTML ? $ref->cacheId : null;
-        $path .= md5($ref->storageName .$ref->name . $cid);
+        $path .= md5($ref->storageName . $ref->name . $cid);
         $path .= ',' . $ref->storageName . ',' . str_replace('/', '%', $ref->name);
         if ($cid !== null)
-            $path .= ',' . preg_replace('/[^A-Za-z0-9._-]+/', '', $cid);
+            $path .= ',' . preg_replace('/[^A-Za-z0-9._-]+/', '%', $cid);
         $path .= ',' . $type;
         return $path;
     }

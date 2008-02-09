@@ -168,6 +168,11 @@ class Sugar {
     private $funcs = array();
 
     /**
+     * Cache of files loaded into memory.
+     */
+    private $files = array();
+
+    /**
      * A map of storage drivers.  The key is the storage driver name,
      * and the value is the storage driver object.
      */
@@ -448,12 +453,16 @@ class Sugar {
         if ($sstamp === false)
             throw new SugarException('template not found: '.$ref->full);
 
+        // cache file ref
+        if ($this->cacheHandler)
+            $this->cacheHandler->addRef($ref);
+
         // if debug is off and the stamp is good, load compiled version
         $cstamp = $this->cache->stamp($ref, SUGAR_CACHE_TPL);
-        if (!$this->debug && $cstamp > $sstamp) {
+        if (!$this->debug && $cstamp !== false && $cstamp > $sstamp) {
             $data = $this->cache->load($ref, SUGAR_CACHE_TPL);
             // if version checks out, run it
-            if ($data['version'] == SUGAR_VERSION) {
+            if ($data !== false && $data['version'] == SUGAR_VERSION) {
                 $this->execute($data);
                 return;
             }
@@ -466,6 +475,8 @@ class Sugar {
 
         // compile
         $source = $ref->storage->load($ref);
+        if ($source === false)
+            throw new SugarException('template not found: '.$ref->full);
         $parser = new SugarParser($this);
         $data = $parser->compile($source, $ref->storage->path($ref));
         $parser = null;
@@ -475,6 +486,58 @@ class Sugar {
 
         // execute
         $this->execute($data);
+    }
+    
+    /**
+     * Attempt to load an HTML cached file.  Will return false if
+     * the cached file does not exist or if the cached file is out
+     * of date.
+     *
+     * @param SugarRef $ref Cache reference.
+     * @return false|array Cache data on success, false on error.
+     */
+    public function loadCache (SugarRef $ref) {
+        // if the file is already loaded, use that
+        if (isset($this->files[$ref->uid]))
+            return $this->files[$ref->uid];
+
+        // get the cache's stamp, and fail if it can't be found
+        $cstamp = $this->cache->stamp($ref, SUGAR_CACHE_HTML);
+        if ($cstamp === false)
+            return false;
+
+        // fail if the cache is too old
+        if ($cstamp < time() - $this->cacheLimit)
+            return false;
+
+        // load the cache data, fail if loading fails or the
+        // version doesn't match
+        $data = $this->cache->load($ref, SUGAR_CACHE_HTML);
+        if ($data === false || $data['version'] != SUGAR_VERSION)
+            return false;
+
+        // compare stamps with the included references
+        foreach ($data['refs'] as $file) {
+            // try to reference the file; ignore failures
+            $iref = SugarRef::create($file, $this);
+            if (!$iref)
+                continue;
+
+            // get the stamp of the reference; ignore failures
+            $stamp = $iref->storage->stamp($iref);
+            if ($stamp === false)
+                continue;
+
+            // if the stamp is newer than the cache stamp, fail
+            if ($cstamp < $stamp)
+                return false;
+        }
+
+        // cache this file
+        $this->files[$ref->uid] = $data;
+
+        // everything has checked out, the cache is valid
+        return $data;
     }
 
     /**
@@ -535,12 +598,8 @@ class Sugar {
         if ($ref === false)
             throw new SugarException('illegal template name: '.$file);
 
-        // file stamp and cache stamp
-        $stamp = $ref->storage->stamp($ref);
-        $cstamp = $this->cache->stamp($ref, SUGAR_CACHE_HTML);
-
-        // check that cache is valid and up to date
-        return !$this->debug && $cstamp !== false && $cstamp >= $stamp;
+        // if the cache can be loaded, it is valid
+        return $this->loadCache($ref) !== false;
     }
 
     /**
@@ -557,22 +616,11 @@ class Sugar {
             throw new SugarException('illegal template name: '.$file);
 
         try {
-            // get stamp, ensure template exists
-            $stamp = $ref->storage->stamp($ref);
-            if ($stamp === false)
-                throw new SugarException('template not found: '.$ref->full);
-
-            // get cache stamp
-            $cstamp = $this->cache->stamp($ref, SUGAR_CACHE_HTML);
-
             // if cache exists and is up-to-date and debug is off, load cache
-            if (!$this->debug && $cstamp > $stamp) {
-                $data = $this->cache->load($ref, SUGAR_CACHE_HTML);
-                // if it is the right version, run it and return
-                if ($data['version'] == SUGAR_VERSION) {
-                    $this->execute($data);
-                    return true;
-                }
+            $data = $this->loadCache($ref);
+            if (!$this->debug && $data !== false) {
+                $this->execute($data);
+                return true;
             }
 
             // create cache handler if necessary

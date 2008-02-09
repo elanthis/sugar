@@ -62,6 +62,13 @@ class SugarCacheHandler {
     private $bc;
 
     /**
+     * List of file references used, stored as strings.
+     *
+     * @var array $refs
+     */
+    private $refs;
+
+    /**
      * Compresses the text output gathered so far onto the bytecode stack.
      */
     private function compact () {
@@ -91,6 +98,16 @@ class SugarCacheHandler {
     }
 
     /**
+     * Adds a new file reference to the list of files
+     * used in the template.
+     *
+     * @param SugarRef $ref New reference.
+     */
+    public function addRef (SugarRef $ref) {
+        $this->refs []= $ref->full;
+    }
+
+    /**
      * Adds bytecode to the cache.
      *
      * @param array $block Bytecode to append to cache.
@@ -107,7 +124,7 @@ class SugarCacheHandler {
      */
     public function getOutput () {
         $this->compact();
-        return array('type' => 'chtml', 'version' => SUGAR_VERSION, 'bytecode' => $this->bc);
+        return array('type' => 'chtml', 'version' => SUGAR_VERSION, 'refs' => $this->refs, 'bytecode' => $this->bc);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
