@@ -1,4 +1,12 @@
 ==================
+** Version 0.72 **
+==================
+
++ Caching bug fixes.
++ New functions.
++ Include file timestamp checking for HTML caches.
+
+==================
 ** Version 0.71 **
 ==================
 
