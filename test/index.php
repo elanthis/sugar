@@ -1,4 +1,6 @@
 <?php
+error_reporting(E_STRICT);
+
 $start = microtime(true);
 
 $begin_load = microtime(true);

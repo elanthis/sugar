@@ -374,7 +374,7 @@ class Sugar {
      */
     public function escape ($output) {
         // do not escape for raw values - just return text
-        if (is_a($output, 'SugarEscaped'))
+        if ($output instanceof SugarEscaped)
             return $output->getText();
 
         // perform proper escaping for current mode
