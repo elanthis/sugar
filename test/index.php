@@ -1,5 +1,5 @@
 <?php
-error_reporting(E_STRICT);
+error_reporting(E_STRICT|E_ALL);
 
 $start = microtime(true);
 

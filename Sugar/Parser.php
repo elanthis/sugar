@@ -506,7 +506,7 @@ class SugarParser {
                 $block []= array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
 
                 // if the function does not have SUPPRESS_RETURN, print return val
-                if ( !($invoke[2] & SUGAR_FUNC_SUPPRESS_RETURN))
+                if ( !isset($invoke[2]) || !($invoke[2] & SUGAR_FUNC_SUPPRESS_RETURN))
                     $block []= array('print');
 
             // we have a statement
