@@ -192,7 +192,7 @@ class SugarTokenizer {
         }
 
         // skip spaces and comments
-        while ($this->getRegex('/(\s+|(?:\/\*.*?\*\/|\/\/.*?($|%>)))/msA') !== false) {
+        while (($ar = $this->getRegex('/(?:\s+|(?:\/\*.*?\*\/|\/\/.*?($|%>)))/msA')) !== false) {
             // line comment ended with a %>
             if ($ar[1] == '%>') {
                 $this->inCmd = false;
