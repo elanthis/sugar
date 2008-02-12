@@ -7,7 +7,7 @@ Result: <% date 'Y-m-d' %>
 
 <p>Test: date format='Y-m-d' date='next Tuesday'<br/>
 Expect: <i>date of next Tuesday in YYYY-MM-DD format</i><br/>
-Result: <% date format='Y-m-d' date='next Tuesday' %>
+Result: <% date format='Y-m-d', date='next Tuesday' %>
 
 <p>Test: date<br/>
 Expect: <i>current date in RFC XXXX format</i><br/>
@@ -34,19 +34,19 @@ Result: <% urlEncode 'this+is%(illegal)in#url' %></p>
 
 <p>Test: urlEncodeAll a='foo' bar='baz+gar' boo='1%2 3'<br/>
 Expect: a=foo&amp;bar=baz%2Bgar&amp;boo=1%252+3<br/>
-Result: <% urlEncodeAll a='foo' bar='baz+gar' boo='1%2 3' %>
+Result: <% urlEncodeAll a='foo', bar='baz+gar', boo='1%2 3' %>
 
 
 <p>Test: escape '&lt;test&gt;' 'html'<br/>
 Expect: &lt;test&gt;<br/>
-Result: <% escape '<test>' 'html' %>
+Result: <% escape '<test>', 'html' %>
 
 <p>Test: escape '&lt;test&gt;' 'xml'<br/>
 Expect: &lt;test&gt;<br/>
-Result: <% escape '<test>' 'xml' %>
+Result: <% escape '<test>', 'xml' %>
 
 <p>Test: escape '&lt;test&gt;' 'url'<br/>
 Expect: %3Ctest%3E<br/>
-Result: <% escape '<test>' 'url' %>
+Result: <% escape '<test>', 'url' %>
 
 <% include 'footer' %>

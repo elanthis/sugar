@@ -129,7 +129,7 @@ class SugarUtil {
      * @param mixed $value Time value to parse.
      * @return int Timestamp.
      */
-    function valueToTime ($value) {
+    public static function valueToTime ($value) {
         // raw int?  it's a timestamp
         if (is_int($value))
             return $value;
