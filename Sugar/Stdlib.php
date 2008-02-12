@@ -203,7 +203,7 @@ class SugarStdlib {
             'raw' => array(array('SugarStdlib', '_echo'), 0),
             'urlencodeall' => array(array('SugarStdlib', 'urlEncodeAll'), 0),
             'urlencode' => array(array('SugarStdlib', 'urlEncode'), 0),
-            'jsValue' => array(array('SugarStdlib', 'jsValue'), 0),
+            'jsvalue' => array(array('SugarStdlib', 'jsValue'), 0),
             'default' => array(array('SugarStdlib', '_default'), 0),
             'date' => array(array('SugarStdlib', 'date'), 0),
             'format' => array(array('SugarStdlib', 'format'), 0),
