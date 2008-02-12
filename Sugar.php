@@ -68,7 +68,7 @@ require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
 /**
  * Version of PHP-Sugar.
  */
-define('SUGAR_VERSION', '0.72');
+define('SUGAR_VERSION', '0.73');
 
 /**
  * Pass this flag to {@link Sugar::register} to indicate that the function

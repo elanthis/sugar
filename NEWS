@@ -1,4 +1,12 @@
 ==================
+** Version 0.73 **
+==================
+
++ Fix isCached() in debug mode.
++ E_STRICT|E_ALL error fixed.
++ Fixed templates.
+
+==================
 ** Version 0.72 **
 ==================
 
