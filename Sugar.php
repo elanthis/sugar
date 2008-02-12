@@ -391,11 +391,11 @@ class Sugar {
     }
 
     /**
-     * Process a {@link SugarException} according to the current value of {@link Sugar::$errors}.
+     * Process an exception according to the current value of {@link Sugar::$errors}.
      *
-     * @param SugarException $e Exception to process.
+     * @param Exception $e Exception to process.
      */
-    public function handleError (SugarException $e) {
+    public function handleError (Exception $e) {
         // if in throw mode, re-throw the exception
         if ($this->errors == SUGAR_ERROR_THROW)
             throw $e;
