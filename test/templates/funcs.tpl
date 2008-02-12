@@ -19,6 +19,6 @@ Result: <% showText text=one() %>
 
 <p>Test: array foo='a string' bar=array('an', 'array') number=42<br>
 Expect: {'foo':'a string','bar':['an','array'],'number':42}<br>
-Result: <% array foo='a string' bar=array('an', 'array') number=42 %> 
+Result: <% array foo='a string', bar=array('an', 'array'), number=42 %> 
 
 <% include 'footer' %>
