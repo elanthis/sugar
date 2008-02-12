@@ -199,6 +199,12 @@ class SugarStdlib {
         else
             return false;
     }
+
+		public static function printf ($sugar, $params) {
+			$format = array_shift($params);
+			return vsprintf($format, $params);
+		}
+
     /**#@-*/
 
     /**
@@ -234,6 +240,7 @@ class SugarStdlib {
             'nl2br' => array(array('SugarStdlib', 'nl2br'), 0),
             'cycle' => array(array('SugarStdlib', 'cycle'), 0),
             'isset' => array(array('SugarStdlib', '_isset'), 0),
+            'printf' => array(array('SugarStdlib', 'printf'), 0),
         ));
     }
 }
