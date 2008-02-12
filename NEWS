@@ -1,4 +1,12 @@
 ==================
+** Version 0.74 **
+==================
+
++ Fix fetch*() family of functions.
++ More E_STRICT|E_ALL errors fixed.
++ Added isset and printf template functions.
+
+==================
 ** Version 0.73 **
 ==================
 
