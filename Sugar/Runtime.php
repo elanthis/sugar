@@ -342,7 +342,7 @@ class SugarRuntime {
                 case '.':
                     $index = array_pop($stack);
                     $array = array_pop($stack);
-                    if (is_array($array))
+                    if (is_array($array) && isset($array[$index]))
                         $stack []= $array[$index];
                     else
                         $stack []= null;
@@ -350,8 +350,10 @@ class SugarRuntime {
                 case '->':
                     $prop = array_pop($stack);
                     $obj = array_pop($stack);
-                    if (is_object($obj))
+                    if (is_object($obj) && isset($obj->$prop))
                         $stack []= $obj->$prop;
+                    else
+                        $stack []= null;
                     break;
                 case 'array':
                     $elems = $code[++$i];

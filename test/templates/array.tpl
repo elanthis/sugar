@@ -21,6 +21,10 @@ Result: <% $list %></p>
 Expect: two<br>
 Result: <% $list.1 %></p>
 
+<p>Test: $list.notdefined<br/>
+Expect: <br>
+Result: <% $list.notdefined %></p>
+
 <p>Test: $list.foo<br/>
 Expect: bar<br>
 Result: <% $list.foo %></p>
