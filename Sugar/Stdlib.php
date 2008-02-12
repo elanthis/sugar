@@ -46,15 +46,15 @@ class SugarStdlib {
      * interesting things to document are the Sugar parameters, not
      * the PHP call interface.
      */
-    public static function _include (&$sugar, $params) {
+    public static function _include ($sugar, $params) {
         $sugar->display(SugarUtil::getArg($params, 'tpl', 0));
     }
 
-    public static function _eval (&$sugar, $params) {
+    public static function _eval ($sugar, $params) {
         $sugar->displayString(SugarUtil::getArg($params, 'source', 0));
     }
 
-    public static function _echo (&$sugar, $params) {
+    public static function _echo ($sugar, $params) {
         return new SugarEscaped(SugarRuntime::showValue(SugarUtil::getArg($params, 'value', 0)));
     }
 
@@ -188,6 +188,17 @@ class SugarStdlib {
         $sugar->set('$sugar.cycle', !$value);
         return (int)$value;
     }
+
+    public static function _isset ($sugar, $params) {
+        $obj = SugarUtil::getArg($params, 'object', 0);
+        $index = SugarUtil::getArg($params, 'index', 1);
+        if (is_array($obj) && isset($obj[$index]))
+            return true;
+        elseif (is_object($obj) && isset($obj->$index))
+            return true;
+        else
+            return false;
+    }
     /**#@-*/
 
     /**
@@ -222,6 +233,7 @@ class SugarStdlib {
             'time' => array('time', SUGAR_FUNC_NATIVE),
             'nl2br' => array(array('SugarStdlib', 'nl2br'), 0),
             'cycle' => array(array('SugarStdlib', 'cycle'), 0),
+            'isset' => array(array('SugarStdlib', '_isset'), 0),
         ));
     }
 }
