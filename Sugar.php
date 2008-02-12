@@ -593,6 +593,10 @@ class Sugar {
      * @return bool True if a valid HTML cache exists for the file.
      */
     function isCached ($file, $cacheId=null) {
+        // debug always disabled caching
+        if ($this->debug)
+            return false;
+
         // validate name
         $ref = SugarRef::create($file, $this, $cacheId);
         if ($ref === false)
