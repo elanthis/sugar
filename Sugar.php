@@ -578,7 +578,7 @@ class Sugar {
     public function fetch ($file) {
         ob_start();
         $this->display($file);
-        $result = ob_get_content();
+        $result = ob_get_contents();
         ob_end_clean();
         return $result;
     }
@@ -669,7 +669,7 @@ class Sugar {
     public function fetchCache ($file, $cacheId = null) {
         ob_start();
         $this->displayCache($file, $cacheId);
-        $result = ob_get_content();
+        $result = ob_get_contents();
         ob_end_clean();
         return $result;
     }
@@ -712,7 +712,7 @@ class Sugar {
     public function fetchString ($source) {
         ob_start();
         $this->displayString($source);
-        $result = ob_get_content();
+        $result = ob_get_contents();
         ob_end_clean();
         return $result;
     }
