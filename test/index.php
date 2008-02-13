@@ -35,15 +35,15 @@ function showText(&$sugar, $args) {
 }
 $sugar->register('showText');
 
-function one($str='') {
-	return 'Uno'.$str;
+function one($sugar, $params) {
+	return 'Uno'.SugarUtil::getArg($params, 'str', 0);
 }
-$sugar->register('one', 'one', SUGAR_FUNC_NATIVE);
+$sugar->register('one', 'one');
 
-function random() {
+function random($sugar, $params) {
 	return rand()%1000;
 }
-$sugar->register('random', 'random', SUGAR_FUNC_NATIVE);
+$sugar->register('random', 'random');
 
 // test class
 class Test {

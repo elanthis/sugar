@@ -32,9 +32,9 @@ Result: <% eval source='<% $x = 4; $x*$x %>' %>
 Expect: this%2Bis%25%28illegal%29in%23url<br/>
 Result: <% urlEncode 'this+is%(illegal)in#url' %></p>
 
-<p>Test: urlEncodeAll a='foo' bar='baz+gar' boo='1%2 3'<br/>
+<p>Test: urlencode array(a='foo', bar='baz+gar', boo='1%2 3')<br/>
 Expect: a=foo&amp;bar=baz%2Bgar&amp;boo=1%252+3<br/>
-Result: <% urlEncodeAll a='foo', bar='baz+gar', boo='1%2 3' %>
+Result: <% urlencode array(a='foo', bar='baz+gar', boo='1%2 3') %>
 
 
 <p>Test: escape '&lt;test&gt;' 'html'<br/>
