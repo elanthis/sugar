@@ -326,17 +326,11 @@ class SugarRuntime {
                     break;
                 case '.':
                     $index = array_pop($stack);
-                    $array = array_pop($stack);
-                    if (is_array($array) && isset($array[$index]))
-                        $stack []= $array[$index];
-                    else
-                        $stack []= null;
-                    break;
-                case '->':
-                    $prop = array_pop($stack);
                     $obj = array_pop($stack);
-                    if (is_object($obj) && isset($obj->$prop))
-                        $stack []= $obj->$prop;
+                    if (is_array($obj) && isset($obj[$index]))
+                        $stack []= $obj[$index];
+                    elseif (is_object($obj) && isset($obj->$index))
+                        $stack []= $obj->$index;
                     else
                         $stack []= null;
                     break;

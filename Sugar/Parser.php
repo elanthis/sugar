@@ -211,41 +211,39 @@ class SugarParser {
             // pop higher precedence operators
             $this->collapseOps(SugarParser::$precedence[$op]);
 
-            // push op
-            $this->stack []= $op;
-
-            // if it's an array . op, we can take a name
-            if ($op == '.' && $this->tokens->accept('name', $name)) {
-                $this->output []= array('push', $name);
-
-            // if it's an object -> op, we can also take a name
-            } elseif ($op == '->' && $this->tokens->accept('name', $name)) {
+            // if it's an array or object . or -> op, we can also take a name
+            if (($op == '.' || $op == '->') && $this->tokens->accept('name', $name)) {
                 // check if this is a method call
                 if ($this->tokens->accept('(')) {
                     $method = $name;
                     $params = $this->parseFunctionArgs(true);
 
-                    // remove -> operator, create method call
-                    array_pop($this->stack);
+                    // create method call
                     $this->output []= array_merge(array_pop($this->output), array('method', $method, $params, $this->tokens->getFile(), $this->tokens->getLine()));
 
                 // not a method call
                 } else {
+										$this->stack []= '.';
                     $this->output []= array('push', $name);
                 }
 
             // if it's an array [] operator, we need to handle the trailing ]
             } elseif ($op == '[') {
-                // replace [ with .
-                array_pop($this->stack);
+								// actual operator is .
                 $this->stack []= '.';
 
                 // compile rest of expression
                 $this->compileTerminal();
                 $this->tokens->expect(']');
 
+						// actual opcode for -> is just .
+						} else if ($op == '->') {
+								$this->stack []= '.';
+                $this->compileTerminal();
+
             // regular case, just go
             } else {
+                $this->stack []= $op;
                 $this->compileTerminal();
             }
         }

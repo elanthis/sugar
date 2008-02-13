@@ -21,6 +21,14 @@ Result: <% $list %></p>
 Expect: two<br>
 Result: <% $list.1 %></p>
 
+<p>Test: $list[1]<br/>
+Expect: two<br>
+Result: <% $list[1] %></p>
+
+<p>Test: $list->1<br/>
+Expect: two<br>
+Result: <% $list->1 %></p>
+
 <p>Test: $list.notdefined<br/>
 Expect: <br>
 Result: <% $list.notdefined %></p>
@@ -28,6 +36,14 @@ Result: <% $list.notdefined %></p>
 <p>Test: $list.foo<br/>
 Expect: bar<br>
 Result: <% $list.foo %></p>
+
+<p>Test: $list['foo']<br/>
+Expect: bar<br>
+Result: <% $list['foo'] %></p>
+
+<p>Test: $list->foo<br/>
+Expect: bar<br>
+Result: <% $list->foo %></p>
 
 <p>Test: "one" in $list<br/>
 Expect: true<br>

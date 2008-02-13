@@ -8,6 +8,14 @@
 Expect: BAR<br/>
 Result: <% $obj->bar %></p>
 
+<p>Test: $obj.bar<br/>
+Expect: BAR<br/>
+Result: <% $obj.bar %></p>
+
+<p>Test: $obj['bar']<br/>
+Expect: BAR<br/>
+Result: <% $obj['bar'] %></p>
+
 <p>Test: $obj->notdefined<br/>
 Expect: <br/>
 Result: <% $obj->notdefined %></p>
