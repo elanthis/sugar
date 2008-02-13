@@ -46,14 +46,37 @@ class SugarStdlib {
      * interesting things to document are the Sugar parameters, not
      * the PHP call interface.
      */
+
+		/*++
+     *+ @name include
+		 *+ @param string $tpl The template path to include.
+		 *+
+		 *+ This function loads up a template file and displays it.
+		 */
     public static function _include ($sugar, $params) {
         $sugar->display(SugarUtil::getArg($params, 'tpl', 0));
     }
 
+		/*++
+     *+ @name eval
+		 *+ @param string $source The template code to evaluate.
+		 *+ @return string The output of the source after evaluation.
+		 *+
+		 *+ Evaluate template code given as a string and reeturn the result.
+		 */
     public static function _eval ($sugar, $params) {
         $sugar->displayString(SugarUtil::getArg($params, 'source', 0));
     }
 
+		/*++
+     *+ @name echo
+		 *+ @param string $value The value to display.
+		 *+ @return raw The input string in raw form.
+		 *+
+		 *+ Calling this function results in unescaped output, allowing
+		 *+ the template author to print variables and strings that contain
+		 *+ HTML tags without any transformations.
+		 */
     public static function _echo ($sugar, $params) {
         return new SugarEscaped(SugarRuntime::showValue(SugarUtil::getArg($params, 'value', 0)));
     }
@@ -76,6 +99,14 @@ class SugarStdlib {
         return SugarUtil::jsValue(SugarUtil::getArg($params, 'value', 0));
     }
 
+		/*++
+     *+ @name date
+		 *+ @param string $format The format to use, from the PHP date() function.
+		 *+ @param mixed? $date The current date, either as a string or a timestamp.
+		 *+ @return string The formatted date.
+		 *+
+		 *+ Formats the input date, or the current date if no date is given.
+		 */
     public static function date ($sugar, $params) {
         $format = SugarUtil::getArg($params, 'format', 0, 'r');
         $date = SugarUtil::getArg($params, 'date', 1);
@@ -102,6 +133,14 @@ class SugarStdlib {
             return SugarUtil::getArg($params, 'default', 1);
     }
 
+		/*++
+     *+ @name count 
+		 *+ @param array $array Array to count.
+		 *+ @return int Number of elements in the array.
+		 *+
+		 *+ Returns the number of elements within the given array,
+		 *+ using the internal PHP count() function.
+		 */
     public static function count ($sugar, $params) {
         return count(SugarUtil::getArg($params, 'array', 0));
     }
