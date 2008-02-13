@@ -47,66 +47,83 @@ class SugarStdlib {
      * the PHP call interface.
      */
 
-		/*++
+    /*++
      *+ @name include
-		 *+ @param string $tpl The template path to include.
-		 *+
-		 *+ This function loads up a template file and displays it.
-		 */
+     *+ @param string $tpl The template path to include.
+     *+
+     *+ This function loads up a template file and displays it.
+     */
     public static function _include ($sugar, $params) {
         $sugar->display(SugarUtil::getArg($params, 'tpl', 0));
     }
 
-		/*++
+    /*++
      *+ @name eval
-		 *+ @param string $source The template code to evaluate.
-		 *+ @return string The output of the source after evaluation.
-		 *+
-		 *+ Evaluate template code given as a string and reeturn the result.
-		 */
+     *+ @param string $source The template code to evaluate.
+     *+ @return string The output of the source after evaluation.
+     *+
+     *+ Evaluate template code given as a string and reeturn the result.
+     */
     public static function _eval ($sugar, $params) {
         $sugar->displayString(SugarUtil::getArg($params, 'source', 0));
     }
 
-		/*++
+    /*++
      *+ @name echo
-		 *+ @param string $value The value to display.
-		 *+ @return raw The input string in raw form.
-		 *+
-		 *+ Calling this function results in unescaped output, allowing
-		 *+ the template author to print variables and strings that contain
-		 *+ HTML tags without any transformations.
-		 */
+     *+ @alias raw
+     *+ @param string $value The value to display.
+     *+ @return raw The input string in raw form.
+     *+
+     *+ Calling this function results in unescaped output, allowing
+     *+ the template author to print variables and strings that contain
+     *+ HTML tags without any transformations.
+     */
     public static function _echo ($sugar, $params) {
         return new SugarEscaped(SugarRuntime::showValue(SugarUtil::getArg($params, 'value', 0)));
     }
 
-    public static function urlEncodeAll ($sugar, $params) {
-        $result = '';
-        foreach($params as $k=>$v) {
-            if ($result)
-                $result .= '&';
-            $result .= urlencode($k) . '=' . urlencode($v);
+    /*++
+     *+ @name urlencode
+     *+ @param array|string $value The value to encode, or an array of key/value pairs.
+     *+ @return string URL-encoded string.
+     *+
+     *+ Converts an input string into a URL-encoded string.  If the input
+     *+ value is an array, the result is a URL-encoded string of each
+     *+ key/value pair separated by ampersands (&).
+     */
+    public static function urlencode ($sugar, $params) {
+        $value = SugarUtil::getArg($params, 'value', 0);
+        if (is_array($value))
+            $result = array();
+            foreach($value as $k=>$v)
+                $result []= urlencode($k) . '=' . urlencode($v);
+            return implode('&', $result);
+        } else {
+            return urlencode($value);
         }
-        return $result;
     }
 
-    public static function urlEncode ($sugar, $params) {
-        return urlencode(SugarUtil::getArg($params, 'value', 0));
+    /*++
+     *+ @name jsvalue
+     *+ @param mixed $value Value to encode.
+     *+ @return string Value encoded in JavaScript notation.
+     *+
+     *+ Convers the input value into the proper code necessary to
+     *+ recreate the value in JavaScript notation.  Useful for
+     *+ exporting template variables to JavaScript.
+     */
+    public static function jsvalue ($sugar, $params) {
+        return SugarUtil::jsvalue(SugarUtil::getArg($params, 'value', 0));
     }
 
-    public static function jsValue ($sugar, $params) {
-        return SugarUtil::jsValue(SugarUtil::getArg($params, 'value', 0));
-    }
-
-		/*++
+    /*++
      *+ @name date
-		 *+ @param string $format The format to use, from the PHP date() function.
-		 *+ @param mixed? $date The current date, either as a string or a timestamp.
-		 *+ @return string The formatted date.
-		 *+
-		 *+ Formats the input date, or the current date if no date is given.
-		 */
+     *+ @param string $format The format to use, from the PHP date() function. (default 'r')
+     *+ @param mixed? $date The current date, either as a string or a timestamp.
+     *+ @return string The formatted date.
+     *+
+     *+ Formats the input date, or the current date if no date is given.
+     */
     public static function date ($sugar, $params) {
         $format = SugarUtil::getArg($params, 'format', 0, 'r');
         $date = SugarUtil::getArg($params, 'date', 1);
@@ -114,17 +131,44 @@ class SugarStdlib {
         return date($format, $stamp);
     }
 
+    /*++
+     *+ @name format
+     *+ @alias printf
+     *+ @param string $format Format string.
+     *+ @vararg mixed
+     *+ @return string Formatted string.
+     *+
+     *+ Formats the input arguments using sprintf().
+     */
     public static function format ($sugar, $params) {
         if (isset($params['format'])) {
-            $args = array($params['format']);
+            $format = $params['format'];
             unset($params['format']);
-            $args = array_merge($args, $params);
-            return call_user_func_array('sprintf', $args);
         } else {
-            return call_user_func_array('sprintf', $params);
+            $format = array_shift($params);
         }
+        return vsprintf($format, $params);
     }
 
+    /*++
+     *+ @name default
+     *+ @param mixed $value The value to test and return if true.
+     *+ @param mixed $default The value to return if $value is false.
+     *+ @return mixed $value if it is true, otherwise $false.
+     *+
+     *+ Tests the first value given and, if it is a true value, returns
+     *+ that value.  If the value is false, the second value is returned
+     *+ instead.
+     *+
+     *+ The code
+     *+   <% default $value, $default %>
+     *+ is equivalent to
+     *+   <% if $value ; $value ; else ; $default ; end %>
+     *+
+     *+ This is particularly useful for the value attribute for form
+     *+ input tags when used in conjunction with a user-input value
+     *+ and the form's default value.
+     */
     public static function _default ($sugar, $params) {
         $value = SugarUtil::getArg($params, 'value', 0);
         if ($value)
@@ -133,30 +177,73 @@ class SugarStdlib {
             return SugarUtil::getArg($params, 'default', 1);
     }
 
-		/*++
+    /*++
      *+ @name count 
-		 *+ @param array $array Array to count.
-		 *+ @return int Number of elements in the array.
-		 *+
-		 *+ Returns the number of elements within the given array,
-		 *+ using the internal PHP count() function.
-		 */
+     *+ @param array $array Array to count.
+     *+ @return int Number of elements in the array.
+     *+
+     *+ Returns the number of elements within the given array,
+     *+ using the internal PHP count() function.
+     */
     public static function count ($sugar, $params) {
         return count(SugarUtil::getArg($params, 'array', 0));
     }
 
+    /*++
+     *+ @name selected
+     *+ @param mixed $test The test expression.
+     *+ @return string The string ' selected="selected" ' if $test is true.
+     *+
+     *+ If the given input is a true value, then the HTML attribute code
+     *+ selected="selected" is returned.
+     *+
+     *+ This is useful to use inside of HTML option tags to determine if
+     *+ the option should be selected by default.  e.g.
+     *+   <option <% selected $value=='First' %>>First</option>
+     *+   <option <% selected $value=='Second' %>>Second</option>
+     *+   <option <% selected $value=='Third' %>>Third</option>
+     */
     public static function selected ($sugar, $params) {
         if (SugarUtil::getArg($params, 'test', 0))
             return new SugarEscaped(' selected="selected" ');
     }
 
+    /*++
+     *+ @name checked
+     *+ @param mixed $test The test expression.
+     *+ @return string The string ' checked="checked" ' if $test is true.
+     *+
+     *+ If the given input is a true value, then the HTML attribute code
+     *+ checked="checked" is returned.
+     *+
+     *+ This is useful to use inside of HTML checkbox and radio input tags
+     *+ to determine if the element should be checked by default.  e.g.
+     *+   <input type="checkbox" name="first" <% checked $first=='on' %>>
+     *+   <input type="checkbox" name="second" <% checked $second=='on' %>>
+     */
     public static function checked ($sugar, $params) {
         if (SugarUtil::getArg($params, 'test', 0))
             return new SugarEscaped(' checked="checked" ');
     }
 
+    /*++
+     *+ @name switch
+     *+ @param mixed $value The value to look for.
+     *+ @param mixed $default The value to return if $value is not found.
+     *+ @varargs mixed
+     *+
+     *+ Given a list of named parameters, return the parameter with the name
+     *+ equal to the $value parameter.  If no such parameter is found, return
+     *+ the $default parameter, or the value of $value itself if $default is
+     *+ not set.
+     *+
+     *+ Example:
+     *+   $n = 'foo'; switch $n, 'not found', foo='Found Foo', bar='Found Bar'
+     *+   // would print 'Found Foo'
+     */
     public static function _switch ($sugar, $params) {
         $value = SugarUtil::getArg($params, 'value', 0);
+        $default = SugarUtil::getArg($params, 'default', 1, $value);
 
         if (isset($params[$value]))
             return $params[$value];
@@ -166,15 +253,48 @@ class SugarStdlib {
             return $value;
     }
 
+    /*++
+     *+ @name truncate
+     *+ @param string $string The string to truncade.
+     *+ @param int $length The maximum length.  (default 72)
+     *+ @param string $end String to append after truncation. (default '...')
+     *+ @return string The truncated string
+     *+
+     *+ Truncates the input string to a maximum of $length characters.  If
+     *+ the string requires truncation, the value of $end will be appended
+     *+ to the truncated string.  The length of $end is taken into account
+     *+ to ensure that the result will never be more than $length characters.
+     */
     public static function truncate ($sugar, $params) {
-        $text = SugarUtil::getArg($params, 'text', 0);
+        $text = SugarUtil::getArg($params, 'string', 0);
         $length = SugarUtil::getArg($params, 'length', 1, 72);
+        $end = SugarUtil::getArg($params, 'end', 2, '...');
         if (strlen($text) <= $length)
             return $text;
         else
-            return preg_replace('/\s+?(\S+)?$/', '...', substr($text, 0, $length + 1));
+            return preg_replace('/\s+?(\S+)?$/', $end, substr($text, 0, $length - strlen($end) + 1));
     }
 
+    /*++
+     *+ @name escape
+     *+ @param mixed $value Value to escape.
+     *+ @param string $mode Escape format to use.  (default 'html')
+     *+ @return raw Escaped value.
+     *+
+     *+ Mode must be one of 'html', 'xml', 'js', or 'url'.
+     *+
+     *+ The input value is escaped according to the rules of $mode, resulting
+     *+ in a raw string which can be safely printed out.
+     *+
+     *+ For the mode 'js', this is equivalent to:
+     *+   <% echo jsvalue $value %>
+     *+
+     *+ For the mode 'url', this is equivalent to:
+     *+   <% echo urlencode $value %>
+     *+
+     *+ For the modes 'html' and 'xml', this is equivalent to the default
+     *+ output encoding rules for both languages.
+     */
     public static function escape ($sugar, $params) {
         $value = SugarUtil::getArg($params, 'value', 0);
         $mode = SugarUtil::getArg($params, 'mode', 1, 'html');
@@ -185,7 +305,7 @@ class SugarStdlib {
             case 'xml':
                 return new SugarEscaped(htmlspecialchars($value, ENT_QUOTES, $sugar->charset));
             case 'js':
-                return new SugarEscaped(SugarUtil::jsValue($value));
+                return new SugarEscaped(SugarUtil::jsvalue($value));
             case 'url':
                 return new SugarEscaped(urlencode($value));
             default:
@@ -193,23 +313,76 @@ class SugarStdlib {
         }
     }
 
+    /*++
+     *+ @name var
+     *+ @param string $name The variable to lookup.
+     *+ @return mixed The value of the requested variable.
+     *+
+     *+ This returns the value of the requested variable.  This function is
+     *+ useful when the name of a variable required is known only by the value
+     *+ of another variable.
+     *+
+     *+ In particular, these three lines are equivalent:
+     *+   <% $foo %>
+     *+   <% var 'foo' %>
+     *+   <% $name = 'foo' ; var $name %>
+     */
     public static function _var ($sugar, $params) {
         $name = SugarUtil::getArg($params, 'name', 0);
         return $sugar->getVariable($name);
     }
 
+    /*++
+     *+ @name array
+     *+ @varargs mixed
+     *+ @return array All of the parameters returned as an array.
+     *+
+     *+ Returns all of the parameters converted into an array.  Named
+     *+ parameters result in appropriate array keys, while unnamed
+     *+ parameters result in appropriate array indexes.
+     */
     public static function _array ($sugar, $params) {
         return $params;
     }
 
+    /*++
+     *+ @name strtolower
+     *+ @param string $string The string to process.
+     *+ @return string $string with all characters lower-cased.
+     *+
+     *+ Equivalent to PHP's strtolower().
+     */
     public static function strtolower ($sugar, $params) {
         return strtolower(SugarUtil::getArg($params, 'string', 0));
     }
 
+    /*++
+     *+ @name strtoupper
+     *+ @param string $string The string to process.
+     *+ @return string $string with all characters upper-cased.
+     *+
+     *+ Equivalent to PHP's strtoupper().
+     */
     public static function strtoupper ($sugar, $params) {
         return strtoupper(SugarUtil::getArg($params, 'string', 0));
     }
 
+    /*++
+     *+ @name substr
+     *+ @param string $string The string to cut.
+     *+ @param int $start The position to cut at.
+     *+ @param int $length The number of characters to cut.
+     *+ @return string The cut string.
+     *+
+     *+ Returns a portion of the input string, no more than $length characters
+     *+ long, starting the character index $index.
+     *+
+     *+ Examples:
+     *+   substr 'hello world', 2, 6 // llo wo
+     *+   substr 'hello world', 0, 5 // hello
+     *+   substr 'hello world', 6, 5 // world
+     *+   substr 'hello world', 10, 5 // ld
+     */
     public static function substr ($sugar, $params) {
         $string = SugarUtil::getArg($params, 'string', 0);
         $start = SugarUtil::getArg($params, 'start', 1);
@@ -217,17 +390,44 @@ class SugarStdlib {
         return substr($string, $start, $length);
     }
 
+    /*++
+     *+ @name nl2br
+     *+ @param string $string The string to process.
+     *+ @return raw $string all newlines replaced with '<br />' and all HTML special characters escaped.
+     *+
+     *+ Equivalent to calling Sugar::escape() followed by PHP's nl2br().
+     */
     public static function nl2br ($sugar, $params) {
         $string = SugarUtil::getArg($params, 'string', 0);
         return new SugarEscaped(nl2br($sugar->escape($string)));
     }
 
+    /*++
+     *+ @name cycle
+     *+ @return int Alternates between returning 0 and 1.
+     *+
+     *+ Returns either 0 or 1, each time returning the opposite of the value
+     *+ returned from the prior call.  The first call will return 0, the
+     *+ second returns 1, and third returns 0, and so on.
+     *+
+     *+ This is most useful when printing rows of data that should be
+     *+ displayed in alternating colors use CSS.  Example:
+     *+  <tr class="row<% cycle %>">
+     */
     public static function cycle ($sugar, $params) {
         $value = $sugar->getVariable('$sugar.cycle');
         $sugar->set('$sugar.cycle', !$value);
         return (int)$value;
     }
 
+    /*++
+     *+ @name isset
+     *+ @param array|object $object Array or object to look inside.
+     *+ @param mixed $index The index to look for.
+     *+ @return bool True if the index is found, false otherwise.
+     *+
+     *+ Equivalent to PHP's isset() function.
+     */
     public static function _isset ($sugar, $params) {
         $obj = SugarUtil::getArg($params, 'object', 0);
         $index = SugarUtil::getArg($params, 'index', 1);
@@ -239,10 +439,26 @@ class SugarStdlib {
             return false;
     }
 
-		public static function printf ($sugar, $params) {
-			$format = array_shift($params);
-			return vsprintf($format, $params);
-		}
+    /*++
+     *+ @name time
+     *+ @return int Current UNIX timestamp.
+     *+
+     *+ Equivalent to PHP's time().
+     */
+    public static function time ($sugar, $params) {
+        return time();
+    }
+
+    /*++
+     *+ @name basename
+     *+ @param string $path File path name.
+     *+ @return string Just the file portion of $path.
+     *+
+     *+ Equivalent to PHP's basename().
+     */
+    public static function basename ($sugar, $params) {
+        return basename(SugarUtil::getArg($params, 'path', 0));
+    }
 
     /**#@-*/
 
@@ -257,17 +473,16 @@ class SugarStdlib {
             'eval' => array(array('SugarStdlib', '_eval'), 0),
             'echo' => array(array('SugarStdlib', '_echo'), 0),
             'raw' => array(array('SugarStdlib', '_echo'), 0),
-            'urlencodeall' => array(array('SugarStdlib', 'urlEncodeAll'), 0),
-            'urlencode' => array(array('SugarStdlib', 'urlEncode'), 0),
-            'jsvalue' => array(array('SugarStdlib', 'jsValue'), 0),
+            'urlencode' => array(array('SugarStdlib', 'urlencode'), 0),
+            'jsvalue' => array(array('SugarStdlib', 'jsvalue'), 0),
             'default' => array(array('SugarStdlib', '_default'), 0),
             'date' => array(array('SugarStdlib', 'date'), 0),
             'format' => array(array('SugarStdlib', 'format'), 0),
+            'printf' => array(array('SugarStdlib', 'format'), 0),
             'count' => array(array('SugarStdlib', 'count'), 0),
             'selected' => array(array('SugarStdlib', 'selected'), 0),
             'checked' => array(array('SugarStdlib', 'checked'), 0),
             'switch' => array(array('SugarStdlib', '_switch'), 0),
-            'basename' => array('basename', SUGAR_FUNC_NATIVE),
             'truncate' => array(array('SugarStdlib', 'truncate'), 0),
             'escape' => array(array('SugarStdlib', 'escape'), 0),
             'var' => array(array('SugarStdlib', '_var'), 0),
@@ -275,12 +490,12 @@ class SugarStdlib {
             'strtoupper' => array(array('SugarStdlib', 'strtoupper'), 0),
             'strtolower' => array(array('SugarStdlib', 'strtolower'), 0),
             'substr' => array(array('SugarStdlib', 'substr'), 0),
-            'time' => array('time', SUGAR_FUNC_NATIVE),
             'nl2br' => array(array('SugarStdlib', 'nl2br'), 0),
             'cycle' => array(array('SugarStdlib', 'cycle'), 0),
             'isset' => array(array('SugarStdlib', '_isset'), 0),
-            'printf' => array(array('SugarStdlib', 'printf'), 0),
+            'time' => array(array('SugarStdlib', 'time'), 0),
+            'basename' => array(array('SugarStdlib', 'basename'), 0),
         ));
     }
 }
-// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
+// vim: set expandtab shiftwidth=4 tabstop=4: ?>
