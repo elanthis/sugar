@@ -77,33 +77,6 @@ class SugarRuntime {
     }
 
     /**
-     * Invokes a PHP-Sugar registered function.  This function is
-     * responsible for handling certain function flags, and also
-     * provides a generic exception wrapper to allow template-called
-     * functions which throw exceptions to be handled by the normal
-     * Sugar error handlers.
-     *
-     * @param Sugar $sugar Sugar instance in use.
-     * @param callback $invoke Function to invoke.
-     * @param int $flags Function flags.
-     * @param array $args The arguments to the function.
-     * @return mixed Function return value.
-     */
-    public static function invoke ($sugar, $invoke, $flags, $args) {
-        // exception net
-        try {
-            // call function, using appropriate method
-            if ($flags & SUGAR_FUNC_NATIVE)
-                return call_user_func_array($invoke, $args);
-            else
-                return call_user_func($invoke, $sugar, $args);
-        } catch (Exception $e) {
-            $sugar->handleError($e);
-            return null;
-        }
-    }
-
-    /**
      * Executes the given bytecode.  The return value is the last item on
      * the stack, if any.  For complete templates, this should be nothing
      * (null).
@@ -253,8 +226,14 @@ class SugarRuntime {
                     foreach($args as $name=>$pcode)
                         $params[$name] = SugarRuntime::execute($sugar, $pcode);
 
-                    // exception net
-                    $ret = SugarRuntime::invoke($sugar, $invoke[0], $invoke[1], $params);
+										// exception net
+										try {
+												// call function, using appropriate method
+												$ret = call_user_func($invoke, $sugar, $params);
+										} catch (Exception $e) {
+												$sugar->handleError($e);
+												$ret = null;
+										}
 
                     // store return value
                     $stack []= $ret;
@@ -281,8 +260,14 @@ class SugarRuntime {
                     foreach($args as $pcode)
                         $params [] = SugarRuntime::execute($sugar, $pcode);
 
-                    // invoke
-                    $stack []= SugarRuntime::invoke($sugar, array($obj, $func), SUGAR_FUNC_NATIVE, $params);
+										// exception net
+										try {
+												// invoke method
+												$stack []= @call_user_func_array(array($obj, $func), $params);
+										} catch (Exception $e) {
+												$sugar->handleError($e);
+												$stack []= null;
+										}
                     break;
                 case 'if':
                     $clauses = $code[++$i];

@@ -491,11 +491,6 @@ class SugarParser {
 
             // function call?
             } elseif ($this->tokens->accept('name', $func)) {
-                // lookup function
-                $invoke = $this->sugar->getFunction($func);
-                if (!$invoke)
-                    throw new SugarParseException($this->tokens->getFile(), $this->tokens->getLine(), 'unknown function `'.$func.'`');
-
                 // check if we're parenthesized, and get args
                 if ($this->tokens->accept('('))
                     $params = $this->parseFunctionArgs(true);
@@ -504,10 +499,7 @@ class SugarParser {
 
                 // build function call
                 $block []= array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
-
-                // if the function does not have SUPPRESS_RETURN, print return val
-                if ( !isset($invoke[2]) || !($invoke[2] & SUGAR_FUNC_SUPPRESS_RETURN))
-                    $block []= array('print');
+								$block []= array('print');
 
             // we have a statement
             } else {

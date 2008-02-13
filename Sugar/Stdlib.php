@@ -93,7 +93,7 @@ class SugarStdlib {
      */
     public static function urlencode ($sugar, $params) {
         $value = SugarUtil::getArg($params, 'value', 0);
-        if (is_array($value))
+        if (is_array($value)) {
             $result = array();
             foreach($value as $k=>$v)
                 $result []= urlencode($k) . '=' . urlencode($v);
@@ -469,32 +469,32 @@ class SugarStdlib {
      */
     public static function initialize ($sugar) {
         $sugar->registerList(array(
-            'include' => array(array('SugarStdlib', '_include'), 0),
-            'eval' => array(array('SugarStdlib', '_eval'), 0),
-            'echo' => array(array('SugarStdlib', '_echo'), 0),
-            'raw' => array(array('SugarStdlib', '_echo'), 0),
-            'urlencode' => array(array('SugarStdlib', 'urlencode'), 0),
-            'jsvalue' => array(array('SugarStdlib', 'jsvalue'), 0),
-            'default' => array(array('SugarStdlib', '_default'), 0),
-            'date' => array(array('SugarStdlib', 'date'), 0),
-            'format' => array(array('SugarStdlib', 'format'), 0),
-            'printf' => array(array('SugarStdlib', 'format'), 0),
-            'count' => array(array('SugarStdlib', 'count'), 0),
-            'selected' => array(array('SugarStdlib', 'selected'), 0),
-            'checked' => array(array('SugarStdlib', 'checked'), 0),
-            'switch' => array(array('SugarStdlib', '_switch'), 0),
-            'truncate' => array(array('SugarStdlib', 'truncate'), 0),
-            'escape' => array(array('SugarStdlib', 'escape'), 0),
-            'var' => array(array('SugarStdlib', '_var'), 0),
-            'array' => array(array('SugarStdlib', '_array'), 0),
-            'strtoupper' => array(array('SugarStdlib', 'strtoupper'), 0),
-            'strtolower' => array(array('SugarStdlib', 'strtolower'), 0),
-            'substr' => array(array('SugarStdlib', 'substr'), 0),
-            'nl2br' => array(array('SugarStdlib', 'nl2br'), 0),
-            'cycle' => array(array('SugarStdlib', 'cycle'), 0),
-            'isset' => array(array('SugarStdlib', '_isset'), 0),
-            'time' => array(array('SugarStdlib', 'time'), 0),
-            'basename' => array(array('SugarStdlib', 'basename'), 0),
+            'include' => array('SugarStdlib', '_include'),
+            'eval' => array('SugarStdlib', '_eval'),
+            'echo' => array('SugarStdlib', '_echo'),
+            'raw' => array('SugarStdlib', '_echo'),
+            'urlencode' => array('SugarStdlib', 'urlencode'),
+            'jsvalue' => array('SugarStdlib', 'jsvalue'),
+            'default' => array('SugarStdlib', '_default'),
+            'date' => array('SugarStdlib', 'date'),
+            'format' => array('SugarStdlib', 'format'),
+            'printf' => array('SugarStdlib', 'format'),
+            'count' => array('SugarStdlib', 'count'),
+            'selected' => array('SugarStdlib', 'selected'),
+            'checked' => array('SugarStdlib', 'checked'),
+            'switch' => array('SugarStdlib', '_switch'),
+            'truncate' => array('SugarStdlib', 'truncate'),
+            'escape' => array('SugarStdlib', 'escape'),
+            'var' => array('SugarStdlib', '_var'),
+            'array' => array('SugarStdlib', '_array'),
+            'strtoupper' => array('SugarStdlib', 'strtoupper'),
+            'strtolower' => array('SugarStdlib', 'strtolower'),
+            'substr' => array('SugarStdlib', 'substr'),
+            'nl2br' => array('SugarStdlib', 'nl2br'),
+            'cycle' => array('SugarStdlib', 'cycle'),
+            'isset' => array('SugarStdlib', '_isset'),
+            'time' => array('SugarStdlib', 'time'),
+            'basename' => array('SugarStdlib', 'basename'),
         ));
     }
 }

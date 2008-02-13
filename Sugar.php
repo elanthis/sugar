@@ -71,21 +71,6 @@ require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
 define('SUGAR_VERSION', '0.73');
 
 /**
- * Pass this flag to {@link Sugar::register} to indicate that the function
- * uses the native PHP function call syntax, instead of the PHP-Sugar
- * syntax.
- */
-define('SUGAR_FUNC_NATIVE', 1);
-
-/**
- * Pass this flag to {@link Sugar::register} to indicate that the return
- * value of the function should not be printed by default when called as a
- * top-level function.  This flag has no effect when the function is called
- * as part of an expression.
- */
-define('SUGAR_FUNC_SUPPRESS_RETURN', 2);
-
-/**
  * Passed to cache drivers to indicate that a compile cache is requested.
  */
 define('SUGAR_CACHE_TPL', 'ctpl');
@@ -305,10 +290,10 @@ class Sugar {
      * @param int $flags Bitset including {@link SUGAR_FUNC_SUPPRESS_RETURN} or {@link SUGAR_FUNC_NATIVE}.
      * @return bool true on success
      */
-    public function register ($name, $invoke=null, $flags=0) {
+    public function register ($name, $invoke=null) {
         if (!$invoke)
             $invoke = $name;
-        $this->funcs [strtolower($name)]= array($invoke, $flags);
+        $this->funcs [strtolower($name)]= $invoke;
         return true;
     }
 
@@ -351,7 +336,11 @@ class Sugar {
      * @return array
      */
     public function getFunction ($name) {
-        return $this->funcs[strtolower($name)];
+				$name = strtolower($name);
+				if (isset($this->funcs[$name]))
+						return $this->funcs[$name];
+				else
+						return false;
     }
 
     /**
