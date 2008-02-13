@@ -13,7 +13,7 @@ if (isset($_GET['t']))
 	$file = $_GET['t'];
 
 // scan available templates
-$templates = preg_replace('/[.]tpl$/', '', preg_grep('/^[^.].*[.]tpl$/', scandir('templates')));
+$templates = preg_replace('/[.]tpl$/', '', preg_grep('/^[^.]+[.]tpl$/', scandir('templates')));
 
 // create parser
 $begin_create = microtime(true);
@@ -73,6 +73,11 @@ $sugar->set('list', array('one','two','three','foo'=>'bar'));
 $sugar->set('obj', new Test());
 $sugar->set('random', rand()%1000);
 $sugar->set('newlines', "This\nhas\nnewlines!");
+
+// fetch testing
+$sugar->set('fetch_string', $sugar->fetchString('1+<% $i %>=<% 1 + $i %>'));
+$sugar->set('fetch_file', $sugar->fetch('fetch.file'));
+$sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
 
 // display file
 $sugar->debug = true;
