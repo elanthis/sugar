@@ -68,7 +68,7 @@ require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
 /**
  * Version of PHP-Sugar.
  */
-define('SUGAR_VERSION', '0.73');
+define('SUGAR_VERSION', '0.74');
 
 /**
  * Passed to cache drivers to indicate that a compile cache is requested.

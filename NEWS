@@ -8,6 +8,7 @@
 + Made the -> operator an alias of the . operator.
 + Added inline documentation for stdlib template functions.
 + Removed function flags.
++ Added gen-doc.php documentation generator.
 
 ==================
 ** Version 0.73 **
