@@ -135,7 +135,7 @@ class SugarStdlib {
      *+ @name format
      *+ @alias printf
      *+ @param string $format Format string.
-     *+ @vararg mixed
+     *+ @varargs mixed
      *+ @return string Formatted string.
      *+
      *+ Formats the input arguments using sprintf().
