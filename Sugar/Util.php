@@ -2,7 +2,7 @@
 /**
  * PHP-Sugar Template Engine
  *
- * Copyright (c) 2007  AwesomePlay Productions, Inc. and
+ * Copyright (c) 2008  AwesomePlay Productions, Inc. and
  * contributors.  All rights reserved.
  *
  * LICENSE:
@@ -27,7 +27,7 @@
  *
  * @package Sugar
  * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2007 AwesomePlay Productions, Inc. and contributors
+ * @copyright 2008 AwesomePlay Productions, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
  */
 

@@ -1,6 +1,6 @@
 PHP-Sugar Template Engine
 =======================================================================
-Copyright (C) 2007  AwesomePlay Productions, Inc.
+Copyright (C) 2008  AwesomePlay Productions, Inc.
 Sean Middleditch <sean@awesomeplay.com>
 See LICENSE for copying and distribution details.
 
@@ -95,15 +95,15 @@ Examples:
     <% $vector = [1, 2, 5] %>
   <% $map = array(first=1, second=2, third=5) %>
 
-Object properties can be accessed using the -> operator.  Object
-methods, if enabled, can be invoked using the -> operator followed
-by a method name, then a list of comma-separated parameters within
-().  Example:
+Object properties can be accessed using the . or [] operators, just
+like arrays.  Object methods, if enabled, can be invoked using the
+. operator followed by a method name, then a list of comma-separated
+parameters within ().  Example:
 
-  <% $obj->name %>
-  <% $obj->$var %>
-  <% $obj->method() %>
-  <% $obj->foobar(1, $var, "test") %>
+  <% $obj.name %>
+  <% $obj[$var] %>
+  <% $obj.method() %>
+  <% $obj.foobar(1, $var, "test") %>
 
 The value of a variable is always HTML-escaped by default.  To
 display the value of a variable with no escaping, use the raw
@@ -253,14 +253,12 @@ Registering new function requires the register() method.  The first
 parameter is the name of the function as used within templates.  The
 second optional parameter is the callback to use when invoking the
 function; if ommitted, the PHP function of the same name as the first
-argument will be invoked.  The third optional parameter may be the
-flag SUGAR_FUNC_NATIVE.
+argument will be invoked.
 
   $sugar->register('myFunc');
   $sugar->register('foo', 'some_function');
   $sugar->register('getCost', array($cart, 'get_cost'));
-  $sugar->register('size, 'count', SUGAR_FUNC_NATIVE);
-  $sugar->register('dynamic', 'dynamic');
+  $sugar->register('dynamic', 'my_dynamic');
 
 Normal functions receive two arguments: the Sugar object and a keyed
 array with the parameters.  Functions registered with
@@ -273,7 +271,7 @@ regular PHP function.
 
     return "arg1=$arg1, arg2=$arg2";
   }
-  $sugar->register('printArgs', 'mySugarFunc'
+  $sugar->register('printArgs', 'mySugarFunc');
 
 The SugarUtil::getArg() function is a utility function to help make
 writing Sugar function handlers easier.  The first parameter is the
@@ -353,6 +351,7 @@ when the results are already cached.
 
   if (!$sugar->isCached('life', 42))
     $sugar->set('results', $db->queryData());
+	$sugar->displayCache('life', 42);
 
 -----------------------------------------------------------------------
 V.   Extending Sugar
