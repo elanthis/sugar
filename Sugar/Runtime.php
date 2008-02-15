@@ -346,7 +346,7 @@ class SugarRuntime {
             }
         }
 
-        return isset($stack[0]) ? $stack[0] : false;
+        return end($stack);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>
