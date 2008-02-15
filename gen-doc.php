@@ -1,3 +1,4 @@
+#!/usr/bin/php
 <?php
 /**
  * PHP-Sugar Template Engine
@@ -32,21 +33,24 @@
  */
 
 // read in StdLib.php
-$file = file_get_contents('Sugar/Stdlib.php');
-if (!$file)
+$data = file_get_contents('Sugar/Stdlib.php');
+if (!$data)
 	die('File not found');
-
-// parse out lines
-$doclines = preg_grep('/\*\+/', explode("\n", $file));
 
 // read in doc blocks
 $blocks = array();
 $block = array();
-foreach($doclines as $line) {
+foreach(explode("\n", $data) as $lno=>$line) {
+	$file = 'Sugar/Stdlib.php:'.($lno+1);
+
+	// ensure we've got a valid doc line
+	if (!preg_match('/\*\+/', $line))
+		continue;
+
 	// new block?
 	if (preg_match('/\*\+\+/', $line)) {
 		if ($block) {
-			$blocks [$block['name']]= $block;
+			$blocks [$block['group'].'.'.$block['name']]= $block;
 			$block = array();
 		}
 		continue;
@@ -61,24 +65,27 @@ foreach($doclines as $line) {
 		case 'name':
 			$block['name'] = $ar[2];
 			break;
+		case 'group':
+			$block['group'] = $ar[2];
+			break;
 		case 'alias':
 			$block['alias'] []= $ar[2];
 			break;
 		case 'param':
 			if (!preg_match('/([\w|]+)(\??)\s+\$(\w+)\s+(.*)/', $ar[2], $ar))
-				die('Malformed param attribute: '.$line);
+				die("$file: Malformed param attribute");
 			$block['param'] []= array('type' => $ar[1], 'optional' => ($ar[2] == '?' ? true : false), 'name' => $ar[3], 'doc' => $ar[4]);
 			break;
 		case 'return':
 			if (!preg_match('/([\w|]+)\s+(.*)/', $ar[2], $ar))
-				die('Malformed return attribute: '.$line);
+				die("$file: Malformed return attribute");
 			$block['return'] = array('type' => $ar[1], 'doc' => $ar[2]);
 			break;
 		case 'varargs':
 			$block['varargs'] = $ar[2];
 			break;
 		default:
-			die('Unknown attribute '.$ar[1]);
+			die("$file: Unknown attribute {$ar[1]}");
 		}
 	} else {
 		if ($block['doc'] || $line)
@@ -86,7 +93,7 @@ foreach($doclines as $line) {
 	}
 }
 if ($block)
-	$blocks [$block['name']]= $block;
+	$blocks [$block['group'].'.'.$block['name']]= $block;
 
 // sort
 ksort($blocks);
@@ -97,4 +104,5 @@ $sugar = new Sugar();
 $sugar->cacheDir = './test/templates/cache';
 $sugar->templateDir = '.';
 $sugar->set('blocks', $blocks);
+$sugar->set('light', $_GET['light'] || in_array('-light', (array)$_SERVER['argv']));
 $sugar->display('gen-doc.tpl');

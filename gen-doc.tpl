@@ -1,57 +1,11 @@
-<html><head><title>Sugar Reference</title><style type="text/css">
-.sugardoc_block {
-	border: 1px solid #000;
-	margin: 15px;
-}
-.sugardoc_name {
-	border-bottom: 1px solid #000;
-	padding: 10px;
-	font-size: 140%;
-	font-weight: bold;
-	background: #ccc;
-}
-.sugardoc_body {
-	padding: 10px;
-}
-.sugardoc_call {
-	border: 1px solid #00c;
-	background: #ccf;
-	padding: 10px;
-	margin: 0 0 10px 0;
-}
-.sugardoc_call_type {
-	font-family: mono;
-	font-size: 80%;
-}
-.sugardoc_call_name {
-	font-weight: bold;
-}
-.sugardoc_call_param {
-	color: #009;
-}
-.sugardoc_call_definitions {
-}
-.sugardoc_heading {
-	font-weight: bold;
-}
-.sugardoc_params {
-	border: 1px solid #00c;
-	background: #ccf;
-	padding: 10px;
-	margin: 0 0 10px 0;
-}
-.sugardoc_return {
-	border: 1px solid #00c;
-	background: #ccf;
-	padding: 10px;
-	margin: 0 0 10px 0;
-}
-.sugardoc_doc {
-	margin: 0 0 10px 0;
-}
-</style></head><body>
+<% if !$light %>
+<html><head><title>Sugar Reference</title>
+<link rel="stylesheet" type="text/css" href="sugardoc.css" />
+</head><body>
+<% end %>
 
-<a name="top"></a><ul>
+<a name="top"></a>
+<ul>
 	<% foreach $block in $blocks %>
 	<li><a href="#sugardoc_block_<% $block.name %>"><% $block.name %></a></li>
 	<% end %>
@@ -61,24 +15,32 @@
 <div class="sugardoc_block"><a name="sugardoc_block_<% $block.name %>"></a>
 	<div class="sugardoc_name"><div style="float:right;font-size:50%;font-weight:normal;"><a href="#top">[top]</a></div><% $block.name %></div>
 	<div class="sugardoc_body">
+		<% if $block.alias %>
+			<div class="sugardoc_heading">Also Known As:</div>
+			<div class="sugardoc_alias">
+				<% join ', ', $block.alias %>
+			</div>
+		<% end %>
 		<div class="sugardoc_heading">Call Prototype:</div>
 		<div class="sugardoc_call">
-			<span class="sugardoc_call_type"><% $block.return.type %></span>
-			<span class="sugardoc_call_name"><% $block.name %></span>
-			(
-			<% foreach $i,$param in $block.param %>
-				<% if $i != 0 ; ',' ; end %>
-				<% if $param.optional ; '[' ; end %>
-				<span class="sugardoc_call_type"><% $param.type %></span>
-				<span class="sugardoc_call_param">$<% $param.name %></span>
-				<% if $param.optional ; ']' ; end %>
+			<% foreach $name in merge([$block.name], $block.alias) %>
+				<span class="sugardoc_call_type"><% $block.return.type %></span>
+				<span class="sugardoc_call_name"><% $name %></span>
+				(
+				<% foreach $i,$param in $block.param %>
+					<% if $i != 0 ; ',' ; end %>
+					<% if $param.optional ; '[' ; end %>
+					<span class="sugardoc_call_type"><% $param.type %></span>
+					<span class="sugardoc_call_param">$<% $param.name %></span>
+					<% if $param.optional ; ']' ; end %>
+				<% end %>
+				<% if $block.varargs %>
+					<% if $i != 0 ; ',' ; end %>
+					<span class="sugardoc_call_type"><% $block.varargs %></span>
+					...
+				<% end %>
+				);<br />
 			<% end %>
-			<% if $block.varargs %>
-				<% if $i != 0 ; ',' ; end %>
-				<span class="sugardoc_call_type"><% $block.varargs %></span>
-				...
-			<% end %>
-			);
 		</div>
 		<% if $block.param %>
 		<div class="sugardoc_heading">Parameters:</div>
@@ -95,16 +57,69 @@
 		<% end %>
 		<div class="sugardoc_heading">Description:</div>
 		<div class="sugardoc_doc">
-			<% foreach $line in $block.doc %>
-				<% if substr($line, 0, 2) == '  ' %>
-					<div style="white-space: pre; font-family: mono;"><% $line %></div>
-				<% else %>
-					<div><% $line %>&nbsp;</div>
-				<% end %>
-			<% end %>
+			<%
+			// mode: r for regular text, c for code blocks
+			$lmode = 'r';
+			// set to try after encountering an empty line
+			$empty = false;
+			// iterator over each line
+			foreach $line in $block.doc;
+				// if we have an empty line, remember that,
+				// but don't display anything just yet
+				if $line == '';
+					$empty = true;
+				// this line is part of a code block
+				elif substr($line, 0, 2) == '  ';
+					// if we're not currently in code block mode, switch
+					if $lmode != 'c';
+						$lmode = 'c';
+						// clear any blank lines
+						$empty = false;
+						// start dic
+						echo '<div class="sugardoc_code">';
+					// already in code mode
+					else;
+						// handle empty line
+						if $empty;
+							$empty = false;
+							echo '<br/>';
+						end;
+					end;
+					// display line
+					$line; echo '<br />';
+				// regular line
+				else;
+					// if we're in code block mode, end it
+					if $lmode == 'c';
+						$lmode = 'r';
+						// clear empty line flag
+						$empty = false;
+						// end the code block
+						echo '</div>';
+					// not in code block mode
+					else;
+						// handle empty line
+						if $empty;
+							$empty = false;
+							echo '<br/><br/>';
+						end;
+					end;
+					// display the line
+					$line;
+					// put a space between end of this line and beginning of next
+					' ';
+				end;
+			end;
+			// terminate code block if we're in it
+			if $lmode == 'c';
+				echo '</div>';
+			end;
+			%>
 		</div>
 	</div>
 </div>
 <% end %>
 
+<% if !$light %>
 </body></html>
+<% end %>
