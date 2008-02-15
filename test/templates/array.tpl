@@ -13,6 +13,10 @@ Result: <% [1,2,3] %></p>
 Expect: ['foo','bar','baz']<br>
 Result: <% ['foo','bar','baz'] %></p>
 
+<p>Test: explode ' ', 'one two three'<br/>
+Expect: ['one','two','three']<br>
+Result: <% explode ' ', 'one two three' %></p>
+
 <p>Test: $list<br/>
 Expect: {0:'one',1:'two',2:'three','foo':'bar'}<br>
 Result: <% $list %></p>

@@ -514,7 +514,10 @@ class SugarStdlib {
 			$sep = (string)SugarUtil::getArg($params, 'delimiter', 0, ' ');
 			$string = (string)SugarUtil::getArg($params, 'string', 1);
 			$count = SugarUtil::getArg($params, 'count', 2);
-			return explode($sep, $string, $count);
+			if (!is_null($count))
+				return explode($sep, $string, $count);
+			else
+				return explode($sep, $string);
 		}
 
 		/*++
