@@ -132,8 +132,8 @@ class SugarStdlib {
     }
 
     /*++
-     *+ @name format
-     *+ @alias printf
+     *+ @name printf
+     *+ @alias format
      *+ @param string $format Format string.
      *+ @varargs mixed
      *+ @return string Formatted string.
@@ -460,6 +460,84 @@ class SugarStdlib {
         return basename(SugarUtil::getArg($params, 'path', 0));
     }
 
+		/*++
+		 *+ @name merge
+		 *+ @varargs array
+		 *+ @return array All input arrays merged.
+		 *+
+		 *+ Takes any number of arrays and merges them into a single array.
+		 *+ Non-array values given are ignored.
+		 *+
+		 *+ Equivalent to PHP's array_merge().
+		 */
+		public static function merge ($sugar, $params) {
+			// clean params of non-arrays
+			foreach ($params as $i=>$k) {
+				if (!is_array($k))
+					unset($params[$i]);
+			}
+			// use array_merge
+			return call_user_func_array('array_merge', $params);
+		}
+
+		/*++
+		 *+ @name join
+		 *+ @alias implode
+		 *+ @param string $separator String to put between joined elements.
+		 *+ @param array $array Array to join.
+		 *+ @return string All elements of $array joined together.
+		 *+
+		 *+ Joins all of the elements of the given array together into a
+		 *+ single string, with each element separated by the given
+		 *+ separator.
+		 *+
+		 *+ Equivalent to PHP's implode().
+		 */
+		public static function join ($sugar, $params) {
+			$sep = (string)SugarUtil::getArg($params, 'separator', 0, ' ');
+			$array = (array)SugarUtil::getArg($params, 'array', 1);
+			return implode($sep, $array);
+		}
+
+		/*++
+		 *+ @name split
+		 *+ @alias explode
+		 *+ @param string $delimiter Separator to split on.
+		 *+ @param string $string String to split.
+		 *+ @param int $count Maximum elements in result, or infinite if unset.
+		 *+
+		 *+ Splits the given input string into an array of elements.
+		 *+
+		 *+ Equivalent to PHP's explode().
+		 */
+		public static function split ($sugar, $params) {
+			$sep = (string)SugarUtil::getArg($params, 'delimiter', 0, ' ');
+			$string = (string)SugarUtil::getArg($params, 'string', 1);
+			$count = SugarUtil::getArg($params, 'count', 2);
+			return explode($sep, $string, $count);
+		}
+
+		/*++
+		 *+ @name psplit
+		 *+ @param string $expr Regular expression to split on.
+		 *+ @param string $string String to split.
+		 *+ @param int $count Maximum elements in result, or infinite if unset.
+		 *+
+		 *+ Splits the given input string into an array of elements using
+		 *+ a regular expression as the delimiter.
+		 *+
+		 *+ Example:
+		 *+   <% psplit '/\s+/', $string %>
+		 *+
+		 *+ Equivalent to PHP's preg_split().
+		 */
+		public static function psplit ($sugar, $params) {
+			$expr = (string)SugarUtil::getArg($params, 'expr', 0, ' ');
+			$string = (string)SugarUtil::getArg($params, 'string', 1);
+			$count = SugarUtil::getArg($params, 'count', 2);
+			return preg_split($expr, $string, $count);
+		}
+
     /**#@-*/
 
     /**
@@ -495,6 +573,12 @@ class SugarStdlib {
             'isset' => array('SugarStdlib', '_isset'),
             'time' => array('SugarStdlib', 'time'),
             'basename' => array('SugarStdlib', 'basename'),
+            'merge' => array('SugarStdlib', 'merge'),
+            'join' => array('SugarStdlib', 'join'),
+            'implode' => array('SugarStdlib', 'join'),
+            'split' => array('SugarStdlib', 'split'),
+            'explode' => array('SugarStdlib', 'split'),
+            'psplit' => array('SugarStdlib', 'psplit'),
         ));
     }
 }
