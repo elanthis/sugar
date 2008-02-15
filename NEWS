@@ -4,7 +4,7 @@
 
 + Fix fetch*() family of functions.
 + More E_STRICT|E_ALL errors fixed.
-+ Added isset and printf template functions.
++ Added isset, printf, join, split, pspli, and merge template functions.
 + Made the -> operator an alias of the . operator.
 + Added inline documentation for stdlib template functions.
 + Removed function flags.
