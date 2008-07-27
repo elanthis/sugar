@@ -247,13 +247,22 @@ Functions receive two arguments: the Sugar object and a keyed array
 with the parameters.  Method calls will be called using the native
 PHP approach.
 
-  function mySugarFunc ($sugar, $params) {
+  function sugar_function_printargs ($sugar, $params) {
     $arg1 = SugarUtil::getArg($params, 'arg1', 0);
     $arg2 = SugarUtil::getArg($params, 'arg2', 1);
 
     return "arg1=$arg1, arg2=$arg2";
   }
-  $sugar->register('printArgs', 'mySugarFunc');
+  $sugar->register('printArgs', 'sugar_function_printargs');
+ 
+It is not always necessary to use $sugar->register() to expode a
+function to Sugar.  Sugar will automatically look for functions
+named sugar_function_foo, where foo is the name of the function
+being called, if there is no registered function named foo.
+
+Sugar will also search in the directory $sugar->pluginDir for
+files named sugar_function_foo.php to attempt to load up unknown
+function names.
 
 The SugarUtil::getArg() function is a utility function to help make
 writing Sugar function handlers easier.  The first parameter is the
@@ -295,9 +304,14 @@ The template directory can be by setting the $templateDir
 property of the Sugar object.  The cache directory can be changed
 by setting the $cacheDir property.
 
-  $sugar->templateDir = '/var/myapp/tpl/';
-  $sugar->cacheDir = '/var/myapp/ctpl/';
+  $sugar->templateDir = '/var/myapp/tpl';
+  $sugar->cacheDir = '/var/myapp/ctpl';
   $sugar->debug = true; // force recompilation and disable caching
+
+The plugins directry can be changed by setting the $pluginDir
+property.
+
+  $sugar->pluginDir = '/var/myapp/plugins';
 
 Caching can be performed on a template by using the displayCache()
 method.  This method takes a second optional parameter, which is a
