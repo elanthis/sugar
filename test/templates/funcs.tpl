@@ -13,9 +13,9 @@ Result: {% one str='test' %}
 Expect: 1<br>
 Result: {% showText text=1 %}
 
-<p>Test: showText text=one()<br>
+<p>Test: showText text=one<br>
 Expect: Uno<br>
-Result: {% showText text=one() %}
+Result: {% showText text=one %}
 
 <p>Test: array foo='a string' bar=['an', 'array'] number=42<br>
 Expect: {'foo':'a string','bar':['an','array'],'number':42}<br>
