@@ -538,7 +538,7 @@ function sugar_function_split ($sugar, $params) {
     $sep = (string)SugarUtil::getArg($params, 'delimiter', ' ');
     $string = (string)SugarUtil::getArg($params, 'string');
     $count = (int)SugarUtil::getArg($params, 'count');
-    if (!is_null($count))
+    if ($count > 0)
         return explode($sep, $string, $count);
     else
         return explode($sep, $string);
