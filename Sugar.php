@@ -408,8 +408,8 @@ class Sugar {
         // perform proper escaping for current mode
         switch ($this->output) {
             case SUGAR_OUTPUT_HTML:
+                return htmlentities($output, ENT_COMPAT, $this->charset);
             case SUGAR_OUTPUT_XHTML:
-                return htmlentities($output, ENT_QUOTES, $this->charset);
             case SUGAR_OUTPUT_XML:
                 return htmlspecialchars($output, ENT_QUOTES, $this->charset);
             case SUGAR_OUTPUT_TEXT:
