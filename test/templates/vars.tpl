@@ -1,19 +1,19 @@
-<% $title = 'Variable Tests' %>
-<% include 'header' %>
+{% $title = 'Variable Tests' %}
+{% include 'header' %}
 
 <p>Expect: dancing mice<br>
-Result: <% $test %>
+Result: {% $test %}
 
 <p>Expect: 10<br>
-Result: <% $i %>
+Result: {% $i %}
 
 <p>Expect: 50<br/>
-Result: <% $i*5 %></p>
+Result: {% $i*5 %}</p>
 
 <p>Expect: 7<br/>
-Result: <% $i=7 ; $i %></p>
+Result: {% $i=7 ; $i %}</p>
 
 <p>Expect: 35<br/>
-Result: <% $i*5 %></p>
+Result: {% $i*5 %}</p>
 
-<% include 'footer' %>
+{% include 'footer' %}

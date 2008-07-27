@@ -264,14 +264,14 @@ class Sugar {
      *
      * @var string
      */
-    public $delimStart = '<%';
+    public $delimStart = '{%';
 
     /**
      * Closing delimiter character.
      *
      * @var string
      */
-    public $delimEnd = '%>';
+    public $delimEnd = '%}';
 
     /**
      * Constructor
@@ -372,8 +372,8 @@ class Sugar {
     /**
      * Change the current delimiters.
      *
-     * @param string $start Starting delimiter (default '<%')
-     * @param string $end Ending delimiter (default '%>')
+     * @param string $start Starting delimiter (default '{%')
+     * @param string $end Ending delimiter (default '%}')
      */
     public function setDelimiter ($start, $end) {
         $this->delimStart = $start;
