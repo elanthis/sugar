@@ -1,4 +1,18 @@
 ==================
+** Version 0.80 **
+==================
+
++ Added the ability to set functions as non-cachable back.
++ Added ability to change code delimiters.
++ Changed default delimiters to {% and %}.
++ Function calls always used named parameters (method calls never do).
++ Function calls do not use commas between parameters (method calls do).
++ Function calls do not use parenthesis around parameters (method calls do).
++ Added auto-lookup of functions.
++ Added plugin support for functions.
++ Cleaned up the stdlib naming slightly.
+
+==================
 ** Version 0.74 **
 ==================
 

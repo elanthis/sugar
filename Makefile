@@ -1,4 +1,4 @@
-VERSION := 0.74
+VERSION := 0.80
 
 DESTDIR := /usr/share/php
 
@@ -13,6 +13,7 @@ dist:
 	mkdir php-sugar-$(VERSION)/test/templates/
 	mkdir php-sugar-$(VERSION)/test/templates/cache/
 	cp test/templates/*.tpl php-sugar-$(VERSION)/test/templates/
+	cp test/plugins/*.php php-sugar-$(VERSION)/test/plugins/
 	tar -zcf php-sugar-$(VERSION).tgz php-sugar-$(VERSION)/
 	rm -fr php-sugar-$(VERSION)/
 
