@@ -36,11 +36,6 @@ function sugar_function_showtext(&$sugar, $args) {
 }
 $sugar->register('showText');
 
-function sugar_function_one($sugar, $params) {
-	return 'Uno'.SugarUtil::getArg($params, 'str');
-}
-$sugar->register('one', 'sugar_function_one');
-
 function random($sugar, $params) {
 	return rand()%1000;
 }
@@ -81,7 +76,7 @@ $sugar->set('fetch_file', $sugar->fetch('fetch.file'));
 $sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
 
 // display file
-//$sugar->debug = true;
+$sugar->debug = true;
 
 $begin_display = microtime(true);
 $sugar->displayCache('file:'.$file.'.tpl');

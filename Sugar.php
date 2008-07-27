@@ -244,6 +244,11 @@ class Sugar {
     public $cacheDir = './templates/cache';
 
     /**
+     * Directory to search for plugins. 
+     */
+    public $pluginDir = './plugins';
+
+    /**
      * Character set that output should be in.
      *
      * @var string
@@ -352,7 +357,15 @@ class Sugar {
             return $this->funcs[$name];
         }
 
-        // FIXME: attempt plugin loading
+        // attempt plugin loading
+        $file = "{$this->pluginDir}/$invoke.php";
+        if (file_exists($file)) {
+            @include_once $file;
+            if (function_exists($invoke)) {
+                $this->funcs[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
+                return $this->funcs[$name];
+            }
+        }
 
         // nothing found
         return false;
