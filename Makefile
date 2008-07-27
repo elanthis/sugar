@@ -10,6 +10,7 @@ dist:
 	cp Sugar/*.php php-sugar-$(VERSION)/Sugar/
 	mkdir php-sugar-$(VERSION)/test/
 	cp test/index.php php-sugar-$(VERSION)/test/
+	mkdir php-sugar-$(VERSION)/test/plugins/
 	mkdir php-sugar-$(VERSION)/test/templates/
 	mkdir php-sugar-$(VERSION)/test/templates/cache/
 	cp test/templates/*.tpl php-sugar-$(VERSION)/test/templates/
