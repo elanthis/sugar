@@ -34,22 +34,22 @@ writable to work.
 -----------------------------------------------------------------------
 III. Basic Syntax
 
-All PHP-Sugar code is put with the tags <% and %>.  For example:
+All PHP-Sugar code is put with the tags {% and %}.  For example:
 
-  <% if $count > 10 %>
+  {% if $count > 10 %}
     <ul>
-    <% foreach $key,$value in $list %>
-      <li><% $key %>: <b><% $value %></b></li>
-    <% end %>
+    {% foreach $key,$value in $list %}
+      <li>{% $key %}: <b>{% $value %}</b></li>
+    {% end %}
     </ul>
-  <% end %>
+  {% end %}
 
 Variables are the dollar sign $ followed by letters, numbers, and/or
 underscores.  Variables can be assigned by the Sugar API or by using
 the equal = operator in a template.
 
-  <% $myvar = "a test" %>
-  My Var is <% $myvar %>.
+  {% $myvar = "a test" %}
+  My Var is {% $myvar %}.
 
 The above code will print:
 
@@ -60,30 +60,30 @@ variable in script tags.  You can also perform various mathematical
 and logical operations on the variable in the tag, which is called
 an expression.  Example:
 
-  <% $i = 7 %>
-  <% $i %> is 7
-  <% 1+$i %> is 8
-  <% $i*($i%5) %> is 14
+  {% $i = 7 %}
+  {% $i %} is 7
+  {% 1+$i %} is 8
+  {% $i*($i%5) %} is 14
 
-  <% $s = "test" %>
-  <% $s %> is test
-  <% $s+7 %> is test7
-  <% $s+" again" %> is test again
+  {% $s = "test" %}
+  {% $s %} is test
+  {% $s+7 %} is test7
+  {% $s+" again" %} is test again
 
-  <% $test = $s+$i %>
-  <% $test %> is test7
+  {% $test = $s+$i %}
+  {% $test %} is test7
 
 Array keys can be accessed using the . operator or the [] array
 subscript operator.  Examples:
 
-  <% $array.key %>
-  <% $array."the key" %>
-  <% $array.0 %>
-  <% $array.8 %>
-  <% $array.$var %>
-  <% $array[$var] %>
-  <% $array[$var-6] %>
-  <% $array["key"] %>
+  {% $array.key %}
+  {% $array."the key" %}
+  {% $array.0 %}
+  {% $array.8 %}
+  {% $array.$var %}
+  {% $array[$var] %}
+  {% $array[$var-6] %}
+  {% $array["key"] %}
 
 Arrays can be constructed using the array() initializer function
 or using the [] initializer syntax.  The array() function can
@@ -91,131 +91,131 @@ make map arrays (arrays with arbitrary keys) while the [] syntax
 can only make vectors (arrays with consecutive integer keys).
 Examples:
 
-  <% $vector = array(1, 2, 5) %>
-    <% $vector = [1, 2, 5] %>
-  <% $map = array(first=1, second=2, third=5) %>
+  {% $vector = array(1, 2, 5) %}
+    {% $vector = [1, 2, 5] %}
+  {% $map = array(first=1, second=2, third=5) %}
 
 Object properties can be accessed using the . or [] operators, just
 like arrays.  Object methods, if enabled, can be invoked using the
 . operator followed by a method name, then a list of comma-separated
 parameters within ().  Example:
 
-  <% $obj.name %>
-  <% $obj[$var] %>
-  <% $obj.method() %>
-  <% $obj.foobar(1, $var, "test") %>
+  {% $obj.name %}
+  {% $obj[$var] %}
+  {% $obj.method() %}
+  {% $obj.foobar(1, $var, "test") %}
 
 The value of a variable is always HTML-escaped by default.  To
 display the value of a variable with no escaping, use the raw
 function.
 
-  <% $html = "<b>bold</b>" %>
-  <% $html %> = &lt;b&gt;bold&lt;/b&gt;
-  <% raw $html %> = <b>bold</b>
+  {% $html = "<b>bold</b>" %}
+  {% $html %} = &lt;b&gt;bold&lt;/b&gt;
+  {% raw $html %} = <b>bold</b>
 
 A function can be called by giving the name of the function, and
 then listing the parameters.  Function parameters must each be
 separated by a comma, and may optionally have a parameter name
 preceding the parameter itself.  Example:
 
-  <% myFunc %>
-  <% myFunc value=$var %>
-  <% myFunc value=$var*2, other="test" last=4+($i*7) %>
+  {% myFunc %}
+  {% myFunc value=$var %}
+  {% myFunc value=$var*2, other="test" last=4+($i*7) %}
 
-  <% myFunc "arg1" "arg2" %>
-  <% myFunc 1, 2 %>
+  {% myFunc "arg1" "arg2" %}
+  {% myFunc 1, 2 %}
 
 Functions may also be called within an expression.  In this case,
 the function call is written as the function name, followed by the
 arguments within parenthesis.  If there are no arguments, just put ()
 after the function name.  Examples:
 
-  <% "show "+getTime() %>
-  <% "show "+getTime('tomorrow') %>
-  <% 12*1+foobar(test="enable", time="now") %>
+  {% "show "+getTime() %}
+  {% "show "+getTime('tomorrow') %}
+  {% 12*1+foobar(test="enable", time="now") %}
 
 Conditional execution can be performed using the if, elif, and else
 statements.  Example:
 
-  <% if $i > 7 %>
+  {% if $i > 7 %}
     The value is greater than 7.
-  <% elif $i < -7 %>
+  {% elif $i < -7 %}
     The value is less than 7.
-  <% elif $i = $v %>
+  {% elif $i = $v %}
     The value is equal to $v.
-  <% else %>
-    The value is <% $i %>
-    <% if $i < 0 %>
+  {% else %}
+    The value is {% $i %}
+    {% if $i < 0 %}
       which is negative
-    <% elif $i > 0 %>
+    {% elif $i > 0 %}
       which is positive
-    <% else %>
+    {% else %}
       which is zero
-    <% end %>
-  <% end %>
+    {% end %}
+  {% end %}
 
 An array or PHP iterator can be looped over using the foreach
 statement.  Either the array values or both the array keys and
 values can be iterated over.
 
   Just the values:
-  <% foreach $i in $mylist %>
-    <% $i %>
-  <% end %>
+  {% foreach $i in $mylist %}
+    {% $i %}
+  {% end %}
 
   Keys and values:
-  <% foreach $k,$i in $mylist %>
-    <% $k %>=<% $i %>
-  <% end %>
+  {% foreach $k,$i in $mylist %}
+    {% $k %}={% $i %}
+  {% end %}
 
     Inline array:
-    <% foreach $k in array(1,2,3) %>
-        <% $k %>
-    <% end %>
+    {% foreach $k in array(1,2,3) %}
+        {% $k %}
+    {% end %}
 
 A code block can be expected a specific number of times by using the
 range loop statement.  The range loop is given a start number, an end
 number, and an optional step value.  The follow example displays the
 numbers 1 through 5.
 
-  <% loop $i in 1,5 %>
-    <% $i %>
-  <% end %>
+  {% loop $i in 1,5 %}
+    {% $i %}
+  {% end %}
 
 This example displays the numbers 6, 4, and 2.
 
-  <% loop $i in 3*2,1,-2 %>
-    <% $i %>
-  <% end %>
+  {% loop $i in 3*2,1,-2 %}
+    {% $i %}
+  {% end %}
 
 Other template files can be included using the include function.  Code
 can be executed using the eval function.
 
-  <% include "header" %>
-  <% include 'some/other/template' %>
-  <% eval 'var is <% $var+1 %>' %>
-  <% eval getCode() %>
+  {% include "header" %}
+  {% include 'some/other/template' %}
+  {% eval 'var is {% $var+1 %}' %}
+  {% eval getCode() %}
 
 Caching can be suppressed for part of a template by using the nocache
 block directive.
 
-  <% nocache %>
-    This value is not cached: <% $value %>
-  <% end %>
+  {% nocache %}
+    This value is not cached: {% $value %}
+  {% end %}
 
 The semi-colon (;) character can be used to separate statements within
 Sugar tags.  The following two blocks of Sugar code function
 identically:
 
-  <% if $value %>Value: <% $value %><% end %>
+  {% if $value %}Value: {% $value %}{% end %}
 
-  <% if $value ; 'Value: '; $value; end %>
+  {% if $value ; 'Value: '; $value; end %}
 
 ** WARNING **  Care must be taken when calling a function using
 unnamed parameters.  The following function call will have
 result in an error:
 
-  <% func ($var+2)*3 %>
+  {% func ($var+2)*3 %}
 
 The function call will result in a parse error.  Sugar will
 interpret the parenthesis following the function name as part of the
@@ -227,8 +227,8 @@ parenthesis is not the first token, which in this case can be done
 by moving the multiplication to the beginning of the expression.
 Examples:
 
-  <% func start=($var+2)*3 %>
-  <% func 3*($var+2) %>
+  {% func start=($var+2)*3 %}
+  {% func 3*($var+2) %}
 
 -----------------------------------------------------------------------
 IV.  Sugar API
@@ -248,6 +248,11 @@ second parameter is the value to assign to the variable.
   $sugar->set('life', 42);
   $sugar->set('results', getDatabaseResults());
   $sugar->set('name', $user->name);
+
+The code delimiters ({% and %}) can be changed by using the
+setDelimiters() method.
+
+  $sugar->setDelimiters('<!--{', '}-->');
 
 Registering new function requires the register() method.  The first
 parameter is the name of the function as used within templates.  The
@@ -315,7 +320,7 @@ engine loads the path templates/$file.tpl, where $file is the name
 passed to display().
 
   $sugar->display('myTemplate'); // loads templates/myTemplate.tpl
-  $sugar->displayString('Var = <% $var %>');
+  $sugar->displayString('Var = {% $var %}');
 
 By default, compiled templates and caches are stored in
 templates/cache/.
