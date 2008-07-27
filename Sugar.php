@@ -260,6 +260,20 @@ class Sugar {
     public $charset = 'ISO-8859-1';
 
     /**
+     * Opening delimiter character.
+     *
+     * @var string
+     */
+    public $delimStart = '<%';
+
+    /**
+     * Closing delimiter character.
+     *
+     * @var string
+     */
+    public $delimEnd = '%>';
+
+    /**
      * Constructor
      */
     public function __construct () {
@@ -336,11 +350,11 @@ class Sugar {
      * @return array
      */
     public function getFunction ($name) {
-				$name = strtolower($name);
-				if (isset($this->funcs[$name]))
-						return $this->funcs[$name];
-				else
-						return false;
+        $name = strtolower($name);
+        if (isset($this->funcs[$name]))
+            return $this->funcs[$name];
+        else
+            return false;
     }
 
     /**
@@ -353,6 +367,17 @@ class Sugar {
     public function addStorage ($name, ISugarStorage $driver) {
         $this->storage [$name]= $driver;
         return true;
+    }
+
+    /**
+     * Change the current delimiters.
+     *
+     * @param string $start Starting delimiter (default '<%')
+     * @param string $end Ending delimiter (default '%>')
+     */
+    public function setDelimiter ($start, $end) {
+        $this->delimStart = $start;
+        $this->delimEnd = $end;
     }
 
     /**

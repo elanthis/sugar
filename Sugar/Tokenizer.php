@@ -62,7 +62,7 @@ class SugarTokenizer {
 
     /**
      * Flag indicating whether the tokenizer is currently working
-     * within a pair of <% %> tags.
+     * within a pair of delimiteres.
      *
      * @var bool $inCmd
      */
@@ -88,6 +88,20 @@ class SugarTokenizer {
      * @var int $tokline
      */
     private $tokline;
+
+    /**
+     * Starting delimiter.
+     *
+     * @var string
+     */
+    private $delimStart = '<%';
+
+    /**
+     * Ending delimiter.
+     *
+     * @var string
+     */
+    private $delimEnd = '%>';
 
     /**
      * Constructor.
@@ -170,8 +184,8 @@ class SugarTokenizer {
 
         // outside of a command?
         if (!$this->inCmd) {
-            // find next <%
-            $next = strpos($this->src, '<%', $this->pos);
+            // find next opening delimiter
+            $next = strpos($this->src, $this->delimStart, $this->pos);
 
             // set $next to last byte
             if ($next === FALSE)
@@ -192,22 +206,22 @@ class SugarTokenizer {
         }
 
         // skip spaces and comments
-        while (($ar = $this->getRegex('/(?:\s+|(?:\/\*.*?\*\/|\/\/.*?($|%>)))/msA')) !== false) {
-            // line comment ended with a %>
-            if (isset($ar[1]) && $ar[1] == '%>') {
+        while (($ar = $this->getRegex('/(?:\s+|(?:\/\*.*?\*\/|\/\/.*?($|'.preg_quote($this->delimEnd).')))/msA')) !== false) {
+            // line comment ended with an end delimiter
+            if (isset($ar[1]) && $ar[1] == $this->delimEnd) {
                 $this->inCmd = false;
-                return array('term', '%>');
+                return array('term', $this->delimEnd);
             }
         }
 
         // get next token
         $this->tokline = $this->line;
-        if (($token = $this->getRegex('/(?:%>|\$\w+|\d+(?:[.]\d+)?|\w+|==|!=|!in\b|<=|>=|\|\||&&|->|\.\.|.)/msA')) === false)
+        if (($token = $this->getRegex('/(?:'.preg_quote($this->delimEnd).'|\$\w+|\d+(?:[.]\d+)?|\w+|==|!=|!in\b|<=|>=|\|\||&&|->|\.\.|.)/msA')) === false)
             throw new SugarParseException($this->file, $this->line, 'garbage at: '.substr($this->src, $this->pos, 12));
         $token = $token[0];
 
         // if at end, mark that
-        if ($token == '%>')
+        if ($token == $this->delimEnd)
             $this->inCmd = false;
 
         // string
@@ -225,7 +239,7 @@ class SugarTokenizer {
         if (strlen($token) > 1 && $token[0] == '$') 
             return array('var', substr($token, 1));
         // terminator
-        elseif ($token == '%>' || $token == ';')
+        elseif ($token == $this->delimEnd || $token == ';')
             return array('term', $token);
         // keyword or special symbol
         elseif (in_array($token, array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache')))

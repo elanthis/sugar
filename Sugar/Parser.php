@@ -529,7 +529,7 @@ class SugarParser {
      */
     public function compile ($src, $file = '<input>') {
         // create tokenizer
-        $this->tokens = new SugarTokenizer($src, $file);
+        $this->tokens = new SugarTokenizer($src, $file, $this->sugar->delimStart, $this->sugar->delimEnd);
 
         // build byte-code
         $bytecode = $this->compileBlock();
