@@ -252,6 +252,11 @@ class SugarTokenizer {
         // float
         elseif (preg_match('/^\d+[.]\d+$/', $token))
             return array('data', floatval($token));
+        // and and or
+        elseif ($token == 'and')
+            return array('&&', null);
+        elseif ($token == 'or')
+            return array('||', null);
         // true and false
         elseif ($token == 'true')
             return array('data', true);
