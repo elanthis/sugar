@@ -109,9 +109,11 @@ class SugarTokenizer {
      * @param string $src The source code to tokenizer.
      * @param string $file The name of the file being tokenized.
      */
-    public function __construct ($src, $file = '<input>') {
+    public function __construct ($src, $file, $delimStart, $delimEnd) {
         $this->src = $src;
         $this->file = $file;
+	$this->delimStart = $delimStart;
+	$this->delimEnd = $delimEnd;
 
         $this->token = $this->next();
     }
