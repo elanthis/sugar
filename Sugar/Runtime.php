@@ -245,9 +245,6 @@ class SugarRuntime {
                     $debug_file = $code[++$i];
                     $debug_line = $code[++$i];
 
-                    if (!$sugar->methods)
-                        throw new SugarRuntimeException($debug_file, $debug_line, 'method invocation disabled');
-
                     if (!is_object($obj))
                         throw new SugarRuntimeException($debug_file, $debug_line, 'method call on non-object type `'.gettype($obj).'`');
 

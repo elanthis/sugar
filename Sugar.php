@@ -187,15 +187,6 @@ class Sugar {
     public $debug = false;
 
     /**
-     * Setting this to true will allow for methods to be called on object
-     * variables within templates.  This is disabled by default for security
-     * reasons.
-     *
-     * @var bool
-     */
-    public $methods = false;
-
-    /**
      * This is the error handling method Sugar should use.  By default,
      * errors are echoed to the screen and no exceptions are thrown.  Set
      * this to one of the following:

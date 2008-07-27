@@ -300,17 +300,6 @@ the $sugar object.
 
   $sugar->charset = 'UTF-8';
 
-By default, object methods cannot be invoked within a template for
-security reasons; there is no way to know which methods are safe
-for templates to execute.  It is highly recommended that this
-behavior be left at the default, and that programmers avoid the need
-for templates to access any object methods.
-
-Method support can be enabled by setting the $methods property to
-true.
-
-  $sugar->methods = true;
-
 To render a template, use either the display() or the displayString()
 methods, or the displayCache() method described below.  The display()
 method will look up the file given it using the storage engine and
