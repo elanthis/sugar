@@ -490,8 +490,7 @@ class SugarParser {
                 $params = $this->parseFunctionArgs();
 
                 // build function call
-                $block []= array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
-                $block []= array('print');
+                $block []= array('pcall', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
 
             // we have a statement
             } else {

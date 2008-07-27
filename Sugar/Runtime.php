@@ -52,7 +52,7 @@ class SugarRuntime {
         if (is_bool($value))
             return $value?'true':'false';
         elseif (is_array($value))
-            return SugarUtil::jsValue($value);
+            return SugarUtil::json($value);
         else
             return $value;
     }
@@ -217,8 +217,8 @@ class SugarRuntime {
                     $debug_line = $code[++$i];
 
                     // lookup function
-                    $invoke = $sugar->getFunction($func);
-                    if (!$invoke)
+                    $callable = $sugar->getFunction($func);
+                    if (!$callable)
                         throw new SugarRuntimeException($debug_file, $debug_line, 'unknown function `'.$func.'`');
 
                     // compile args
@@ -226,17 +226,54 @@ class SugarRuntime {
                     foreach($args as $name=>$pcode)
                         $params[$name] = SugarRuntime::execute($sugar, $pcode);
 
-										// exception net
-										try {
-												// call function, using appropriate method
-												$ret = call_user_func($invoke, $sugar, $params);
-										} catch (Exception $e) {
-												$sugar->handleError($e);
-												$ret = null;
-										}
+                    // exception net
+                    try {
+                        // call function, using appropriate method
+                        $ret = call_user_func($callable['invoke'], $sugar, $params);
+                    } catch (Exception $e) {
+                        $sugar->handleError($e);
+                        $ret = null;
+                    }
 
                     // store return value
                     $stack []= $ret;
+                    break;
+                case 'pcall':
+                    $func = $code[++$i];
+                    $args = $code[++$i];
+                    $debug_file = $code[++$i];
+                    $debug_line = $code[++$i];
+
+                    // lookup function
+                    $callable = $sugar->getFunction($func);
+                    if (!$callable)
+                        throw new SugarRuntimeException($debug_file, $debug_line, 'unknown function `'.$func.'`');
+
+                    // compile args
+                    $params = array();
+                    foreach($args as $name=>$pcode)
+                        $params[$name] = SugarRuntime::execute($sugar, $pcode);
+
+                    // non-cachable function?  handle that
+                    if ($sugar->cacheHandler && !$callable['cache']) {
+                        $sugar->cacheHandler->addBlock(array('pcall', $func, $params, $debug_file, $debug_line));
+                        break;
+                    }
+
+                    // exception net
+                    try {
+                        // call function, using appropriate method
+                        $ret = call_user_func($callable['invoke'], $sugar, $params);
+                    } catch (Exception $e) {
+                        $sugar->handleError($e);
+                        $ret = null;
+                    }
+
+                    // show output
+                    if ($sugar->cacheHandler)
+                        $sugar->cacheHandler->addOutput($sugar->escape(SugarRuntime::showValue($ret)));
+                    else
+                        echo $sugar->escape(SugarRuntime::showValue($ret));
                     break;
                 case 'method':
                     $obj = array_pop($stack);
@@ -257,14 +294,14 @@ class SugarRuntime {
                     foreach($args as $pcode)
                         $params [] = SugarRuntime::execute($sugar, $pcode);
 
-										// exception net
-										try {
-												// invoke method
-												$stack []= @call_user_func_array(array($obj, $func), $params);
-										} catch (Exception $e) {
-												$sugar->handleError($e);
-												$stack []= null;
-										}
+                    // exception net
+                    try {
+                            // invoke method
+                            $stack []= @call_user_func_array(array($obj, $func), $params);
+                    } catch (Exception $e) {
+                            $sugar->handleError($e);
+                            $stack []= null;
+                    }
                     break;
                 case 'if':
                     $clauses = $code[++$i];

@@ -270,8 +270,6 @@ class Sugar {
     public function __construct () {
         $this->storage ['file']= new SugarStorageFile($this);
         $this->cache = new SugarCacheFile($this);
-
-        SugarStdlib::initialize($this);
     }
 
     /**
@@ -292,13 +290,13 @@ class Sugar {
      *
      * @param string $name The name to register the function under.
      * @param callback $invoke Optional PHP callback; if null, the $name parameter is used as the callback.
-     * @param int $flags Bitset including {@link SUGAR_FUNC_SUPPRESS_RETURN} or {@link SUGAR_FUNC_NATIVE}.
+     * @param bool $cache Whether the function is cacheable.
      * @return bool true on success
      */
-    public function register ($name, $invoke=null) {
+    public function register ($name, $invoke=null, $cache = true) {
         if (!$invoke)
-            $invoke = $name;
-        $this->funcs [strtolower($name)]= $invoke;
+            $invoke = 'sugar_function_'.strtolower($name);
+        $this->funcs [strtolower($name)]= array('name'=>$name, 'invoke'=>$invoke, 'cache'=>$cache);
         return true;
     }
 
@@ -333,19 +331,31 @@ class Sugar {
     }
 
     /**
-     * Returns an array containing the data for a registered function.  The
-     * first field of the array is the callback, and the second field are
-     * the function flags.
+     * Returns an array containing the data for template function.  This
+     * will first look for registered functions, then it will attempt to
+     * auto-register a function using the smarty_function_foo naming
+     * scheme.  Finally, it will attempt to load a function plugin.
      *
      * @param string $name Function name to lookup.
      * @return array
      */
     public function getFunction ($name) {
         $name = strtolower($name);
+        // check for registered functions
         if (isset($this->funcs[$name]))
             return $this->funcs[$name];
-        else
-            return false;
+
+        // try to auto-lookup the function
+        $invoke = "sugar_function_$name";
+        if (function_exists($invoke)) {
+            $this->funcs[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
+            return $this->funcs[$name];
+        }
+
+        // FIXME: attempt plugin loading
+
+        // nothing found
+        return false;
     }
 
     /**
