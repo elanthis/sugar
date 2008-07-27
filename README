@@ -88,12 +88,11 @@ subscript operator.  Examples:
 Arrays can be constructed using the array() initializer function
 or using the [] initializer syntax.  The array() function can
 make map arrays (arrays with arbitrary keys) while the [] syntax
-can only make vectors (arrays with consecutive integer keys).
+can make vectors (arrays with consecutive integer keys).
 Examples:
 
-  {% $vector = array(1, 2, 5) %}
-    {% $vector = [1, 2, 5] %}
-  {% $map = array(first=1, second=2, third=5) %}
+  {% $vector = [1, 2, 5] %}
+  {% $map = (array first=1 second=2 third=5) %}
 
 Object properties can be accessed using the . or [] operators, just
 like arrays.  Object methods, if enabled, can be invoked using the
@@ -114,25 +113,22 @@ function.
   {% raw $html %} = <b>bold</b>
 
 A function can be called by giving the name of the function, and
-then listing the parameters.  Function parameters must each be
-separated by a comma, and may optionally have a parameter name
-preceding the parameter itself.  Example:
+then listing the parameters.  Each function parameters is given as
+a parameter name, an equals sign, and then the parameter value.
+Example:
 
   {% myFunc %}
   {% myFunc value=$var %}
-  {% myFunc value=$var*2, other="test" last=4+($i*7) %}
+  {% myFunc value=$var*2 other="test" last=4+($i*7) %}
 
-  {% myFunc "arg1" "arg2" %}
-  {% myFunc 1, 2 %}
+Functions may also be called within an expression.  It is recommended
+to put the whole function inside of parenthesis, although this is
+not required.
+Examples:
 
-Functions may also be called within an expression.  In this case,
-the function call is written as the function name, followed by the
-arguments within parenthesis.  If there are no arguments, just put ()
-after the function name.  Examples:
-
-  {% "show "+getTime() %}
-  {% "show "+getTime('tomorrow') %}
-  {% 12*1+foobar(test="enable", time="now") %}
+  {% "show "+getTime %}
+  {% "show "+getTime 'tomorrow' %}
+  {% 12*1+(foobar test="enable" time="now") %}
 
 Conditional execution can be performed using the if, elif, and else
 statements.  Example:
@@ -168,10 +164,10 @@ values can be iterated over.
     {% $k %}={% $i %}
   {% end %}
 
-    Inline array:
-    {% foreach $k in array(1,2,3) %}
-        {% $k %}
-    {% end %}
+  Inline array:
+  {% foreach $k in [1,2,3] %}
+    {% $k %}
+  {% end %}
 
 A code block can be expected a specific number of times by using the
 range loop statement.  The range loop is given a start number, an end
@@ -194,7 +190,7 @@ can be executed using the eval function.
   {% include "header" %}
   {% include 'some/other/template' %}
   {% eval 'var is {% $var+1 %}' %}
-  {% eval getCode() %}
+  {% eval getCode %}
 
 Caching can be suppressed for part of a template by using the nocache
 block directive.
@@ -210,25 +206,6 @@ identically:
   {% if $value %}Value: {% $value %}{% end %}
 
   {% if $value ; 'Value: '; $value; end %}
-
-** WARNING **  Care must be taken when calling a function using
-unnamed parameters.  The following function call will have
-result in an error:
-
-  {% func ($var+2)*3 %}
-
-The function call will result in a parse error.  Sugar will
-interpret the parenthesis following the function name as part of the
-function call syntax and not as a sub-expression, and will consider
-the trailing right parenthesis as the end of the function call,
-making the *3 unexpected.  This can be fixed by using named
-parameters or altering the expression so that the opening
-parenthesis is not the first token, which in this case can be done
-by moving the multiplication to the beginning of the expression.
-Examples:
-
-  {% func start=($var+2)*3 %}
-  {% func 3*($var+2) %}
 
 -----------------------------------------------------------------------
 IV.  Sugar API
@@ -258,17 +235,17 @@ Registering new function requires the register() method.  The first
 parameter is the name of the function as used within templates.  The
 second optional parameter is the callback to use when invoking the
 function; if ommitted, the PHP function of the same name as the first
-argument will be invoked.
+argument will be invoked.  A third optional parameter controls
+whether the function can be cached or not.
 
   $sugar->register('myFunc');
   $sugar->register('foo', 'some_function');
   $sugar->register('getCost', array($cart, 'get_cost'));
-  $sugar->register('dynamic', 'my_dynamic');
+  $sugar->register('dynamic', 'my_dynamic', false);
 
-Normal functions receive two arguments: the Sugar object and a keyed
-array with the parameters.  Functions registered with
-SUGAR_FUNC_NATIVE will instead receive a list of parameters like a
-regular PHP function.
+Functions receive two arguments: the Sugar object and a keyed array
+with the parameters.  Method calls will be called using the native
+PHP approach.
 
   function mySugarFunc ($sugar, $params) {
     $arg1 = SugarUtil::getArg($params, 'arg1', 0);
@@ -282,9 +259,9 @@ The SugarUtil::getArg() function is a utility function to help make
 writing Sugar function handlers easier.  The first parameter is the
 $params array received by the Sugar function handler, the second
 parameter is the name of the parameter (when named parameters are
-used), the third parameter is the index of the parameter (when
-unnamed parameters are used), and the fourth parameter is the default
-value to return if the argument was not specified.
+used), and the third parameter is the default value to return if the
+argument was not specified.  This provides behavior equivalent to
+PHP 6's ?: short-hand operator.
 
 Function return values will be passed back into the calling
 expression.  As with all expressions, the result of a function call
