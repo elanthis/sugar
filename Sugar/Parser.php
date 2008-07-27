@@ -106,39 +106,38 @@ class SugarParser {
     /**
      * Parsed out a list of function arguments.
      *
-     * @param bool $parens True if a right-parenthesis is expected at the end.
      * @return array Arguments.
      */
-    private function parseFunctionArgs ($parens) {
-        // if parents is true, then the args are
-        // parenthesized, and require commas and a
-        // trailing comma
-
+    private function parseFunctionArgs () {
         $params = array();
-        $first = true;
-        while (!$this->tokens->accept($parens?')':'term')) {
-            // after the first arg, require a separating comma
-            if ($first)
-                $first = false;
-            else
-                $this->tokens->expect(',');
-
+        while (!$this->tokens->peekAny(array(')', ']', '}', ',', 'term'))) {
             // check for name= assignment
-            if ($this->tokens->accept('name', $name)) {
-                // if followed by a (, then it's actually a function call
-                if ($this->tokens->accept('(')) {
-                    $nparams = $this->parseFunctionArgs(true);
-                    $this->output []= array('call', $name, $nparams, $this->tokens->getFile(), $this->tokens->getLine());
-                    $params []= $this->compileExpr(true);
-                // otherwise, we expect a name= construct
-                } else {
-                    $this->tokens->expect('=');
-                    $params [$name]= $this->compileExpr();
-                }
-            // regular parameter
-            } else {
-                $params []= $this->compileExpr();
-            }
+            $this->tokens->expect('name', $name);
+            $this->tokens->expect('=');
+
+            // assign parameter
+            $params [$name]= $this->compileExpr();
+        }
+        return $params;
+    }
+
+    /**
+     * Parsed out a list of method arguments.
+     *
+     * @return array Arguments.
+     */
+    private function parseMethodArgs () {
+        $params = array();
+        while (!$this->tokens->accept(')')) {
+            // assign parameter
+            $params []= $this->compileExpr();
+
+            // if we're at a ), end now
+            if ($this->tokens->accept(')'))
+                break;
+
+            // require a comma after every parameter
+            $this->tokens->expect(',');
         }
         return $params;
     }
@@ -215,30 +214,31 @@ class SugarParser {
             if (($op == '.' || $op == '->') && $this->tokens->accept('name', $name)) {
                 // check if this is a method call
                 if ($this->tokens->accept('(')) {
+                    // get name and parameters
                     $method = $name;
-                    $params = $this->parseFunctionArgs(true);
+                    $params = $this->parseMethodArgs();
 
                     // create method call
                     $this->output []= array_merge(array_pop($this->output), array('method', $method, $params, $this->tokens->getFile(), $this->tokens->getLine()));
 
                 // not a method call
                 } else {
-										$this->stack []= '.';
+                    $this->stack []= '.';
                     $this->output []= array('push', $name);
                 }
 
             // if it's an array [] operator, we need to handle the trailing ]
             } elseif ($op == '[') {
-								// actual operator is .
+                // actual operator is .
                 $this->stack []= '.';
 
                 // compile rest of expression
                 $this->compileTerminal();
                 $this->tokens->expect(']');
 
-						// actual opcode for -> is just .
-						} else if ($op == '->') {
-								$this->stack []= '.';
+            // actual opcode for -> is just .
+            } else if ($op == '->') {
+                $this->stack []= '.';
                 $this->compileTerminal();
 
             // regular case, just go
@@ -318,10 +318,7 @@ class SugarParser {
 
         // function call
         } elseif ($this->tokens->accept('name', $name)) {
-            // if it's not followed by a (, its not a function call
-            $this->tokens->expect('(');
-
-            $params = $this->parseFunctionArgs(true);
+            $params = $this->parseFunctionArgs();
 
             // return new function all
             $this->output []= array('call', $name, $params, $this->tokens->getFile(), $this->tokens->getLine());
@@ -489,15 +486,12 @@ class SugarParser {
 
             // function call?
             } elseif ($this->tokens->accept('name', $func)) {
-                // check if we're parenthesized, and get args
-                if ($this->tokens->accept('('))
-                    $params = $this->parseFunctionArgs(true);
-                else
-                    $params = $this->parseFunctionArgs(false);
+                // parameters
+                $params = $this->parseFunctionArgs();
 
                 // build function call
                 $block []= array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
-								$block []= array('print');
+                $block []= array('print');
 
             // we have a statement
             } else {

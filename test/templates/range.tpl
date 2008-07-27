@@ -1,5 +1,5 @@
 {% $title = 'Range Loop Tests' %}
-{% include 'header' %}
+{% include tpl= 'header' %}
 
 <p>Test: loop $i in 1,3 ; $i ; end<br/>
 Expect: 123<br/>
@@ -17,4 +17,4 @@ Result: {% loop $i in 3,4*6,7 ; $i ; end %}</p>
 Expect: <br/>
 Result: {% loop $i in 2,1 ; $i ; end %}</p>
 
-{% include 'footer' %}
+{% include tpl= 'footer' %}

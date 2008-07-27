@@ -47,13 +47,8 @@ class SugarUtil {
      * @param mixed $default Default value if parameter is not specified.
      * @return mixed Value of parameter if given, or the default value otherwise.
      */
-    public static function getArg ($params, $name, $index = -1, $default = null) {
-        if (isset($params[$name]))
-            return $params[$name];
-        elseif ($index >= 0 && isset($params[$index]))
-            return $params[$index];
-        else
-            return $default;
+    public static function getArg ($params, $name, $default = null) {
+	return isset($params[$name]) ? $params[$name] : $default;
     }
 
     /**
@@ -61,7 +56,7 @@ class SugarUtil {
      * indexes starting at zero and incrementally increasing.  Used only
      * for nice exporting to JavaScript.
      *
-     * Only really used for {@link SugarUtil::jsValue}.
+     * Only really used for {@link SugarUtil::json}.
      *
      * @param array $array Array to check.
      * @return bool True if array is a vector.
@@ -87,14 +82,14 @@ class SugarUtil {
      * @param mixed $value Value to format.
      * @return string Formatted result.
      */
-    public static function jsValue ($value) {
+    public static function json ($value) {
         switch (gettype($value)) {
             case 'integer':
             case 'float':
                 return $value;
             case 'array':
                 if (SugarUtil::isVector($value))
-                    return '['.implode(',', array_map(array('SugarUtil', 'jsValue'), $value)).']';
+                    return '['.implode(',', array_map(array('SugarUtil', 'json'), $value)).']';
 
                 $result = '{';
                 $first = true;
@@ -103,14 +98,14 @@ class SugarUtil {
                         $result .= ',';
                     else
                         $first = false;
-                    $result .= SugarUtil::jsValue($k).':'.SugarUtil::jsValue($v);
+                    $result .= SugarUtil::json($k).':'.SugarUtil::json($v);
                 }
                 $result .= '}';
                 return $result;
             case 'object':
-                $result = '{\'phpType\':'.SugarUtil::jsValue(get_class($value));
+                $result = '{\'phpType\':'.SugarUtil::json(get_class($value));
                 foreach(get_object_vars($value) as $k=>$v)
-                    $result .= ',' . SugarUtil::jsValue($k).':'.SugarUtil::jsValue($v);
+                    $result .= ',' . SugarUtil::json($k).':'.SugarUtil::json($v);
                 $result .= '}';
                 return $result;
             case 'null':

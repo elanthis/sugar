@@ -1,5 +1,5 @@
 {% $title = 'Expression Tests' %}
-{% include 'header' %}
+{% include tpl= 'header' %}
 
 {% $a = 4 %}
 {% $b = 15 %}
@@ -17,4 +17,4 @@ Result: {% 0||0+1 %}
 <p>Expect: 9<br>
 Result: {% 3*(-8+$a/2)/-2 %}
 
-{% include 'footer' %}
+{% include tpl= 'footer' %}

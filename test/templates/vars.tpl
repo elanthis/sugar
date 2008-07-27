@@ -1,5 +1,5 @@
 {% $title = 'Variable Tests' %}
-{% include 'header' %}
+{% include tpl= 'header' %}
 
 <p>Expect: dancing mice<br>
 Result: {% $test %}
@@ -16,4 +16,4 @@ Result: {% $i=7 ; $i %}</p>
 <p>Expect: 35<br/>
 Result: {% $i*5 %}</p>
 
-{% include 'footer' %}
+{% include tpl= 'footer' %}

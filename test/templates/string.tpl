@@ -1,5 +1,5 @@
 {% $title = 'String Tests' %}
-{% include 'header' %}
+{% include tpl= 'header' %}
 
 <p>Test: ''<br>
 Expect: <br>
@@ -13,8 +13,8 @@ Result: {% '\'\"\\' %}
 Expect: '"\<br>
 Result: {% "\'\"\\" %}
 
-<p>Test: printf('%04d', 42)<br>
+<p>Test: printf format='%04d' params=[42]<br>
 Expect: 0042<br>
-Result: {% printf('%04d', 42) %}
+Result: {% printf format='%04d' params=[42] %}
 
-{% include 'footer' %}
+{% include tpl= 'footer' %}

@@ -1,5 +1,6 @@
 <?php
 error_reporting(E_STRICT|E_ALL);
+date_default_timezone_set('UTC');
 
 $start = microtime(true);
 
@@ -36,7 +37,7 @@ function showText(&$sugar, $args) {
 $sugar->register('showText');
 
 function one($sugar, $params) {
-	return 'Uno'.SugarUtil::getArg($params, 'str', 0);
+	return 'Uno'.SugarUtil::getArg($params, 'str');
 }
 $sugar->register('one', 'one');
 
@@ -75,7 +76,7 @@ $sugar->set('random', rand()%1000);
 $sugar->set('newlines', "This\nhas\nnewlines!");
 
 // fetch testing
-$sugar->set('fetch_string', $sugar->fetchString('1+<% $i %>=<% 1 + $i %>'));
+$sugar->set('fetch_string', $sugar->fetchString('1+{% $i %}={% 1 + $i %}'));
 $sugar->set('fetch_file', $sugar->fetch('fetch.file'));
 $sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
 

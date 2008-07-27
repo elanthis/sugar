@@ -1,5 +1,5 @@
 {% $title = 'All Tests' %}
-{% include 'header' %}
+{% include tpl= 'header' %}
 
 <ul>
 {% foreach $tpl in $templates%}
@@ -9,4 +9,4 @@
 {%end%}
 </ul>
 
-{% include 'footer' %}
+{% include tpl= 'footer' %}

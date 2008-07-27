@@ -1,9 +1,5 @@
 {% $title = 'Array Tests' %}
-{% include 'header' %}
-
-<p>Test: array(1,2,3)<br/>
-Expect: [1,2,3]<br>
-Result: {% array(1,2,3) %}</p>
+{% include tpl= 'header' %}
 
 <p>Test: [1,2,3]<br/>
 Expect: [1,2,3]<br>
@@ -15,7 +11,7 @@ Result: {% ['foo','bar','baz'] %}</p>
 
 <p>Test: explode ' ', 'one two three'<br/>
 Expect: ['one','two','three']<br>
-Result: {% explode ' ', 'one two three' %}</p>
+Result: {% explode separator=' ' string='one two three' %}</p>
 
 <p>Test: $list<br/>
 Expect: {0:'one',1:'two',2:'three','foo':'bar'}<br>
@@ -69,4 +65,4 @@ Result: {% $c=2 ; $list.$c %}</p>
 Expect: three<br>
 Result: {% $c=2 ; $list[$c] %}</p>
 
-{% include 'footer' %}
+{% include tpl= 'footer' %}

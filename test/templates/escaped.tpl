@@ -1,5 +1,5 @@
 {% $title = 'Raw Text Tests' %}
-{% include 'header' %}
+{% include tpl= 'header' %}
 
 <p>Expect: &lt;foo&gt;<br/>
 Result: {% '<foo>' %}</p>
@@ -8,6 +8,6 @@ Result: {% '<foo>' %}</p>
 Result: {% ' checked="checked" ' %}</p>
 
 <p>Expect: checked="checked"<br/>
-Result: {% checked(1) %}</p>
+Result: {% checked test=1 %}</p>
 
-{% include 'footer' %}
+{% include tpl= 'footer' %}
