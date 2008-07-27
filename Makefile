@@ -19,7 +19,7 @@ dist:
 
 gendoc:
 	[ -d doc ] || mkdir doc/
-	php gen-doc.php > doc/reference.html
+	php gen-doc.php > reference.html
 
 phpdoc:
 	phpdoc -o HTML:frames:earthli -f Sugar.php -d Sugar -t doc
