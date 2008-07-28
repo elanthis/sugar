@@ -19,11 +19,14 @@ dist:
 	rm -fr php-sugar-$(VERSION)/
 
 gendoc:
-	[ -d doc ] || mkdir doc/
-	php gen-doc.php > reference.html
+	[ -d doc ] || mkdir doc
+	php gen-doc.php > doc/reference.html
+
+manual:
+	xmlto -o doc/manual xhtml sugar-manual.xml
 
 phpdoc:
-	phpdoc -o HTML:frames:earthli -f Sugar.php -d Sugar -t doc
+	phpdoc -o HTML:frames:earthli -f Sugar.php -d Sugar -t doc/phpdoc
 
 install:
 	mkdir -p $(DESTDIR)/Sugar

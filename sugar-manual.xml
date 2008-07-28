@@ -1,0 +1,27 @@
+<?xml version='1.0'?>
+<!DOCTYPE set PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN"
+                  "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
+<set>
+	<title>PHP-Sugar</title>
+	<book>
+		<title>PHP-Sugar Syntax</title>
+		<preface>
+			<title>Introduction</title>
+			<para>PHP-Sugar is a PHP templating engine aimed at being powerful, easy and safe to use, and fast.</para>
+		</preface>
+		<chapter>
+			<title>Templates</title>
+			<para>PHP-Sugar process template files, which generally end in the <filename>.tpl</filename> extension.  Template files are mostly regular HTML, with special markup for Sugar expressions.</para>
+			<para>Sugar markup is any code within the <code>{%</code> and <code>%}</code> delimiters.  For example,</para>
+			<example>
+				<title>Sugar markup</title>
+				<programlisting language="xhtml"><![CDATA[<p>The foo variable is: {% $foo %}</p>]]></programlisting>
+			</example>
+			<para>In that example, the Sugar code <code>$foo</code> is processed by the template engine, and the rest of the text outside of the delimiters is displayed unchanged.</para>
+		</chapter>
+	</book>
+	<book>
+		<title>PHP-Sugar API</title>
+	</book>
+</set>
+<!-- vim: set ts=2 sw=2 : -->
