@@ -1,9 +1,13 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Cache handler, a helper class for the runtime.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * This class is used to build up the cache output for cached runs of the
+ * runtime engine.  It provides methods for storing cached output as well
+ * as adding uncachable runtime code to be re-executed when the cache is
+ * displayed.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,21 +29,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
- * @subpackage Internals
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @subpackage Runtime
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
  * Handlers the creation of Sugar caches, including non-cached bytecode
  * chunks.
  *
+ * @category Template
  * @package Sugar
- * @subpackage Internals
+ * @subpackage Runtime
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarCacheHandler {
+class SugarCacheHandler
+{
     /**
      * Sugar reference.
      *
@@ -71,7 +85,8 @@ class SugarCacheHandler {
     /**
      * Compresses the text output gathered so far onto the bytecode stack.
      */
-    private function compact () {
+    private function compact()
+    {
         if ($this->output) {
             $this->bc []= 'echo';
             $this->bc []= $this->output;
@@ -84,7 +99,8 @@ class SugarCacheHandler {
      *
      * @param Sugar $sugar Sugar reference.
      */
-    public function __construct ($sugar) {
+    public function __construct($sugar)
+    {
         $this->sugar = $sugar;
     }
 
@@ -93,7 +109,8 @@ class SugarCacheHandler {
      *
      * @param string $text Text to append to cache.
      */
-    public function addOutput ($text) {
+    public function addOutput($text)
+    {
         $this->output .= $text;
     }
 
@@ -103,7 +120,8 @@ class SugarCacheHandler {
      *
      * @param SugarRef $ref New reference.
      */
-    public function addRef (SugarRef $ref) {
+    public function addRef(SugarRef $ref)
+    {
         $this->refs []= $ref->full;
     }
 
@@ -112,7 +130,8 @@ class SugarCacheHandler {
      *
      * @param array $block Bytecode to append to cache.
      */
-    public function addBlock ($block) {
+    public function addBlock($block)
+    {
         $this->compact();
         array_push($this->bc, 'nocache', $block);
     }
@@ -122,7 +141,8 @@ class SugarCacheHandler {
      *
      * @return array Cache.
      */
-    public function getOutput () {
+    public function getOutput()
+    {
         $this->compact();
         return array('type' => 'chtml', 'version' => SUGAR_VERSION, 'refs' => $this->refs, 'bytecode' => $this->bc);
     }

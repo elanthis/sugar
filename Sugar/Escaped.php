@@ -1,9 +1,11 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * SugarEscaped helper class.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * A simple class for wrapping strings, informing the Sugar runtime that the
+ * strings should not be escaped.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,18 +27,29 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @subpackage Exceptions
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
  * Encapsulates a string, inhibiting the default HTML escaping when printed.
  *
+ * @category Template
  * @package Sugar
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarEscaped {
+class SugarEscaped
+{
     /**
      * Encapsulated text.
      *
@@ -49,7 +62,8 @@ class SugarEscaped {
      *
      * @param string $text Text to encapsulate.
      */
-	public function __construct ($text) {
+	public function __construct($text)
+	{
 		$this->text = $text;
 	}
 
@@ -58,7 +72,8 @@ class SugarEscaped {
      *
      * @return string Text.
      */
-	public function getText () {
+	public function getText()
+	{
 		return $this->text;
 	}
 
@@ -67,7 +82,8 @@ class SugarEscaped {
      *
      * @return string Text.
      */
-	public function __toString () {
+	public function __toString()
+	{
 		return $this->text;
 	}
 }

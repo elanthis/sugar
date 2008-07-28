@@ -1,9 +1,13 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Cache driver interface.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * Defines the interface to be used by cache drivers.  Different cache
+ * drivers can store and load cache files in different manners.  For example,
+ * an application may wish to use a database storage engine for its cache
+ * files instead of the filesystem.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,21 +29,31 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
  * Interface for Sugar cache drivers.  These are used for storing and
  * retrieving bytecode and HTML caches.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-interface ISugarCache {
+interface ISugarCache
+{
     /**
      * Returns the timestamp for the given reference, or zero if the file
      * is not in the cache.
@@ -49,7 +63,7 @@ interface ISugarCache {
      * @return int Timestamp, or 0 if the file does not exist.
      * @abstract
      */
-    function stamp (SugarRef $ref, $type);
+    function stamp(SugarRef $ref, $type);
 
     /**
      * Returns the bytecode for the requested reference.
@@ -59,7 +73,7 @@ interface ISugarCache {
      * @return array Bytecode, or false if not in the cache.
      * @abstract
      */
-    function load (SugarRef $ref, $type);
+    function load(SugarRef $ref, $type);
 
     /**
      * Adds the bytecode to the cache.
@@ -69,7 +83,7 @@ interface ISugarCache {
      * @param array $data Bytecode.
      * @abstract
      */
-    function store (SugarRef $ref, $type, $data);
+    function store(SugarRef $ref, $type, $data);
 
     /**
      * Erases the bytecode for the requested reference.
@@ -78,13 +92,13 @@ interface ISugarCache {
      * @param string $type Either 'ctpl' or 'chtml'.
      * @abstract
      */
-    function erase (SugarRef $ref, $type);
+    function erase(SugarRef $ref, $type);
 
     /**
      * Clears all caches the driver is responsible for.
      *
      * @abstract
      */
-    function clear ();
+    function clear();
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

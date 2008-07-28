@@ -2,8 +2,10 @@
 /**
  * PHP-Sugar Template Engine
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * This file includes the core framework for PHP-Sugar, and auto-
+ * includes all necessary sub-modules.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,10 +27,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
@@ -133,9 +138,17 @@ define('SUGAR_OUTPUT_TEXT', 4);
  * PHP-Sugar core class.
  *
  * Instantiate this class to use PHP-Sugar.
+ *
+ * @category Template
  * @package Sugar
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class Sugar {
+class Sugar
+{
     /**
      * Stack of variable sets.  Each template invocation creates a new
      * entry on the stack, ensuring that templates cannot subvert the
@@ -272,7 +285,8 @@ class Sugar {
     /**
      * Constructor
      */
-    public function __construct () {
+    public function __construct()
+    {
         $this->storage ['file']= new SugarStorageFile($this);
         $this->cache = new SugarCacheFile($this);
     }
@@ -284,7 +298,8 @@ class Sugar {
      * @param mixed $value The variable's value.
      * @return bool true on success
      */
-    public function set ($name, $value) {
+    public function set($name, $value)
+    {
         $name = strtolower($name);
         $this->vars[count($this->vars)-1] [$name]= $value;
         return true;
@@ -298,7 +313,8 @@ class Sugar {
      * @param bool $cache Whether the function is cacheable.
      * @return bool true on success
      */
-    public function register ($name, $invoke=null, $cache = true) {
+    public function register($name, $invoke=null, $cache = true)
+    {
         if (!$invoke)
             $invoke = 'sugar_function_'.strtolower($name);
         $this->funcs [strtolower($name)]= array('name'=>$name, 'invoke'=>$invoke, 'cache'=>$cache);
@@ -317,7 +333,8 @@ class Sugar {
      * @return bool true on success
      * @internal
      */
-    public function registerList (array $funcs) {
+    public function registerList(array $funcs)
+    {
         $this->funcs = array_merge($this->funcs, $funcs);
     }
 
@@ -327,7 +344,8 @@ class Sugar {
      * @param string $name Name of the variable to lookup.
      * @return mixed
      */
-    public function getVariable ($name) {
+    public function getVariable($name)
+    {
         $name = strtolower($name);
         for ($i = count($this->vars)-1; $i >= 0; --$i)
             if (array_key_exists($name, $this->vars[$i]))
@@ -344,7 +362,8 @@ class Sugar {
      * @param string $name Function name to lookup.
      * @return array
      */
-    public function getFunction ($name) {
+    public function getFunction($name)
+    {
         $name = strtolower($name);
         // check for registered functions
         if (isset($this->funcs[$name]))
@@ -352,7 +371,8 @@ class Sugar {
 
         // try to auto-lookup the function
         $invoke = "sugar_function_$name";
-        if (function_exists($invoke)) {
+        if (function_exists($invoke))
+        {
             $this->funcs[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
             return $this->funcs[$name];
         }
@@ -361,7 +381,8 @@ class Sugar {
         $file = "{$this->pluginDir}/$invoke.php";
         if (file_exists($file)) {
             @include_once $file;
-            if (function_exists($invoke)) {
+            if (function_exists($invoke))
+            {
                 $this->funcs[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
                 return $this->funcs[$name];
             }
@@ -378,7 +399,8 @@ class Sugar {
      * @param ISugarStorage $driver Driver object to register.
      * @return bool true on success
      */
-    public function addStorage ($name, ISugarStorage $driver) {
+    public function addStorage($name, ISugarStorage $driver)
+    {
         $this->storage [$name]= $driver;
         return true;
     }
@@ -389,7 +411,8 @@ class Sugar {
      * @param string $start Starting delimiter (default '{%')
      * @param string $end Ending delimiter (default '%}')
      */
-    public function setDelimiter ($start, $end) {
+    public function setDelimiter($start, $end)
+    {
         $this->delimStart = $start;
         $this->delimEnd = $end;
     }
@@ -400,21 +423,22 @@ class Sugar {
      * @param string $output String to escape.
      * @return string Escaped output.
      */
-    public function escape ($output) {
+    public function escape($output)
+    {
         // do not escape for raw values - just return text
         if ($output instanceof SugarEscaped)
             return $output->getText();
 
         // perform proper escaping for current mode
         switch ($this->output) {
-            case SUGAR_OUTPUT_HTML:
-                return htmlentities($output, ENT_COMPAT, $this->charset);
-            case SUGAR_OUTPUT_XHTML:
-            case SUGAR_OUTPUT_XML:
-                return htmlspecialchars($output, ENT_QUOTES, $this->charset);
-            case SUGAR_OUTPUT_TEXT:
-            default:
-                return $output;
+        case SUGAR_OUTPUT_HTML:
+            return htmlentities($output, ENT_COMPAT, $this->charset);
+        case SUGAR_OUTPUT_XHTML:
+        case SUGAR_OUTPUT_XML:
+            return htmlspecialchars($output, ENT_QUOTES, $this->charset);
+        case SUGAR_OUTPUT_TEXT:
+        default:
+            return $output;
         }
     }
 
@@ -423,7 +447,8 @@ class Sugar {
      *
      * @param Exception $e Exception to process.
      */
-    public function handleError (Exception $e) {
+    public function handleError(Exception $e)
+    {
         // if in throw mode, re-throw the exception
         if ($this->errors == SUGAR_ERROR_THROW)
             throw $e;
@@ -446,7 +471,8 @@ class Sugar {
      * @param array $data Bytecode.
      * @return mixed Return value of bytecode.
      */
-    private function execute (array $data) {
+    private function execute(array $data)
+    {
         // create new domain
         $this->vars []= array();
 
@@ -475,7 +501,8 @@ class Sugar {
      *
      * @param SugarRed $ref The template to load.
      */
-    private function loadExecute (SugarRef $ref) {
+    private function loadExecute(SugarRef $ref)
+    {
         // check template exists, and remember stamp
         $sstamp = $ref->storage->stamp($ref);
         if ($sstamp === false)
@@ -524,7 +551,8 @@ class Sugar {
      * @param SugarRef $ref Cache reference.
      * @return false|array Cache data on success, false on error.
      */
-    public function loadCache (SugarRef $ref) {
+    public function loadCache(SugarRef $ref)
+    {
         // if the file is already loaded, use that
         if (isset($this->files[$ref->uid]))
             return $this->files[$ref->uid];
@@ -574,7 +602,8 @@ class Sugar {
      * @param string $file Template to display.
      * @return bool true on success.
      */
-    public function display ($file) {
+    public function display($file)
+    {
         // validate name
         $ref = SugarRef::create($file, $this);
         if ($ref === false)
@@ -603,7 +632,8 @@ class Sugar {
      * @param string $file Template to process.
      * @return string Template output.
      */
-    public function fetch ($file) {
+    public function fetch($file)
+    {
         ob_start();
         $this->display($file);
         $result = ob_get_contents();
@@ -620,7 +650,8 @@ class Sugar {
      * @param string $cacheId Optional cache identifier.
      * @return bool True if a valid HTML cache exists for the file.
      */
-    function isCached ($file, $cacheId=null) {
+    function isCached($file, $cacheId=null)
+    {
         // debug always disabled caching
         if ($this->debug)
             return false;
@@ -641,7 +672,8 @@ class Sugar {
      * @param string $cacheId Optinal cache identifier.
      * @return bool true on success.
      */
-    function displayCache ($file, $cacheId = null) {
+    function displayCache($file, $cacheId = null)
+    {
         // validate name
         $ref = SugarRef::create($file, $this, $cacheId);
         if ($ref === false)
@@ -694,7 +726,8 @@ class Sugar {
      * @param string $cacheId Optional cache identifier.
      * @return string Template output.
      */
-    public function fetchCache ($file, $cacheId = null) {
+    public function fetchCache($file, $cacheId = null)
+    {
         ob_start();
         $this->displayCache($file, $cacheId);
         $result = ob_get_contents();
@@ -708,7 +741,8 @@ class Sugar {
      * @param string $source Template code to display.
      * @return bool true on success.
      */
-    function displayString ($source) {
+    function displayString($source)
+    {
         try {
             /**
              * Compiler.
@@ -737,7 +771,8 @@ class Sugar {
      * @param string $Source Template code to process.
      * @return string Template output.
      */
-    public function fetchString ($source) {
+    public function fetchString($source)
+    {
         ob_start();
         $this->displayString($source);
         $result = ob_get_contents();
@@ -751,7 +786,8 @@ class Sugar {
      * @param string $file Template to lookup.
      * @return string Template's source code.
      */
-    function getSource ($file) {
+    function getSource($file)
+    {
         // validate name
         $ref = SugarRef::create($file, $this);
         if ($ref === false)

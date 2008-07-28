@@ -1,9 +1,10 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Miscellaneous utility functions used by Sugar.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * Provides several utility functions used by the Sugar codebase.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,18 +26,30 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
+ * Utility functions for Sugar.
+ *
  * Namespace for utility functions useful in Sugar functions.
  *
+ * @category Template
  * @package Sugar
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarUtil {
+class SugarUtil
+{
     /**
      * Returns an argument from a function parameter list, supporting both
      * position and named parameters and default values.
@@ -47,7 +60,8 @@ class SugarUtil {
      * @param mixed $default Default value if parameter is not specified.
      * @return mixed Value of parameter if given, or the default value otherwise.
      */
-    public static function getArg ($params, $name, $default = null) {
+    public static function getArg($params, $name, $default = null)
+    {
 	return isset($params[$name]) ? $params[$name] : $default;
     }
 
@@ -61,7 +75,8 @@ class SugarUtil {
      * @param array $array Array to check.
      * @return bool True if array is a vector.
      */
-    public static function isVector ($array) {
+    public static function isVector($array)
+    {
         if (!is_array($array))
             return false;
         $next = 0;
@@ -82,36 +97,37 @@ class SugarUtil {
      * @param mixed $value Value to format.
      * @return string Formatted result.
      */
-    public static function json ($value) {
+    public static function json($value)
+    {
         switch (gettype($value)) {
-            case 'integer':
-            case 'float':
-                return $value;
-            case 'array':
-                if (SugarUtil::isVector($value))
-                    return '['.implode(',', array_map(array('SugarUtil', 'json'), $value)).']';
+        case 'integer':
+        case 'float':
+            return $value;
+        case 'array':
+            if (SugarUtil::isVector($value))
+                return '['.implode(',', array_map(array('SugarUtil', 'json'), $value)).']';
 
-                $result = '{';
-                $first = true;
-                foreach($value as $k=>$v) {
-                    if (!$first)
-                        $result .= ',';
-                    else
-                        $first = false;
-                    $result .= SugarUtil::json($k).':'.SugarUtil::json($v);
-                }
-                $result .= '}';
-                return $result;
-            case 'object':
-                $result = '{\'phpType\':'.SugarUtil::json(get_class($value));
-                foreach(get_object_vars($value) as $k=>$v)
-                    $result .= ',' . SugarUtil::json($k).':'.SugarUtil::json($v);
-                $result .= '}';
-                return $result;
-            case 'null':
-                return 'null';
-            default:
-                return "'".str_replace(array("\n", "\r", "\r\n"), '\\n', addslashes($value))."'";
+            $result = '{';
+            $first = true;
+            foreach($value as $k=>$v) {
+                if (!$first)
+                    $result .= ',';
+                else
+                    $first = false;
+                $result .= SugarUtil::json($k).':'.SugarUtil::json($v);
+            }
+            $result .= '}';
+            return $result;
+        case 'object':
+            $result = '{\'phpType\':'.SugarUtil::json(get_class($value));
+            foreach(get_object_vars($value) as $k=>$v)
+                $result .= ',' . SugarUtil::json($k).':'.SugarUtil::json($v);
+            $result .= '}';
+            return $result;
+        case 'null':
+            return 'null';
+        default:
+            return "'".str_replace(array("\n", "\r", "\r\n"), '\\n', addslashes($value))."'";
         }
     }
 
@@ -124,7 +140,8 @@ class SugarUtil {
      * @param mixed $value Time value to parse.
      * @return int Timestamp.
      */
-    public static function valueToTime ($value) {
+    public static function valueToTime($value)
+    {
         // raw int?  it's a timestamp
         if (is_int($value))
             return $value;

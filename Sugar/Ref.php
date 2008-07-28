@@ -1,9 +1,11 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * File references.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * Defines a helper class for Sugar which encodes a reference to a template
+ * or cache file.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -33,12 +35,23 @@
  */
 
 /**
- * References a Sugar file, complete with storage driver and cache ID.
+ * Sugar file references.
  *
+ * Encapsulates a complete reference to a template or cache file within
+ * Sugar.  This is used in order to more easily identify individual files,
+ * as well as centralize the path generation for files.
+ *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarRef {
+class SugarRef
+{
     /**
      * Full user-given file reference.
      *
@@ -91,7 +104,8 @@ class SugarRef {
      * @param string $cacheId Optional cache ID.
      * @return SugarRef
      */
-	static function create ($path, Sugar $sugar, $cacheId = null) {
+	static function create($path, Sugar $sugar, $cacheId = null)
+	{
 		$storage = $sugar->defaultStorage;
 		$name = $path;
 
@@ -131,7 +145,8 @@ class SugarRef {
      * @param string $name The file name of the path.
      * @param string $cacheId The cache ID for the reference.
      */
-	private function __construct ($full, $storageName, ISugarStorage $storage, $name, $cacheId) {
+	private function __construct($full, $storageName, ISugarStorage $storage, $name, $cacheId)
+	{
         $this->full = $full;
 		$this->storageName = $storageName;
 		$this->storage = $storage;

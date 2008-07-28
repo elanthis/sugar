@@ -1,9 +1,14 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Sugar template function standard library.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * These are all of the built-in standard template functions that ship with
+ * Sugar.  Note that the functions are not documented in phpdoc, as the
+ * functions are of little interest to PHP developers; the important
+ * information is related to how they are called from Sugar, and a custom
+ * documentation parser has been written for generating that documentation.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,11 +30,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Stdlib
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**#@+
@@ -46,7 +54,8 @@
  *+
  *+ This function loads up a template file and displays it.
  */
-function sugar_function_include ($sugar, $params) {
+function sugar_function_include($sugar, $params)
+{
     $sugar->display(SugarUtil::getArg($params, 'tpl'));
 }
 
@@ -57,7 +66,8 @@ function sugar_function_include ($sugar, $params) {
  *+
  *+ Evaluate template code given as a string and reeturn the result.
  */
-function sugar_function_eval ($sugar, $params) {
+function sugar_function_eval($sugar, $params)
+{
     $sugar->displayString(SugarUtil::getArg($params, 'source'));
 }
 
@@ -71,11 +81,13 @@ function sugar_function_eval ($sugar, $params) {
  *+ the template author to print variables and strings that contain
  *+ HTML tags without any transformations.
  */
-function sugar_function_echo ($sugar, $params) {
+function sugar_function_echo($sugar, $params)
+{
     $value = SugarUtil::getArg($params, 'value');
     return new SugarEscaped(SugarRuntime::showvalue($value));
 }
-function sugar_function_raw ($s, $p) {
+function sugar_function_raw($s, $p)
+{
     return sugar_function_echo($s, $p);
 }
 
@@ -89,7 +101,8 @@ function sugar_function_raw ($s, $p) {
  *+ value is an array, the result is a URL-encoded string of each
  *+ key/value pair separated by ampersands (&).
  */
-function sugar_function_urlencode ($sugar, $params) {
+function sugar_function_urlencode($sugar, $params)
+{
     $string = (string)SugarUtil::getArg($params, 'string');
     $array = SugarUtil::getArg($params, 'array');
     if (is_array($array)) {
@@ -111,7 +124,8 @@ function sugar_function_urlencode ($sugar, $params) {
  *+ recreate the value in JSON notation.  Useful for
  *+ exporting template variables to JavaScript.
  */
-function sugar_function_json ($sugar, $params) {
+function sugar_function_json($sugar, $params)
+{
     return SugarUtil::json(SugarUtil::getArg($params, 'value'));
 }
 
@@ -123,7 +137,8 @@ function sugar_function_json ($sugar, $params) {
  *+
  *+ Formats the input date, or the current date if no date is given.
  */
-function sugar_function_date ($sugar, $params) {
+function sugar_function_date($sugar, $params)
+{
     $format = SugarUtil::getArg($params, 'format', 'r');
     $date = SugarUtil::getArg($params, 'date');
     $stamp = SugarUtil::valueToTime($date);
@@ -139,7 +154,8 @@ function sugar_function_date ($sugar, $params) {
  *+
  *+ Formats the input arguments using sprintf().
  */
-function sugar_function_printf ($sugar, $params) {
+function sugar_function_printf($sugar, $params)
+{
     $format = (string)SugarUtil::getArg($params, 'format');
     $args = SugarUtil::getArg($params, 'params');
     if (is_array($args))
@@ -147,7 +163,8 @@ function sugar_function_printf ($sugar, $params) {
     else
         return $format;
 }
-function sugar_function_sprintf ($s, $p) {
+function sugar_function_sprintf($s, $p)
+{
     return sugar_function_printf($s, $p);
 }
 
@@ -170,7 +187,8 @@ function sugar_function_sprintf ($s, $p) {
  *+ input tags when used in conjunction with a user-input value
  *+ and the form's default value.
  */
-function sugar_function_default ($sugar, $params) {
+function sugar_function_default($sugar, $params)
+{
     $value = SugarUtil::getArg($params, 'value');
     if ($value)
         return $value;
@@ -186,7 +204,8 @@ function sugar_function_default ($sugar, $params) {
  *+ Returns the number of elements within the given array,
  *+ using the internal PHP count() function.
  */
-function sugar_function_count ($sugar, $params) {
+function sugar_function_count($sugar, $params)
+{
     return count(SugarUtil::getArg($params, 'array'));
 }
 
@@ -204,7 +223,8 @@ function sugar_function_count ($sugar, $params) {
  *+   <option {% selected test=$value=='Second' %}>Second</option>
  *+   <option {% selected test=$value=='Third' %}>Third</option>
  */
-function sugar_function_selected ($sugar, $params) {
+function sugar_function_selected($sugar, $params)
+{
     if (SugarUtil::getArg($params, 'test'))
         return new SugarEscaped(' selected="selected" ');
 }
@@ -222,7 +242,8 @@ function sugar_function_selected ($sugar, $params) {
  *+   <input type="checkbox" name="first" {% checked test=$first=='on' %}>
  *+   <input type="checkbox" name="second" {% checked test=$second=='on' %}>
  */
-function sugar_function_checked ($sugar, $params) {
+function sugar_function_checked($sugar, $params)
+{
     if (SugarUtil::getArg($params, 'test'))
         return new SugarEscaped(' checked="checked" ');
 }
@@ -239,7 +260,8 @@ function sugar_function_checked ($sugar, $params) {
  *+   <input type="checkbox" name="first" {% disabled test=$first=='on' %}>
  *+   <input type="checkbox" name="second" {% disabled test=$second=='on' %}>
  */
-function sugar_function_disabled ($sugar, $params) {
+function sugar_function_disabled($sugar, $params)
+{
     if (SugarUtil::getArg($params, 'test'))
         return new SugarEscaped(' disabled="disabled" ');
 }
@@ -259,7 +281,8 @@ function sugar_function_disabled ($sugar, $params) {
  *+   $n = 'foo'; select value=$n default='not found' foo='Found Foo' bar='Found Bar'
  *+   // would print 'Found Foo'
  */
-function sugar_function_select ($sugar, $params) {
+function sugar_function_select($sugar, $params)
+{
     $value = SugarUtil::getArg($params, 'value');
     $default = SugarUtil::getArg($params, 'default', $value);
 
@@ -283,7 +306,8 @@ function sugar_function_select ($sugar, $params) {
  *+ to the truncated string.  The length of $end is taken into account
  *+ to ensure that the result will never be more than $length characters.
  */
-function sugar_function_truncate ($sugar, $params) {
+function sugar_function_truncate($sugar, $params)
+{
     $text = (string)SugarUtil::getArg($params, 'string');
     $length = (int)SugarUtil::getArg($params, 'length', 72);
     $end = (string)SugarUtil::getArg($params, 'end', '...');
@@ -313,24 +337,25 @@ function sugar_function_truncate ($sugar, $params) {
  *+ For the modes 'html' and 'xml', this is equivalent to the default
  *+ output encoding rules for both languages.
  */
-function sugar_function_escape ($sugar, $params) {
+function sugar_function_escape($sugar, $params)
+{
     $value = SugarUtil::getArg($params, 'string');
     $mode = (string)SugarUtil::getArg($params, 'mode', 'html');
 
     switch ($mode) {
-        case 'html':
-            return new SugarEscaped(htmlentities($value, ENT_QUOTES, $sugar->charset));
-        case 'xhtml':
-        case 'xml':
-            return new SugarEscaped(htmlspecialchars($value, ENT_QUOTES, $sugar->charset));
-        case 'javascript':
-        case 'js':
-        case 'json':
-            return new SugarEscaped(SugarUtil::json($value));
-        case 'url':
-            return new SugarEscaped(urlencode($value));
-        default:
-            return null;
+    case 'html':
+        return new SugarEscaped(htmlentities($value, ENT_QUOTES, $sugar->charset));
+    case 'xhtml':
+    case 'xml':
+        return new SugarEscaped(htmlspecialchars($value, ENT_QUOTES, $sugar->charset));
+    case 'javascript':
+    case 'js':
+    case 'json':
+        return new SugarEscaped(SugarUtil::json($value));
+    case 'url':
+        return new SugarEscaped(urlencode($value));
+    default:
+        return null;
     }
 }
 
@@ -348,7 +373,8 @@ function sugar_function_escape ($sugar, $params) {
  *+   {% var name='foo' %}
  *+   {% $name = 'foo' ; var name=$name %}
  */
-function sugar_function_var ($sugar, $params) {
+function sugar_function_var($sugar, $params)
+{
     $name = (string)SugarUtil::getArg($params, 'name');
     return $sugar->getVariable($name);
 }
@@ -362,7 +388,8 @@ function sugar_function_var ($sugar, $params) {
  *+ parameters result in appropriate array keys, while unnamed
  *+ parameters result in appropriate array indexes.
  */
-function sugar_function_array ($sugar, $params) {
+function sugar_function_array($sugar, $params)
+{
     return $params;
 }
 
@@ -373,7 +400,8 @@ function sugar_function_array ($sugar, $params) {
  *+
  *+ Equivalent to PHP's strtolower().
  */
-function sugar_function_strtolower ($sugar, $params) {
+function sugar_function_strtolower($sugar, $params)
+{
     return strtolower((string)SugarUtil::getArg($params, 'string'));
 }
 
@@ -384,7 +412,8 @@ function sugar_function_strtolower ($sugar, $params) {
  *+
  *+ Equivalent to PHP's strtoupper().
  */
-function sugar_function_strtoupper ($sugar, $params) {
+function sugar_function_strtoupper($sugar, $params)
+{
     return strtoupper((string)SugarUtil::getArg($params, 'string'));
 }
 
@@ -404,7 +433,8 @@ function sugar_function_strtoupper ($sugar, $params) {
  *+   substr string='hello world' start=6 length=5 // world
  *+   substr string='hello world' start=10 length=5 // ld
  */
-function sugar_function_substr ($sugar, $params) {
+function sugar_function_substr($sugar, $params)
+{
     $string = (string)SugarUtil::getArg($params, 'string');
     $start = (int)SugarUtil::getArg($params, 'start');
     $length = (int)SugarUtil::getArg($params, 'length');
@@ -418,7 +448,8 @@ function sugar_function_substr ($sugar, $params) {
  *+
  *+ Equivalent to calling Sugar::escape() followed by PHP's nl2br().
  */
-function sugar_function_nl2br ($sugar, $params) {
+function sugar_function_nl2br($sugar, $params)
+{
     $string = SugarUtil::getArg($params, 'string');
     return new SugarEscaped(nl2br($sugar->escape($string)));
 }
@@ -435,7 +466,8 @@ function sugar_function_nl2br ($sugar, $params) {
  *+ displayed in alternating colors use CSS.  Example:
  *+  <tr class="row{% cycle %}">
  */
-function sugar_function_cycle ($sugar, $params) {
+function sugar_function_cycle($sugar, $params)
+{
     $value = $sugar->getVariable('$sugar.cycle');
     $sugar->set('$sugar.cycle', !$value);
     return (int)$value;
@@ -449,7 +481,8 @@ function sugar_function_cycle ($sugar, $params) {
  *+
  *+ Equivalent to PHP's isset() function.
  */
-function sugar_function_isset ($sugar, $params) {
+function sugar_function_isset($sugar, $params)
+{
     $obj = SugarUtil::getArg($params, 'object');
     $index = SugarUtil::getArg($params, 'index');
     if (is_array($obj) && isset($obj[$index]))
@@ -466,7 +499,8 @@ function sugar_function_isset ($sugar, $params) {
  *+
  *+ Equivalent to PHP's time().
  */
-function sugar_function_time ($sugar, $params) {
+function sugar_function_time($sugar, $params)
+{
     return time();
 }
 
@@ -477,7 +511,8 @@ function sugar_function_time ($sugar, $params) {
  *+
  *+ Equivalent to PHP's basename().
  */
-function sugar_function_basename ($sugar, $params) {
+function sugar_function_basename($sugar, $params)
+{
     return basename(SugarUtil::getArg($params, 'path'));
 }
 
@@ -491,7 +526,8 @@ function sugar_function_basename ($sugar, $params) {
  *+
  *+ Equivalent to PHP's array_merge().
  */
-function sugar_function_merge ($sugar, $params) {
+function sugar_function_merge($sugar, $params)
+{
     // clean params of non-arrays
     foreach ($params as $i=>$k) {
         if (!is_array($k))
@@ -514,12 +550,14 @@ function sugar_function_merge ($sugar, $params) {
  *+
  *+ Equivalent to PHP's implode().
  */
-function sugar_function_join ($sugar, $params) {
+function sugar_function_join($sugar, $params)
+{
     $sep = (string)SugarUtil::getArg($params, 'separator', ' ');
     $array = (array)SugarUtil::getArg($params, 'array');
     return implode($sep, $array);
 }
-function sugar_function_implode ($s, $p) {
+function sugar_function_implode($s, $p)
+{
     return sugar_function_join($s, $p);
 }
 
@@ -534,7 +572,8 @@ function sugar_function_implode ($s, $p) {
  *+
  *+ Equivalent to PHP's explode().
  */
-function sugar_function_split ($sugar, $params) {
+function sugar_function_split($sugar, $params)
+{
     $sep = (string)SugarUtil::getArg($params, 'delimiter', ' ');
     $string = (string)SugarUtil::getArg($params, 'string');
     $count = (int)SugarUtil::getArg($params, 'count');
@@ -543,7 +582,8 @@ function sugar_function_split ($sugar, $params) {
     else
         return explode($sep, $string);
 }
-function sugar_function_explode ($s, $p) {
+function sugar_function_explode($s, $p)
+{
     return sugar_function_split ($s, $p);
 }
 
@@ -561,7 +601,8 @@ function sugar_function_explode ($s, $p) {
  *+
  *+ Equivalent to PHP's preg_split().
  */
-function sugar_function_psplit ($sugar, $params) {
+function sugar_function_psplit($sugar, $params)
+{
     $expr = (string)SugarUtil::getArg($params, 'expr', '/\s+/');
     $string = (string)SugarUtil::getArg($params, 'string');
     $count = (int)SugarUtil::getArg($params, 'count');

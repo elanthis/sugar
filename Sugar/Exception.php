@@ -1,9 +1,10 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Exceptions used by Sugar.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * Various exception classes used by Sugar.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,26 +26,40 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Exceptions
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
  * Generic Sugar exception.
  *
+ * This is the base class for any exception thrown by PHP-Sugar.  It
+ * is provided to make it easier to catch all Sugar errors.
+ *
+ * @category Template
  * @package Sugar
  * @subpackage Exceptions
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarException extends Exception {
+class SugarException extends Exception
+{
     /**
      * Constructor.
      *
      * @param string $msg Error message.
      */
-    public function __construct ($msg) {
+    public function __construct($msg)
+    {
         parent::__construct($msg);
     }
 }
@@ -52,10 +67,21 @@ class SugarException extends Exception {
 /**
  * Parse error.
  *
+ * Thrown during the template parsing stage when the template contains
+ * invalid PHP-Sugar template markup that cannot be processed.  This
+ * is a fatal, non-recoverable error inside the parser.
+ *
+ * @category Template
  * @package Sugar
  * @subpackage Exceptions
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarParseException extends SugarException {
+class SugarParseException extends SugarException
+{
     /**
      * File error occured in.
      *
@@ -84,7 +110,8 @@ class SugarParseException extends SugarException {
      * @param int $line Line the error occured in.
      * @param string $msg Error message.
      */
-    public function __construct ($file, $line, $msg) {
+    public function __construct($file, $line, $msg)
+    {
         parent::__construct('parse error at '.$file.','.$line.': '.$msg);
         $this->file = $file;
         $this->line = $line;
@@ -94,10 +121,20 @@ class SugarParseException extends SugarException {
 /**
  * Runtime error.
  *
+ * Thrown for any errors that occur during execution of a compiled
+ * template.  These errors cannot be recovered from during execution.
+ *
+ * @category Template
  * @package Sugar
  * @subpackage Exceptions
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarRuntimeException extends SugarException {
+class SugarRuntimeException extends SugarException
+{
     /**
      * File error occured in.
      *
@@ -126,7 +163,8 @@ class SugarRuntimeException extends SugarException {
      * @param int $line Line the error occured in.
      * @param string $msg Error message.
      */
-    public function __construct ($file, $line, $msg) {
+    public function __construct($file, $line, $msg)
+    {
         parent::__construct('runtime error at '.$file.','.$line.': '.$msg);
         $this->file = $file;
         $this->line = $line;

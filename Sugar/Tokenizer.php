@@ -1,9 +1,21 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Sugar template language tokenizer.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * The tokenizer is responsible for taking template files and breaking them
+ * into a series of tokens to be consumed by the grammar parser portion of
+ * the Sugar compiler.  The tokenizer makes use of some rather ugly
+ * regular expressions as they actually provide better performance than any
+ * other method available in PHP for this purpose.
+ *
+ * The regular expressions could possible use some improvements in efficiency.
+ * In particular, even though the compiled regex is cached by PHP, the string
+ * interpolation done on each token loop to build the regex should be avoied.
+ * This is the most used and most performance-sensitive portion of the
+ * compiler, and as such needs more love than the grammar when it comes time
+ * to optimize.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,20 +37,32 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
- * @subpackage Internals
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @subpackage Compiler
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
+ * Sugar language tokenizer.
+ *
  * Tokenizes a source file for use by {@link SugarParser}.
  *
+ * @category Template
  * @package Sugar
- * @subpackage Internals
+ * @subpackage Compiler
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarTokenizer {
+class SugarTokenizer
+{
     /**
      * Source code to be tokenized.
      *
@@ -109,7 +133,8 @@ class SugarTokenizer {
      * @param string $src The source code to tokenizer.
      * @param string $file The name of the file being tokenized.
      */
-    public function __construct ($src, $file, $delimStart, $delimEnd) {
+    public function __construct($src, $file, $delimStart, $delimEnd)
+    {
         $this->src = $src;
         $this->file = $file;
 	$this->delimStart = $delimStart;
@@ -124,22 +149,23 @@ class SugarTokenizer {
      * @param array $token Token to name.
      * @return string Nice name for the token.
      */
-    public static function tokenName ($token) {
+    public static function tokenName($token)
+    {
         switch($token[0]) {
-            case 'eof': return '<eof>';
-            case 'name': return 'name '.$token[1];
-            case 'var': return 'variable $'.$token[1];
-            case 'data':
-                if (is_string($token[1]))
-                    return 'string "'.addslashes($token[1]).'"';
-                elseif (is_float($token[1]))
-                    return 'float '.$token[1];
-                elseif (is_int($token[1]))
-                    return 'integer '.$token[1];
-                else
-                    return gettype($token[1]);
-            case 'term': return $token[1];
-            default: return $token[0];
+        case 'eof': return '<eof>';
+        case 'name': return 'name '.$token[1];
+        case 'var': return 'variable $'.$token[1];
+        case 'data':
+            if (is_string($token[1]))
+                return 'string "'.addslashes($token[1]).'"';
+            elseif (is_float($token[1]))
+                return 'float '.$token[1];
+            elseif (is_int($token[1]))
+                return 'integer '.$token[1];
+            else
+                return gettype($token[1]);
+        case 'term': return $token[1];
+        default: return $token[0];
         }
     }
 
@@ -150,7 +176,8 @@ class SugarTokenizer {
      * @param string $string String to decode.
      * @return string Decoded string.
      */
-    public static function decodeSlashes ($string) {
+    public static function decodeSlashes($string)
+    {
         $string = str_replace('\\n', "\n", $string);
         $string = stripslashes($string);
         return $string;
@@ -166,7 +193,8 @@ class SugarTokenizer {
      * @param string $regex Regular expression to check for.
      * @return mixed Array of subexpression matches on successful, or false if no match.
      */
-    private function getRegex ($regex) {
+    private function getRegex($regex)
+    {
         if (!preg_match($regex, $this->src, $ar, 0, $this->pos))
             return false;
         $this->pos += strlen($ar[0]);
@@ -179,7 +207,8 @@ class SugarTokenizer {
      *
      * @return array Next token.
      */
-    private function next () {
+    private function next()
+    {
         // EOF
         if ($this->pos >= strlen($this->src))
             return array('eof', null);
@@ -280,7 +309,8 @@ class SugarTokenizer {
      * @param mixed $data Token token.
      * @return bool True if the token matched.
      */
-    public function accept ($accept, &$data = null) {
+    public function accept($accept, &$data = null)
+    {
         // return false if it's the wrong token
         if ($this->token[0] != $accept)
             return false;
@@ -299,7 +329,8 @@ class SugarTokenizer {
      * @param array $accept Tokens to accept.
      * @return bool True if one of the given token types matches.
      */
-    public function peekAny (array $accept) {
+    public function peekAny(array $accept)
+    {
         return in_array($this->token[0], $accept);
     }
 
@@ -312,7 +343,8 @@ class SugarTokenizer {
      * @param string $accept Which token type to accept.
      * @param mixed $data Token token.
      */
-    public function expect ($expect, &$data = null) {
+    public function expect($expect, &$data = null)
+    {
         // throw an error if it's the wrong token
         if ($this->token[0] != $expect)
             throw new SugarParseException($this->file, $this->tokline, 'expected '.$expect.'; found '.SugarTokenizer::tokenName($this->token));
@@ -331,7 +363,8 @@ class SugarTokenizer {
      *
      * @return mixed The operator if one matches, or false otherwise.
      */
-    public function getOp () {
+    public function getOp()
+    {
         $op = $this->token[0];
 
         // convert = to == for operators
@@ -354,7 +387,8 @@ class SugarTokenizer {
      *
      * @return int Line number.
      */
-    public function getLine () {
+    public function getLine()
+    {
         return $this->line;
     }
 
@@ -363,7 +397,8 @@ class SugarTokenizer {
      *
      * @return string File name.
      */
-    public function getFile () {
+    public function getFile()
+    {
         return $this->file;
     }
 }

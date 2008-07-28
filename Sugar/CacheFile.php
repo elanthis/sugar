@@ -1,9 +1,11 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * File-based cache driver for PHP-Sugar
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * This class implements a file-based cache driver, which loads and saves
+ * cache files in the $sugar->cacheDir directory.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,11 +27,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
@@ -38,10 +43,17 @@
  * Uses {@link Sugar::$cacheDir} and {$link Sugar::$cacheTime} to control
  * behavior.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarCacheFile implements ISugarCache {
+class SugarCacheFile implements ISugarCache
+{
     /**
      * Sugar instance.
      *
@@ -54,7 +66,8 @@ class SugarCacheFile implements ISugarCache {
      *
      * @param Sugar $sugar Sugar instance.
      */
-    public function __construct ($sugar) {
+    public function __construct($sugar)
+    {
         $this->sugar = $sugar;
     }
 
@@ -65,7 +78,8 @@ class SugarCacheFile implements ISugarCache {
      * @param string $type Either 'ctpl' or 'chtml'.
      * @return string Path.
      */
-    private function makePath (SugarRef $ref, $type) {
+    private function makePath(SugarRef $ref, $type)
+    {
         $path = $this->sugar->cacheDir.'/';
         $cid = $type == SUGAR_CACHE_HTML ? $ref->cacheId : null;
         $path .= md5($ref->storageName . $ref->name . $cid);
@@ -83,7 +97,8 @@ class SugarCacheFile implements ISugarCache {
      * @param string $type Either 'ctpl' or 'chtml'.
      * @return int Timestamp
      */
-    public function stamp (SugarRef $ref, $type) {
+    public function stamp(SugarRef $ref, $type)
+    {
         $path = $this->makePath($ref, $type);
 
         // check exists, return stamp
@@ -100,7 +115,8 @@ class SugarCacheFile implements ISugarCache {
      * @param string $type Either 'ctpl' or 'chtml'.
      * @return array Bytecode, or false if not in the cache.
      */
-    public function load (SugarRef $ref, $type) {
+    public function load(SugarRef $ref, $type)
+    {
         $path = $this->makePath($ref, $type);
     
         // must exist, be readable, and not be older than $cacheLimit seconds
@@ -122,7 +138,8 @@ class SugarCacheFile implements ISugarCache {
      * @param string $type Either 'ctpl' or 'chtml'.
      * @param array $data Bytecode.
      */
-    public function store (SugarRef $ref, $type, $data) {
+    public function store(SugarRef $ref, $type, $data)
+    {
         $path = $this->makePath($ref, $type);
 
         // ensure we can save the cache file
@@ -145,7 +162,8 @@ class SugarCacheFile implements ISugarCache {
      * @param SugarRef $ref File reference for the bytecode to erase.
      * @param string $type Either 'ctpl' or 'chtml'.
      */
-    public function erase (SugarRef $ref, $type) {
+    public function erase(SugarRef $ref, $type)
+    {
         $path = $this->makePath($ref, $type);
 
         // if the file exists and the directory is writeable, erase it
@@ -160,7 +178,8 @@ class SugarCacheFile implements ISugarCache {
     /**
      * Clears all caches the driver is responsible for.
      */
-    public function clear () {
+    public function clear()
+    {
         // directory must exist, and be both readable and writable
         if (!file_exists($this->sugar->cacheDir) || !is_dir($this->sugar->cacheDir) || !is_writable($this->sugar->cacheDir) || !is_readable($this->sugar->cacheDir))
             return false;

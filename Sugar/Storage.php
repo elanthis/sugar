@@ -1,9 +1,12 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Sugar storage interface.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * This is an interface used for defining custom storage drivers.  Storage
+ * drivers are responsible for loading template files.  An application might
+ * want a custom driver for loadng templates from a database, for example.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,21 +28,33 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
+ * Storage driver interface.
+ *
  * Interface for storage drivers.  These are used to load template from
  * different resources, such as the file system or a database.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-interface ISugarStorage {
+interface ISugarStorage
+{
     /**
      * Returns the timestamp of the reference, or 0 if the reference does
      * not exist.
@@ -47,7 +62,7 @@ interface ISugarStorage {
      * @param SugarRef $ref Reference to lookup.
      * @return int Timestamp if it exists, or zero if it cannot be found.
      */
-    function stamp (SugarRef $ref);
+    function stamp(SugarRef $ref);
 
     /**
      * Returns the source for the requested reference.
@@ -55,7 +70,7 @@ interface ISugarStorage {
      * @param SugarRef $ref Reference to lookup.
      * @return string Source of reference.
      */
-    function load (SugarRef $ref);
+    function load(SugarRef $ref);
 
     /**
      * Returns a path name for the reference, mapped as appropriate for
@@ -67,6 +82,6 @@ interface ISugarStorage {
      * @param SugarRef $ref Reference to lookup.
      * @return string User-friendly path to reference.
      */
-    function path (SugarRef $ref);
+    function path(SugarRef $ref);
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 : ?>

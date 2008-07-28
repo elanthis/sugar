@@ -1,9 +1,10 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * File-based storage driver.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * This provides the default filesystem storage driver for Sugar cache files.
+ *
+ * PHP version 5
  *
  * LICENSE:
  * 
@@ -25,11 +26,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@awesomeplay.com>
- * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
 
 /**
@@ -37,10 +41,20 @@
  *
  * Uses {@link Sugar::$templateDir} to find templates.
  *
+ * This class is a namespace containing static function relevant to 
+ * executing Sugar bytecode.
+ *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarStorageFile implements ISugarStorage {
+class SugarStorageFile implements ISugarStorage
+{
     /**
      * Sugar instances.
      *
@@ -53,7 +67,8 @@ class SugarStorageFile implements ISugarStorage {
      *
      * @param Sugar $sugar Sugar instance.
      */
-    public function __construct ($sugar) {
+    public function __construct($sugar)
+    {
         $this->sugar = $sugar;
     }
 
@@ -64,7 +79,8 @@ class SugarStorageFile implements ISugarStorage {
      * @param SugarRef $ref Reference to lookup.
      * @return int Timestamp if it exists, or zero if it cannot be found.
      */
-    public function stamp (SugarRef $ref) {
+    public function stamp(SugarRef $ref)
+    {
         $path = $this->sugar->templateDir.'/'.$ref->name.'.tpl';
         if (is_file($path) && is_readable($path))
             return filemtime($path);
@@ -78,7 +94,8 @@ class SugarStorageFile implements ISugarStorage {
      * @param SugarRef $ref Reference to lookup.
      * @return string Source of reference.
      */
-    public function load (SugarRef $ref) {
+    public function load(SugarRef $ref)
+    {
         $path = $this->sugar->templateDir.'/'.$ref->name.'.tpl';
         if (is_file($path) && is_readable($path))
             return file_get_contents($path);
@@ -96,7 +113,8 @@ class SugarStorageFile implements ISugarStorage {
      * @param SugarRef $ref Reference to lookup.
      * @return string User-friendly path to reference.
      */
-    public function path (SugarRef $ref) {
+    public function path(SugarRef $ref)
+    {
         return $this->sugar->templateDir.'/'.$ref->name.'.tpl';
     }
 }

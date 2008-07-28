@@ -1,9 +1,10 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Template markup grammar parser.
  *
- * Copyright (c) 2008  AwesomePlay Productions, Inc. and
- * contributors.  All rights reserved.
+ * Defines the grammar parser engine used for Sugar markup.  This is a hand-
+ * written recursive-descent parser.  It's simple in design, but very easy
+ * to extend or modify.
  *
  * LICENSE:
  * 
@@ -43,12 +44,22 @@ require_once SUGAR_ROOTDIR.'/Sugar/Tokenizer.php';
 require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
 
 /**
- * Parses source code into Sugar bytecode.
+ * Template parser.
  *
+ * This class implements the grammar parsing language for the PHP-Sugar
+ * template language.
+ *
+ * @category Template
  * @package Sugar
- * @subpackage Internals
+ * @subpackage Compiler
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
  */
-class SugarParser {
+class SugarParser
+{
     /**
      * Tokenizer.
      *
@@ -99,7 +110,8 @@ class SugarParser {
      *
      * @param Sugar $sugar Sugar instance.
      */
-    public function __construct ($sugar) {
+    public function __construct($sugar)
+    {
         $this->sugar = $sugar;
     }
 
@@ -108,7 +120,8 @@ class SugarParser {
      *
      * @return array Arguments.
      */
-    private function parseFunctionArgs () {
+    private function parseFunctionArgs()
+    {
         $params = array();
         while (!$this->tokens->peekAny(array(')', ']', '}', ',', 'term'))) {
             // check for name= assignment
@@ -126,7 +139,8 @@ class SugarParser {
      *
      * @return array Arguments.
      */
-    private function parseMethodArgs () {
+    private function parseMethodArgs()
+    {
         $params = array();
         while (!$this->tokens->accept(')')) {
             // assign parameter
@@ -148,7 +162,8 @@ class SugarParser {
      *
      * @param int $level Precedence level to collapse under.
      */
-    private function collapseOps ($level) {
+    private function collapseOps($level)
+    {
         while ($this->stack && SugarParser::$precedence[end($this->stack)] <= $level) {
             // get operator
             $op = array_pop($this->stack);
@@ -186,7 +201,8 @@ class SugarParser {
      * @param array $node Bytecode to check.
      * @return bool True if the node is only data.
      */
-    private static function isData ($node) {
+    private static function isData($node)
+    {
         return (count($node) == 2 && $node[0] == 'push');
     }
 
@@ -196,7 +212,8 @@ class SugarParser {
      * @param bool $skip Hack to skip the first terminal, used in some hacky parsing routines.
      * @return array Bytecode of expression.
      */
-    private function compileExpr ($skip = false) {
+    private function compileExpr($skip = false)
+    {
         // wrap operator stack
         $this->stack []= '(';
 
@@ -263,7 +280,8 @@ class SugarParser {
      * constructs.  Not the best named method.  The resulting bytecode
      * is pushed to the output stack.
      */
-    private function compileTerminal () {
+    private function compileTerminal()
+    {
         // unary -
         if ($this->tokens->accept('-')) {
             $this->stack []= 'negate';
@@ -343,7 +361,8 @@ class SugarParser {
      *
      * @return array Block's bytecode.
      */
-    public function compileBlock () {
+    public function compileBlock()
+    {
         $block = array();
 
         // build byte-code
@@ -520,7 +539,8 @@ class SugarParser {
      * @param string $file Name of the file being compiled.
      * @return array Bytecode.
      */
-    public function compile ($src, $file = '<input>') {
+    public function compile($src, $file = '<input>')
+    {
         // create tokenizer
         $this->tokens = new SugarTokenizer($src, $file, $this->sugar->delimStart, $this->sugar->delimEnd);
 
