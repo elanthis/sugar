@@ -500,13 +500,14 @@ class Sugar
      * execute the bytecode.
      *
      * @param SugarRed $ref The template to load.
+     * @throws SugarApiException when the template cannot be found.
      */
     private function loadExecute(SugarRef $ref)
     {
         // check template exists, and remember stamp
         $sstamp = $ref->storage->stamp($ref);
         if ($sstamp === false)
-            throw new SugarException('template not found: '.$ref->full);
+            throw new SugarApiException('template not found: '.$ref->full);
 
         // cache file ref
         if ($this->cacheHandler)
@@ -531,7 +532,7 @@ class Sugar
         // compile
         $source = $ref->storage->load($ref);
         if ($source === false)
-            throw new SugarException('template not found: '.$ref->full);
+            throw new SugarApiException('template not found: '.$ref->full);
         $parser = new SugarParser($this);
         $data = $parser->compile($source, $ref->storage->path($ref));
         $parser = null;
@@ -601,17 +602,19 @@ class Sugar
      *
      * @param string $file Template to display.
      * @return bool true on success.
+     * @throws SugarApiException when the template name is invalid or
+     * the template cannot be found.
      */
     public function display($file)
     {
         // validate name
         $ref = SugarRef::create($file, $this);
         if ($ref === false)
-            throw new SugarException('illegal template name: '.$file);
+            throw new SugarApiException('illegal template name: '.$file);
 
         // ensure template exists
         if ($ref->storage->stamp($ref) === false)
-            throw new SugarException('template not found: '.$ref->full);
+            throw new SugarApiException('template not found: '.$ref->full);
 
         // load and run
         try {
@@ -649,6 +652,7 @@ class Sugar
      * @param string $file File to check.
      * @param string $cacheId Optional cache identifier.
      * @return bool True if a valid HTML cache exists for the file.
+     * @throws SugarApiException when the template name is invalid.
      */
     function isCached($file, $cacheId=null)
     {
@@ -659,7 +663,7 @@ class Sugar
         // validate name
         $ref = SugarRef::create($file, $this, $cacheId);
         if ($ref === false)
-            throw new SugarException('illegal template name: '.$file);
+            throw new SugarApiException('illegal template name: '.$file);
 
         // if the cache can be loaded, it is valid
         return $this->loadCache($ref) !== false;
@@ -671,13 +675,14 @@ class Sugar
      * @param string $file Template to display.
      * @param string $cacheId Optinal cache identifier.
      * @return bool true on success.
+     * @throws SugarApiException when the template name is invalid.
      */
     function displayCache($file, $cacheId = null)
     {
         // validate name
         $ref = SugarRef::create($file, $this, $cacheId);
         if ($ref === false)
-            throw new SugarException('illegal template name: '.$file);
+            throw new SugarApiException('illegal template name: '.$file);
 
         try {
             // if cache exists and is up-to-date and debug is off, load cache
@@ -785,16 +790,18 @@ class Sugar
      *
      * @param string $file Template to lookup.
      * @return string Template's source code.
+     * @throws SugarApiException when the template name is invalid.
      */
     function getSource($file)
     {
         // validate name
         $ref = SugarRef::create($file, $this);
         if ($ref === false)
-            throw new SugarException('illegal template name: '.$file);
+            throw new SugarApiException('illegal template name: '.$file);
 
         // fetch source
         return $ref->storage->load($ref);
     }
 }
-// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
+// vim: set expandtab shiftwidth=4 tabstop=4 :
+?>

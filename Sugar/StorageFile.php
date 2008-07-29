@@ -118,4 +118,5 @@ class SugarStorageFile implements ISugarStorage
         return $this->sugar->templateDir.'/'.$ref->name.'.tpl';
     }
 }
-// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
+// vim: set expandtab shiftwidth=4 tabstop=4 :
+?>

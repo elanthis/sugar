@@ -206,6 +206,7 @@ class SugarTokenizer
      * Retrieves the next token in the input stream.
      *
      * @return array Next token.
+     * @throws SugarParseException on invalid template input.
      */
     private function next()
     {
@@ -342,6 +343,7 @@ class SugarTokenizer
      *
      * @param string $accept Which token type to accept.
      * @param mixed $data Token token.
+     * @throws SugarParseException when the next token does not match $accept.
      */
     public function expect($expect, &$data = null)
     {
@@ -402,4 +404,5 @@ class SugarTokenizer
         return $this->file;
     }
 }
-// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
+// vim: set expandtab shiftwidth=4 tabstop=4 :
+?>

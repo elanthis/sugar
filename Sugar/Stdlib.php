@@ -611,4 +611,5 @@ function sugar_function_psplit($sugar, $params)
 
 /**#@-*/
 
-// vim: set expandtab shiftwidth=4 tabstop=4: ?>
+// vim: set expandtab shiftwidth=4 tabstop=4 :
+?>

@@ -97,13 +97,6 @@ class SugarParseException extends SugarException
     var $line = 1;
 
     /**
-     * Error message.
-     *
-     * @var string Error message.
-     */
-    var $msg;
-
-    /**
      * Constructor.
      *
      * @param string $file File the error occured in.
@@ -150,13 +143,6 @@ class SugarRuntimeException extends SugarException
     var $line = 1;
 
     /**
-     * Error message.
-     *
-     * @var string Error message.
-     */
-    var $msg;
-
-    /**
      * Constructor.
      *
      * @param string $file File the error occured in.
@@ -171,4 +157,34 @@ class SugarRuntimeException extends SugarException
     }
 }
 
-// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
+/**
+ * Invocation error.
+ *
+ * Thrown whenever the user has mis-used the Sugar API.
+ *
+ * @category Template
+ * @package Sugar
+ * @subpackage Exceptions
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 Mojodo, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ * @version 0.80
+ * @link http://php-sugar.net
+ */
+class SugarApiException extends SugarException
+{
+    /**
+     * Constructor.
+     *
+     * @param string $file File the error occured in.
+     * @param int $line Line the error occured in.
+     * @param string $msg Error message.
+     */
+    public function __construct($msg)
+    {
+        parent::__construct('api misuse error: '.$msg);
+    }
+}
+
+// vim: set expandtab shiftwidth=4 tabstop=4 :
+?>

@@ -84,4 +84,5 @@ interface ISugarStorage
      */
     function path(SugarRef $ref);
 }
-// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
+// vim: set expandtab shiftwidth=4 tabstop=4 :
+?>

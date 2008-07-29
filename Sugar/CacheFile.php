@@ -137,6 +137,8 @@ class SugarCacheFile implements ISugarCache
      * @param SugarRef $ref File reference to lookup.
      * @param string $type Either 'ctpl' or 'chtml'.
      * @param array $data Bytecode.
+     * @throws SugarApiException when the cache directory is missing or
+     * otherwise unusable.
      */
     public function store(SugarRef $ref, $type, $data)
     {
@@ -192,4 +194,5 @@ class SugarCacheFile implements ISugarCache
         return true;
     }
 }
-// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
+// vim: set expandtab shiftwidth=4 tabstop=4 :
+?>

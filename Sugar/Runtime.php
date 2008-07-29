@@ -106,6 +106,9 @@ class SugarRuntime
      * @param Sugar $sugar Sugar instance.
      * @param array $code Bytecode to execute.
      * @return mixed Last value on stack.
+     * @throws SugarRuntimeException when the user has provided code that
+     * cannot be executed, such as attempting to call a function that does
+     * not exist.
      */
     public static function execute($sugar, $code)
     {
@@ -406,4 +409,5 @@ class SugarRuntime
         return end($stack);
     }
 }
-// vim: set expandtab shiftwidth=4 tabstop=4 : ?>
+// vim: set expandtab shiftwidth=4 tabstop=4 :
+?>
