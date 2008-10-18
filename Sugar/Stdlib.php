@@ -56,7 +56,10 @@
  */
 function sugar_function_include($sugar, $params)
 {
-    $sugar->display(SugarUtil::getArg($params, 'tpl'));
+    $tpl = SugarUtil::getArg($params, 'tpl');
+    unset($params['tpl']);
+
+    $sugar->display($tpl, $params);
 }
 
 /*++
@@ -68,7 +71,10 @@ function sugar_function_include($sugar, $params)
  */
 function sugar_function_eval($sugar, $params)
 {
-    $sugar->displayString(SugarUtil::getArg($params, 'source'));
+    $tpl = SugarUtil::getArg($params, 'tpl');
+    unset($params['tpl']);
+
+    $sugar->displayString($tpl, $params);
 }
 
 /*++

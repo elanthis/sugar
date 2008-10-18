@@ -469,12 +469,16 @@ class Sugar
      * Execute Sugar bytecode.
      *
      * @param array $data Bytecode.
+     * @param array $vars Additional vars to set during execution.
      * @return mixed Return value of bytecode.
      */
-    private function execute(array $data)
+    private function execute(array $data, $vars = null)
     {
-        // create new domain
-        $this->vars []= array();
+        // create new domain -- with vars, if set
+        if (is_array($vars))
+            $this->vars []= $vars; 
+        else
+            $this->vars []= array();
 
         try {
             /**
@@ -500,9 +504,10 @@ class Sugar
      * execute the bytecode.
      *
      * @param SugarRed $ref The template to load.
+     * @param array $vars Additional vars to set during execution.
      * @throws SugarApiException when the template cannot be found.
      */
-    private function loadExecute(SugarRef $ref)
+    private function loadExecute(SugarRef $ref, $vars)
     {
         // check template exists, and remember stamp
         $sstamp = $ref->storage->stamp($ref);
@@ -519,7 +524,7 @@ class Sugar
             $data = $this->cache->load($ref, SUGAR_CACHE_TPL);
             // if version checks out, run it
             if ($data !== false && $data['version'] == SUGAR_VERSION) {
-                $this->execute($data);
+                $this->execute($data, $vars);
                 return;
             }
         }
@@ -541,7 +546,7 @@ class Sugar
         $this->cache->store($ref, SUGAR_CACHE_TPL, $data);
 
         // execute
-        $this->execute($data);
+        $this->execute($data, $vars);
     }
     
     /**
@@ -601,11 +606,12 @@ class Sugar
      * Load, compile, and display the requested template.
      *
      * @param string $file Template to display.
+     * @param array $vars Additional vars to set during execution.
      * @return bool true on success.
      * @throws SugarApiException when the template name is invalid or
      * the template cannot be found.
      */
-    public function display($file)
+    public function display($file, $vars = null)
     {
         // validate name
         $ref = SugarRef::create($file, $this);
@@ -618,7 +624,7 @@ class Sugar
 
         // load and run
         try {
-            $this->loadExecute($ref);
+            $this->loadExecute($ref, $vars);
             return true;
         } catch (SugarException $e) {
             $this->handleError($e);
@@ -633,12 +639,13 @@ class Sugar
      * the result as a string instead of displaying it to the user.
      *
      * @param string $file Template to process.
+     * @param array $vars Additional vars to set during execution.
      * @return string Template output.
      */
-    public function fetch($file)
+    public function fetch($file, $vars = null)
     {
         ob_start();
-        $this->display($file);
+        $this->display($file, $vars);
         $result = ob_get_contents();
         ob_end_clean();
         return $result;
@@ -654,7 +661,7 @@ class Sugar
      * @return bool True if a valid HTML cache exists for the file.
      * @throws SugarApiException when the template name is invalid.
      */
-    function isCached($file, $cacheId=null)
+    function isCached($file, $cacheId = null, $vars = null)
     {
         // debug always disabled caching
         if ($this->debug)
@@ -674,10 +681,11 @@ class Sugar
      *
      * @param string $file Template to display.
      * @param string $cacheId Optinal cache identifier.
+     * @param array $vars Additional vars to set during execution.
      * @return bool true on success.
      * @throws SugarApiException when the template name is invalid.
      */
-    function displayCache($file, $cacheId = null)
+    function displayCache($file, $cacheId = null, $vars = null)
     {
         // validate name
         $ref = SugarRef::create($file, $this, $cacheId);
@@ -688,7 +696,7 @@ class Sugar
             // if cache exists and is up-to-date and debug is off, load cache
             $data = $this->loadCache($ref);
             if (!$this->debug && $data !== false) {
-                $this->execute($data);
+                $this->execute($data, $vars);
                 return true;
             }
 
@@ -701,7 +709,7 @@ class Sugar
 
                 // create cache
                 $this->cacheHandler = new SugarCacheHandler($this);
-                $this->loadExecute($ref);
+                $this->loadExecute($ref, $vars);
                 $cache = $this->cacheHandler->getOutput();
                 $this->cacheHandler = null;
 
@@ -709,11 +717,11 @@ class Sugar
                 $this->cache->store($ref, SUGAR_CACHE_HTML, $cache);
 
                 // display cache
-                $this->execute($cache);
+                $this->execute($cache, $vars);
 
             // cache handler already running - just display normally
             } else {
-                $this->loadExecute($ref);
+                $this->loadExecute($ref, $vars);
             }
 
             return true;
@@ -729,12 +737,13 @@ class Sugar
      *
      * @param string $file Template to process.
      * @param string $cacheId Optional cache identifier.
+     * @param array $vars Additional vars to set during execution.
      * @return string Template output.
      */
-    public function fetchCache($file, $cacheId = null)
+    public function fetchCache($file, $cacheId = null, $vars = null)
     {
         ob_start();
-        $this->displayCache($file, $cacheId);
+        $this->displayCache($file, $cacheId, $vars);
         $result = ob_get_contents();
         ob_end_clean();
         return $result;
@@ -744,9 +753,10 @@ class Sugar
      * Compile and display the template source code given as a string.
      *
      * @param string $source Template code to display.
+     * @param array $vars Additional vars to set during execution.
      * @return bool true on success.
      */
-    function displayString($source)
+    function displayString($source, $vars = null)
     {
         try {
             /**
@@ -760,7 +770,7 @@ class Sugar
             $parser = null;
 
             // run
-            $this->execute($data);
+            $this->execute($data, $vars);
             
             return true;
         } catch (SugarException $e) {
@@ -774,12 +784,13 @@ class Sugar
      * returns the result as a string instead of displaying it to the user.
      *
      * @param string $Source Template code to process.
+     * @param array $vars Additional vars to set during execution.
      * @return string Template output.
      */
-    public function fetchString($source)
+    public function fetchString($source, $vars = null)
     {
         ob_start();
-        $this->displayString($source);
+        $this->displayString($source, $vars);
         $result = ob_get_contents();
         ob_end_clean();
         return $result;
