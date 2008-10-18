@@ -615,6 +615,19 @@ function sugar_function_psplit($sugar, $params)
     return preg_split($expr, $string, $count);
 }
 
+/*++
+ *+ @name int 
+ *+ @param mixed $value Value to convert to an integer.
+ *+
+ *+ Converts the input value into an integer.
+ *+
+ *+ Equivalent to PHP's intval().
+ */
+function sugar_function_int($sugar, $params)
+{
+    return intval(SugarUtil::getArg($params, 'value'));
+}
+
 /**#@-*/
 
 // vim: set expandtab shiftwidth=4 tabstop=4 :
