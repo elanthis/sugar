@@ -532,13 +532,13 @@ class Sugar
         /**
          * Compiler.
          */
-        require_once SUGAR_ROOTDIR.'/Sugar/Parser.php';
+        require_once SUGAR_ROOTDIR.'/Sugar/Grammar.php';
 
         // compile
         $source = $ref->storage->load($ref);
         if ($source === false)
             throw new SugarApiException('template not found: '.$ref->full);
-        $parser = new SugarParser($this);
+        $parser = new SugarGrammar($this);
         $data = $parser->compile($source, $ref->storage->path($ref));
         $parser = null;
 
@@ -762,10 +762,10 @@ class Sugar
             /**
              * Compiler.
              */
-            require_once SUGAR_ROOTDIR.'/Sugar/Parser.php';
+            require_once SUGAR_ROOTDIR.'/Sugar/Grammar.php';
 
             // compile
-            $parser = new SugarParser($this);
+            $parser = new SugarGrammar($this);
             $data = $parser->compile($source);
             $parser = null;
 

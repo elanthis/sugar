@@ -36,7 +36,7 @@
 /**
  * Source tokenizer.
  */
-require_once SUGAR_ROOTDIR.'/Sugar/Tokenizer.php';
+require_once SUGAR_ROOTDIR.'/Sugar/Lexer.php';
 
 /**
  * Runtime engine, used for optimization.
@@ -58,12 +58,12 @@ require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
  * @version 0.81
  * @link http://php-sugar.net
  */
-class SugarParser
+class SugarGrammar
 {
     /**
      * Tokenizer.
      *
-     * @var SugarTokenizer $tokens
+     * @var SugarLexer $tokens
      */
     private $tokens = null;
 
@@ -164,7 +164,7 @@ class SugarParser
      */
     private function collapseOps($level)
     {
-        while ($this->stack && SugarParser::$precedence[end($this->stack)] <= $level) {
+        while ($this->stack && SugarGrammar::$precedence[end($this->stack)] <= $level) {
             // get operator
             $op = array_pop($this->stack);
 
@@ -173,7 +173,7 @@ class SugarParser
                 $right = array_pop($this->output);
 
                 // optimize away if operand is data
-                if (SugarParser::isData($right))
+                if (SugarGrammar::isData($right))
                     $this->output []= array('push', SugarRuntime::execute($this->sugar, array_merge($right, array($op))));
                 // can't optimize away - emit opcodes
                 else
@@ -185,7 +185,7 @@ class SugarParser
                 $left = array_pop($this->output);
 
                 // optimize away if both operands are constant data
-                if (SugarParser::isData($left) && SugarParser::isData($right))
+                if (SugarGrammar::isData($left) && SugarGrammar::isData($right))
                     $this->output []= array('push', SugarRuntime::execute($this->sugar, array_merge($left, $right, array($op))));
                 // can't optimize away - emit opcodes
                 else
@@ -225,7 +225,7 @@ class SugarParser
         // while we have a binary operator, continue chunking along
         while ($op = $this->tokens->getOp()) {
             // pop higher precedence operators
-            $this->collapseOps(SugarParser::$precedence[$op]);
+            $this->collapseOps(SugarGrammar::$precedence[$op]);
 
             // if it's an array or object . or -> op, we can also take a name
             if (($op == '.' || $op == '->') && $this->tokens->accept('name', $name)) {
@@ -516,7 +516,7 @@ class SugarParser
                 $ops = $this->compileExpr();
                 $this->tokens->expect('term');
 
-                if (SugarParser::isData($ops)) {
+                if (SugarGrammar::isData($ops)) {
                     $block []= array('echo', $this->sugar->escape(SugarRuntime::showValue($ops[1])));
                 } else {
                     $block []= $ops;
@@ -542,7 +542,7 @@ class SugarParser
     public function compile($src, $file = '<input>')
     {
         // create tokenizer
-        $this->tokens = new SugarTokenizer($src, $file, $this->sugar->delimStart, $this->sugar->delimEnd);
+        $this->tokens = new SugarLexer($src, $file, $this->sugar->delimStart, $this->sugar->delimEnd);
 
         // build byte-code
         $bytecode = $this->compileBlock();

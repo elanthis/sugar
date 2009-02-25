@@ -50,7 +50,7 @@
 /**
  * Sugar language tokenizer.
  *
- * Tokenizes a source file for use by {@link SugarParser}.
+ * Tokenizes a source file for use by {@link SugarGrammar}.
  *
  * @category Template
  * @package Sugar
@@ -61,7 +61,7 @@
  * @version 0.81
  * @link http://php-sugar.net
  */
-class SugarTokenizer
+class SugarLexer
 {
     /**
      * Source code to be tokenized.
@@ -260,11 +260,11 @@ class SugarTokenizer
         if ($token == '"') {
             if (($string = $this->getRegex('/((?:[^"\\\\]*\\\\.)*[^"]*)"/msA')) === false)
                 throw new SugarParseException($this->file, $this->line, 'unterminated string constant at: '.substr($this->src, $this->pos, 12));
-            return array('data', SugarTokenizer::decodeSlashes($string[1]));
+            return array('data', SugarLexer::decodeSlashes($string[1]));
         } elseif ($token == '\'') {
             if (($string = $this->getRegex('/((?:[^\'\\\\]*\\\\.)*[^\']*)\'/msA')) === false)
                 throw new SugarParseException($this->file, $this->line, 'unterminated string constant at: '.substr($this->src, $this->pos, 12));
-            return array('data', SugarTokenizer::decodeSlashes($string[1]));
+            return array('data', SugarLexer::decodeSlashes($string[1]));
         }
 
         // variable
@@ -349,7 +349,7 @@ class SugarTokenizer
     {
         // throw an error if it's the wrong token
         if ($this->token[0] != $expect)
-            throw new SugarParseException($this->file, $this->tokline, 'expected '.$expect.'; found '.SugarTokenizer::tokenName($this->token));
+            throw new SugarParseException($this->file, $this->tokline, 'expected '.$expect.'; found '.SugarLexer::tokenName($this->token));
 
         // store value
         $data = $this->token[1];
@@ -359,7 +359,7 @@ class SugarTokenizer
     }
 
     /**
-     * Similar to {@link SugarTokenizer::expect}, except that it checks for
+     * Similar to {@link SugarLexer::expect}, except that it checks for
      * any of standard Sugar operators, and the matched operator (if any)
      * is returned.
      *
@@ -374,7 +374,7 @@ class SugarTokenizer
             $op = '==';
 
         // if it's a valid operator, return it
-        if (isset(SugarParser::$precedence[$op])) {
+        if (isset(SugarGrammar::$precedence[$op])) {
             // get next token
             $this->token = $this->next();
 
