@@ -33,7 +33,7 @@
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 
@@ -49,7 +49,7 @@
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 class SugarCacheFile implements ISugarCache

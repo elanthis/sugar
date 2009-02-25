@@ -32,7 +32,7 @@
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 
@@ -73,7 +73,7 @@ require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
 /**
  * Version of PHP-Sugar.
  */
-define('SUGAR_VERSION', '0.80');
+define('SUGAR_VERSION', '0.81');
 
 /**
  * Passed to cache drivers to indicate that a compile cache is requested.
@@ -144,7 +144,7 @@ define('SUGAR_OUTPUT_TEXT', 4);
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 class Sugar

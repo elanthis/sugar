@@ -33,7 +33,7 @@
  */
 
 // read in StdLib.php
-$data = file_get_contents('Sugar/Stdlib.php');
+$data = file_get_contents(dirname(__FILE__).'/../Sugar/Stdlib.php');
 if (!$data)
 	die('File not found');
 
@@ -99,10 +99,10 @@ if ($block)
 ksort($blocks);
 
 // display
-require_once './Sugar.php';
+require_once dirname(__FILE__).'/../Sugar.php';
 $sugar = new Sugar();
-$sugar->cacheDir = './test/templates/cache';
-$sugar->templateDir = '.';
+$sugar->cacheDir = dirname(__FILE__).'/../test/templates/cache';
+$sugar->templateDir = dirname(__FILE__);
 $sugar->set('blocks', $blocks);
 $sugar->set('light', $_GET['light'] || in_array('-light', (array)$_SERVER['argv']));
 $sugar->display('gen-doc.tpl');

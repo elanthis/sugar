@@ -32,7 +32,7 @@
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 
@@ -48,7 +48,7 @@
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 class SugarException extends Exception
@@ -77,7 +77,7 @@ class SugarException extends Exception
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 class SugarParseException extends SugarException
@@ -123,7 +123,7 @@ class SugarParseException extends SugarException
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 class SugarRuntimeException extends SugarException
@@ -168,7 +168,7 @@ class SugarRuntimeException extends SugarException
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.80
+ * @version 0.81
  * @link http://php-sugar.net
  */
 class SugarApiException extends SugarException
