@@ -85,8 +85,8 @@ subscript operator.  Examples:
   {% $array[$var-6] %}
   {% $array["key"] %}
 
-Arrays can be constructed using the array() initializer function
-or using the [] initializer syntax.  The array() function can
+Arrays can be constructed using the array initializer function
+or using the [] initializer syntax.  The array function can
 make map arrays (arrays with arbitrary keys) while the [] syntax
 can make vectors (arrays with consecutive integer keys).
 Examples:
@@ -286,16 +286,17 @@ the $sugar object.
 
   $sugar->charset = 'UTF-8';
 
-To render a template, use either the display() or the displayString()
-methods, or the displayCache() method described below.  The display()
-method will look up the file given it using the storage engine and
-render the result.  The displayString() method takes a string
-containing the template source to display.  The default storage
-engine loads the path templates/$file.tpl, where $file is the name
-passed to display().
+To render a template, use either the Sugar::display() or the
+Sugar::displayString() methods, or the displayCache() method described
+below.  The Sugar::display() method will look up the file given it
+using the storage engine and render the result.  The
+Sugar::displayString() method takes a string containing the template
+source to display.  The default storage engine loads the path
+templates/$file.tpl, where $file is the name passed to
+Sugar::display().
 
-  $sugar->display('myTemplate'); // loads templates/myTemplate.tpl
-  $sugar->displayString('Var = {% $var %}');
+	$sugar->display('myTemplate'); // loads templates/myTemplate.tpl
+	$sugar->displayString('Var = {% $var %}');
 
 By default, compiled templates and caches are stored in
 templates/cache/.
@@ -313,12 +314,13 @@ property.
 
   $sugar->pluginDir = '/var/myapp/plugins';
 
-Caching can be performed on a template by using the displayCache()
-method.  This method takes a second optional parameter, which is a
-cache identifier, which is used to differentiate between multiple
-instances of the same template.  For example, a product template
-in an eCommerce application would use a different cache identifier
-for each product.  The second parameter can be ommitted if desired.
+Caching can be performed on a template by using the
+Sugar::displayCache() method.  This method takes a second optional
+parameter, which is a cache identifier, which is used to differentiate
+between multiple instances of the same template.  For example, a
+product template in an eCommerce application would use a different
+cache identifier for each product.  The second parameter can be
+ommitted if desired.
 
   $sugar->displayCache('homepage');
   $sugar->displayCache('product', $product->id);
@@ -330,9 +332,9 @@ of seconds a cache will exist before being forced to re-cache.
   $sugar->cacheLimit = 60*5; // five minutes
 
 It is possible to check if a valid cache exists for a given template
-and cache identifier using the isCached() method.  This allows the
-application to avoid expensive database queries or other operations
-when the results are already cached.
+and cache identifier using the Sugar::isCached() method.  This allows
+the application to avoid expensive database queries or other
+operations when the results are already cached.
 
   if (!$sugar->isCached('life', 42))
     $sugar->set('results', $db->queryData());
@@ -364,9 +366,9 @@ following member variables which are used to distinguish templates:
   $name: the base name of the template
   $cacheId: an optional cache identifier (only used for caching)
 
-To register a new storage driver, use the addStorage() method of the
-Sugar object, passing in the desired name and an instance of the new
-driver.
+To register a new storage driver, use the Sugar::addStorage() method
+of the Sugar object, passing in the desired name and an instance of
+the new driver.
 
   $sugar->addStorage('db', new SugarDatabaseStorage($sugar));
 
