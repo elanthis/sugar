@@ -29,17 +29,17 @@ $sugar->set('templates', $templates);
 function sugar_function_showhtml(&$sugar, $args) {
 	return new SugarEscaped($args['html']);
 }
-$sugar->register('showHtml');
+$sugar->addFunction('showHtml');
 
 function sugar_function_showtext(&$sugar, $args) {
 	return $args['text'];
 }
-$sugar->register('showText');
+$sugar->addFunction('showText');
 
 function random($sugar, $params) {
 	return rand()%1000;
 }
-$sugar->register('random', 'random');
+$sugar->addFunction('random', 'random');
 
 // test class
 class Test {

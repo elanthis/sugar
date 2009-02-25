@@ -231,17 +231,17 @@ setDelimiters() method.
 
   $sugar->setDelimiters('<!--{', '}-->');
 
-Registering new function requires the register() method.  The first
-parameter is the name of the function as used within templates.  The
-second optional parameter is the callback to use when invoking the
-function; if ommitted, the PHP function of the same name as the first
-argument will be invoked.  A third optional parameter controls
-whether the function can be cached or not.
+Registering new function requires the Sugar::addFunction() method.  The first
+parameter is the name of the function as used within templates.  The second
+optional parameter is the callback to use when invoking the function; if
+ommitted, the PHP function of the same name as the first argument will be
+invoked.  A third optional parameter controls whether the function can be
+cached or not.
 
-  $sugar->register('myFunc');
-  $sugar->register('foo', 'some_function');
-  $sugar->register('getCost', array($cart, 'get_cost'));
-  $sugar->register('dynamic', 'my_dynamic', false);
+  $sugar->addFunction('myFunc');
+  $sugar->addFunction('foo', 'some_function');
+  $sugar->addFunction('getCost', array($cart, 'get_cost'));
+  $sugar->addFunction('dynamic', 'my_dynamic', false);
 
 Functions receive two arguments: the Sugar object and a keyed array
 with the parameters.  Method calls will be called using the native
@@ -253,9 +253,9 @@ PHP approach.
 
     return "arg1=$arg1, arg2=$arg2";
   }
-  $sugar->register('printArgs', 'sugar_function_printargs');
+  $sugar->addFunction('printArgs', 'sugar_function_printargs');
  
-It is not always necessary to use $sugar->register() to expode a
+It is not always necessary to use Sugar::addFunction() to expose a
 function to Sugar.  Sugar will automatically look for functions
 named sugar_function_foo, where foo is the name of the function
 being called, if there is no registered function named foo.

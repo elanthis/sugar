@@ -163,7 +163,7 @@ class Sugar
      * and the value is an array containing the callback and function
      * flags.
      */
-    private $funcs = array();
+    private $functions = array();
 
     /**
      * Cache of files loaded into memory.
@@ -313,11 +313,11 @@ class Sugar
      * @param bool $cache Whether the function is cacheable.
      * @return bool true on success
      */
-    public function register($name, $invoke=null, $cache = true)
+    public function addFunction($name, $invoke=null, $cache = true)
     {
         if (!$invoke)
             $invoke = 'sugar_function_'.strtolower($name);
-        $this->funcs [strtolower($name)]= array('name'=>$name, 'invoke'=>$invoke, 'cache'=>$cache);
+        $this->functions [strtolower($name)]= array('name'=>$name, 'invoke'=>$invoke, 'cache'=>$cache);
         return true;
     }
 
@@ -329,13 +329,13 @@ class Sugar
      * function flags in index 1.  Functions with no flags must pass in
      * a 0 in index 1.
      *
-     * @param array $funcs The list of functions to register.
+     * @param array $functions The list of functions to register.
      * @return bool true on success
      * @internal
      */
-    public function registerList(array $funcs)
+    public function addFunctions(array $functions)
     {
-        $this->funcs = array_merge($this->funcs, $funcs);
+        $this->functions = array_merge($this->functions, $functions);
     }
 
     /**
@@ -366,15 +366,15 @@ class Sugar
     {
         $name = strtolower($name);
         // check for registered functions
-        if (isset($this->funcs[$name]))
-            return $this->funcs[$name];
+        if (isset($this->functions[$name]))
+            return $this->functions[$name];
 
         // try to auto-lookup the function
         $invoke = "sugar_function_$name";
         if (function_exists($invoke))
         {
-            $this->funcs[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
-            return $this->funcs[$name];
+            $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
+            return $this->functions[$name];
         }
 
         // attempt plugin loading
@@ -383,8 +383,8 @@ class Sugar
             @include_once $file;
             if (function_exists($invoke))
             {
-                $this->funcs[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
-                return $this->funcs[$name];
+                $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
+                return $this->functions[$name];
             }
         }
 
