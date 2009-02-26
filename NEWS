@@ -2,7 +2,9 @@
 ** Version 0.81 **
 ==================
 
-+ Improved documentation
++ Improved documentation.
++ Added modifiers.
++ Converted several stdlib functions to modifiers.
 
 ==================
 ** Version 0.80 **
