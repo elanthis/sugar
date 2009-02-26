@@ -210,9 +210,10 @@ class SugarGrammar
      * Compile an entire expression.
      *
      * @param bool $skip Hack to skip the first terminal, used in some hacky parsing routines.
+     * @param bool $modifiers If set to false, do not look for modifiers after the expression.
      * @return array Bytecode of expression.
      */
-    private function compileExpr($skip = false)
+    private function compileExpr($skip = false, $modifiers = true)
     {
         // wrap operator stack
         $this->stack []= '(';
@@ -271,8 +272,30 @@ class SugarGrammar
         // peel operator stack
         array_pop($this->stack);
 
-        // return output
-        return array_pop($this->output);
+        // remove compiled expression from the output stack
+        $expr = array_pop($this->output);
+
+        // look for and apply modifiers, if present
+        if ($modifiers) {
+            while ($this->tokens->accept('|'))
+                $expr = array_merge($expr, $this->compileModifier());
+        }
+
+        return $expr;
+    }
+
+    /**
+     * Parses a modifier, not include the leading pipe.
+     */
+    private function compileModifier()
+    {
+        $this->tokens->expect('name', $name);
+
+        $params = array();
+        while ($this->tokens->accept(':'))
+            $params []= $this->compileExpr(false, false);
+
+        return array('modifier', $name, $params);
     }
 
     /**
@@ -473,7 +496,7 @@ class SugarGrammar
                 $block []= $ops;
                 $block []= array('foreach', $key, $name, $body);
 
-            // inhibit cahing
+            // inhibit caching
             } elseif ($this->tokens->accept('nocache')) {
                 // get block
                 $body = $this->compileBlock();
@@ -505,11 +528,21 @@ class SugarGrammar
 
             // function call?
             } elseif ($this->tokens->accept('name', $func)) {
+                // get modifier, if present
+                $modifier = null;
+                if ($this->tokens->accept('|'))
+                    $modifier = $this->compileModifier();
+
                 // parameters
                 $params = $this->parseFunctionArgs();
 
                 // build function call
-                $block []= array('pcall', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
+                if ($modifier) {
+                    $call = array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
+                    $block []= array_merge($call, $modifier, array('print'));
+                } else {
+                    $block []= array('pcall', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
+                }
 
             // we have a statement
             } else {

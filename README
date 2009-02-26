@@ -130,6 +130,33 @@ Examples:
   {% "show "+getTime 'tomorrow' %}
   {% 12*1+(foobar test="enable" time="now") %}
 
+Sugar supports a feature called modifiers, which allow for any
+expression to be passed through a special function that modifies the
+value of the expression.  Modifiers are used by putting a pipe (|)
+followed by the modifier name.
+
+  {% 'some text'|upper %} becomes SOME TEXT
+  {% 'Niagara Falls'|lower %} becomes niagara falls
+
+A modifier can be applied to a function by putting the modifier
+directly after the function's name.  Putting the modifier after
+function parameters will result in the modifier being applied to
+the last parameter value, not the function itself!
+
+  {% myFunc|upper value=$var %} modifier applied to result of myFunc
+	{% myFunc value=$var|upper %} modifier applied to $var
+
+Parameters can be passed to a modifier by using a colon (:) followed
+by the parameter.  Any number of parameters can be used.
+
+  {% $var|modifier:1:2:'three':4 %}
+	{% myFunc|modifier:'parameter' value=$var %}
+
+Modifiers can be chained together, allowing for multiple modifications
+to a single expression.
+
+  {% $var|default:'string'|upper %}
+
 Conditional execution can be performed using the if, elif, and else
 statements.  Example:
 

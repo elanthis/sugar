@@ -166,6 +166,12 @@ class Sugar
     private $functions = array();
 
     /**
+     * Map of all registered modifiers.  The key is the modifier name,
+     * and the value is the callback.
+     */
+    private $modifiers = array();
+
+    /**
      * Cache of files loaded into memory.
      */
     private $files = array();
@@ -313,7 +319,7 @@ class Sugar
      * @param bool $cache Whether the function is cacheable.
      * @return bool true on success
      */
-    public function addFunction($name, $invoke=null, $cache = true)
+    public function addFunction($name, $invoke = null, $cache = true)
     {
         if (!$invoke)
             $invoke = 'sugar_function_'.strtolower($name);
@@ -322,20 +328,18 @@ class Sugar
     }
 
     /**
-     * Registers a list of functions to be available within templates.
+     * Registers a new modifier to be available within templates.
      *
-     * The input array is an associative array mapping the function name
-     * to an array consisting of the callback in index 0 (zero) and the
-     * function flags in index 1.  Functions with no flags must pass in
-     * a 0 in index 1.
-     *
-     * @param array $functions The list of functions to register.
+     * @param string $name The name to register the modifier under.
+     * @param callback $invoke Optional PHP callback; if null, the $name parameter is used as the callback.
      * @return bool true on success
-     * @internal
      */
-    public function addFunctions(array $functions)
+    public function addModifier($name, $invoke = null)
     {
-        $this->functions = array_merge($this->functions, $functions);
+        if (!$invoke)
+            $invoke = 'sugar_modifier_'.strtolower($name);
+        $this->functions [strtolower($name)]= $invoke;
+        return true;
     }
 
     /**
@@ -372,10 +376,7 @@ class Sugar
         // try to auto-lookup the function
         $invoke = "sugar_function_$name";
         if (function_exists($invoke))
-        {
-            $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
-            return $this->functions[$name];
-        }
+            return $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
 
         // attempt plugin loading
         $file = "{$this->pluginDir}/$invoke.php";
@@ -386,6 +387,39 @@ class Sugar
                 $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
                 return $this->functions[$name];
             }
+        }
+
+        // nothing found
+        return false;
+    }
+
+    /**
+     * Returns the callback for a template modifier, if it exists.  This
+     * will first look for registered modifiers, then it will attempt to
+     * auto-register a modifier using the smarty_modifier_foo naming
+     * scheme.  Finally, it will attempt to load a modifier plugin.
+     *
+     * @param string $name Modifier name to lookup.
+     * @return array
+     */
+    public function getModifier($name)
+    {
+        $name = strtolower($name);
+        // check for registered modifiers
+        if (isset($this->modifiers[$name]))
+            return $this->modifiers[$name];
+
+        // try to auto-lookup the modifier
+        $invoke = "sugar_modifier_$name";
+        if (function_exists($invoke))
+            return $this->modifiers[$name] = $invoke;
+
+        // attempt plugin loading
+        $file = "{$this->pluginDir}/$invoke.php";
+        if (file_exists($file)) {
+            @include_once $file;
+            if (function_exists($invoke))
+                return $this->modifiers[$name] = $invoke;
         }
 
         // nothing found

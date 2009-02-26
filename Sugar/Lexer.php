@@ -248,7 +248,7 @@ class SugarLexer
 
         // get next token
         $this->tokline = $this->line;
-        if (($token = $this->getRegex('/(?:'.preg_quote($this->delimEnd).'|\$\w+|\d+(?:[.]\d+)?|\w+|==|!=|!in\b|<=|>=|\|\||&&|->|\.\.|.)/msA')) === false)
+        if (($token = $this->getRegex('/(?:'.preg_quote($this->delimEnd).'|\$\w+|\d+(?:[.]\d+)?|\w+|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA')) === false)
             throw new SugarParseException($this->file, $this->line, 'garbage at: '.substr($this->src, $this->pos, 12));
         $token = $token[0];
 

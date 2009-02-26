@@ -329,6 +329,33 @@ class SugarRuntime
                         $stack []= null;
                 }
                 break;
+            case 'modifier':
+                $name = $code[++$i];
+                $args = $code[++$i];
+                $value = array_pop($stack);
+
+                // lookup function
+                $callable = $sugar->getModifier($name);
+                if (!$callable)
+                    throw new SugarRuntimeException('FIXME', 1, 'unknown modifier `'.$name.'`');
+
+                // compile args
+                $params = array();
+                foreach($args as $pcode)
+                    $params []= SugarRuntime::execute($sugar, $pcode);
+
+                // exception net
+                try {
+                    // invoke the modifier
+                    $ret = call_user_func($callable, $value, $sugar, $params);
+                } catch (Exception $e) {
+                    $sugar->handleError($e);
+                    $ret = null;
+                }
+
+                // store return value
+                $stack []= $ret;
+                break;
             case 'if':
                 $clauses = $code[++$i];
                 foreach ($clauses as $clause) {

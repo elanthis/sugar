@@ -71,10 +71,10 @@ function sugar_function_include($sugar, $params)
  */
 function sugar_function_eval($sugar, $params)
 {
-    $tpl = SugarUtil::getArg($params, 'tpl');
-    unset($params['tpl']);
+    $source = SugarUtil::getArg($params, 'source');
+    unset($params['source']);
 
-    $sugar->displayString($tpl, $params);
+    $sugar->displayString($source, $params);
 }
 
 /*++
@@ -325,7 +325,8 @@ function sugar_function_truncate($sugar, $params)
 
 /*++
  *+ @name escape
- *+ @param mixed $string String (or any other type) to escape.
+ *+ @type modifier
+ *+ @param mixed $value String (or any other type) to escape.
  *+ @param string $mode Escape format to use.  (default 'html')
  *+ @return raw Escaped value.
  *+
@@ -343,10 +344,9 @@ function sugar_function_truncate($sugar, $params)
  *+ For the modes 'html' and 'xml', this is equivalent to the default
  *+ output encoding rules for both languages.
  */
-function sugar_function_escape($sugar, $params)
+function sugar_modifier_escape($value, $sugar, $params)
 {
-    $value = SugarUtil::getArg($params, 'string');
-    $mode = (string)SugarUtil::getArg($params, 'mode', 'html');
+    $mode = isset($params[0]) ? (string)$params[0] : 'html';
 
     switch ($mode) {
     case 'html':
@@ -617,15 +617,86 @@ function sugar_function_psplit($sugar, $params)
 
 /*++
  *+ @name int 
- *+ @param mixed $value Value to convert to an integer.
+ *+ @type modifier
+ *+ @param mixed $value Value to convert.
+ *+ @return int Value converted to an integer.
  *+
  *+ Converts the input value into an integer.
  *+
  *+ Equivalent to PHP's intval().
  */
-function sugar_function_int($sugar, $params)
+function sugar_modifier_int($value)
 {
-    return intval(SugarUtil::getArg($params, 'value'));
+    return intval($value);
+}
+
+/*++
+ *+ @name upper 
+ *+ @type modifier
+ *+ @param string $value String to convert.
+ *+ @return string String with all letters converted to upper case.
+ *+
+ *+ Converts a string to all upper case letters.
+ *+
+ *+ Equivalent to PHP's strtoupper().
+ */
+function sugar_modifier_upper($value)
+{
+    return strtoupper($value);
+}
+
+/*++
+ *+ @name lower 
+ *+ @type modifier
+ *+ @param string $value String to convert.
+ *+ @return string String with all letters converted to lower case.
+ *+
+ *+ Converts a string to all lower case letters.
+ *+
+ *+ Equivalent to PHP's strtolower().
+ */
+function sugar_modifier_lower($value)
+{
+    return strtolower($value);
+}
+
+/*++
+ *+ @name default
+ *+ @type modifier
+ *+ @param mixed $value Value to test.
+ *+ @param mixed $default Value to use if $value is unset.
+ *+ @return mixed $value, or $default if $value is null.
+ *+
+ *+ If $value is not null, return $value, otherwise return $default.
+ *+
+ *+ Example:
+ *+   {% $undefined |default:'Not Defined' %}
+ */
+function sugar_modifier_default($value, $sugar, $params) {
+    if (is_null($value) && isset($params[0]))
+        return $params[0];
+    else
+        return $value;
+}
+
+/*++
+ *+ @name ldelim
+ *+ @return string Left delimiter.
+ *+
+ *+ Returns the left delimiter token.
+ */
+function sugar_function_ldelim($sugar, $params) {
+    return $sugar->delimStart;
+}
+
+/*++
+ *+ @name rdelim
+ *+ @return string Right delimiter.
+ *+
+ *+ Returns the right delimiter token.
+ */
+function sugar_function_rdelim($sugar, $params) {
+    return $sugar->delimEnd;
 }
 
 /**#@-*/
