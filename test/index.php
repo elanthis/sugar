@@ -76,7 +76,7 @@ $sugar->set('fetch_file', $sugar->fetch('fetch.file'));
 $sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
 
 // display file
-$sugar->debug = true;
+$sugar->debug = isset($_GET['debug']) ? (bool)$_GET['debug'] : false;
 
 $begin_display = microtime(true);
 $sugar->displayCache('file:'.$file.'.tpl');
