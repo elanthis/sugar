@@ -370,10 +370,16 @@ class SugarGrammar
 
         // function call
         } elseif ($this->tokens->accept('name', $name)) {
+            // parse modifiers
+            $modifiers = array();
+            if ($this->tokens->accept('|'))
+                $modifiers = $this->compileModifiers();
+
+            // get args
             $params = $this->parseFunctionArgs();
 
             // return new function all
-            $this->output []= array('call', $name, $params, $this->tokens->getFile(), $this->tokens->getLine());
+            $this->output []= array_merge(array('call', $name, $params, $this->tokens->getFile(), $this->tokens->getLine()), $modifiers);
 
         // static values
         } elseif ($this->tokens->accept('data', $data)) {
