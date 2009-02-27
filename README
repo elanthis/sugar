@@ -106,11 +106,11 @@ parameters within ().  Example:
 
 The value of a variable is always HTML-escaped by default.  To
 display the value of a variable with no escaping, use the raw
-function.
+modifier.
 
   {% $html = "<b>bold</b>" %}
   {% $html %} = &lt;b&gt;bold&lt;/b&gt;
-  {% raw $html %} = <b>bold</b>
+  {% $html|raw %} = <b>bold</b>
 
 A function can be called by giving the name of the function, and
 then listing the parameters.  Each function parameters is given as
@@ -302,10 +302,7 @@ PHP 6's ?: short-hand operator.
 Function return values will be passed back into the calling
 expression.  As with all expressions, the result of a function call
 that is to be displayed will be escaped by default.  To negate this
-behavior, return an instance of the SugarEscaped class, which takes
-the return value as its sole constructor parameter.
-
-  return new SugarEscaped('This is <b>raw</b> HTML.');
+behavior, use the |raw modifier on the function call.
 
 The character set used by the escape routines is ISO-8859-1 (latin1)
 by default.  This can be changed by setting the $charset member of
