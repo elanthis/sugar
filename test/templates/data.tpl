@@ -1,4 +1,4 @@
-{% $title = 'Raw Text Tests' %}
+{% $title = 'Plain Data Tests' %}
 {% include tpl= 'header' %}
 
 <p>Expect: &lt;foo&gt;<br/>

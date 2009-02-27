@@ -78,26 +78,6 @@ function sugar_function_eval($sugar, $params)
 }
 
 /*++
- *+ @name echo
- *+ @alias raw
- *+ @param string $value The value to display.
- *+ @return raw The input string in raw form.
- *+
- *+ Calling this function results in unescaped output, allowing
- *+ the template author to print variables and strings that contain
- *+ HTML tags without any transformations.
- */
-function sugar_function_echo($sugar, $params)
-{
-    $value = SugarUtil::getArg($params, 'value');
-    return new SugarEscaped(SugarRuntime::showvalue($value));
-}
-function sugar_function_raw($s, $p)
-{
-    return sugar_function_echo($s, $p);
-}
-
-/*++
  *+ @name urlencode
  *+ @param string? $string A string to encode.
  *+ @param array? $array An array of key/value pairs.
@@ -232,7 +212,7 @@ function sugar_function_count($sugar, $params)
 function sugar_function_selected($sugar, $params)
 {
     if (SugarUtil::getArg($params, 'test'))
-        return new SugarEscaped(' selected="selected" ');
+        return ' selected="selected" ';
 }
 
 /*++
@@ -251,7 +231,7 @@ function sugar_function_selected($sugar, $params)
 function sugar_function_checked($sugar, $params)
 {
     if (SugarUtil::getArg($params, 'test'))
-        return new SugarEscaped(' checked="checked" ');
+        return ' checked="checked" ';
 }
 
 /*++
@@ -269,7 +249,7 @@ function sugar_function_checked($sugar, $params)
 function sugar_function_disabled($sugar, $params)
 {
     if (SugarUtil::getArg($params, 'test'))
-        return new SugarEscaped(' disabled="disabled" ');
+        return ' disabled="disabled" ';
 }
 
 /*++
@@ -350,16 +330,16 @@ function sugar_modifier_escape($value, $sugar, $params)
 
     switch ($mode) {
     case 'html':
-        return new SugarEscaped(htmlentities($value, ENT_QUOTES, $sugar->charset));
+        return htmlentities($value, ENT_QUOTES, $sugar->charset);
     case 'xhtml':
     case 'xml':
-        return new SugarEscaped(htmlspecialchars($value, ENT_QUOTES, $sugar->charset));
+        return htmlspecialchars($value, ENT_QUOTES, $sugar->charset);
     case 'javascript':
     case 'js':
     case 'json':
-        return new SugarEscaped(SugarUtil::json($value));
+        return SugarUtil::json($value);
     case 'url':
-        return new SugarEscaped(urlencode($value));
+        return urlencode($value);
     default:
         return null;
     }
@@ -457,7 +437,7 @@ function sugar_function_substr($sugar, $params)
 function sugar_function_nl2br($sugar, $params)
 {
     $string = SugarUtil::getArg($params, 'string');
-    return new SugarEscaped(nl2br($sugar->escape($string)));
+    return nl2br($sugar->escape($string));
 }
 
 /*++

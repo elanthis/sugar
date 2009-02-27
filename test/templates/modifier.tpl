@@ -25,4 +25,8 @@ Result: {% $undefined|default:'Not Defined'|upper %}</p>
 Expect: UNO<br/>
 Result: {% $undefined|default:(one)|upper %}</p>
 
+<p>Test: '&lt;b&gt;bold&lt;/b&gt;'|raw<br/>
+Expect: <b>bold</b><br/>
+Result: {% '<b>bold</b>'|raw %}</p>
+
 {% include tpl='footer' %}

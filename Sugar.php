@@ -61,7 +61,6 @@ require_once SUGAR_ROOTDIR.'/Sugar/CacheFile.php';
 /**#@+
  * Utility includes.
  */
-require_once SUGAR_ROOTDIR.'/Sugar/Escaped.php';
 require_once SUGAR_ROOTDIR.'/Sugar/Util.php';
 /**#@-*/
 
@@ -454,25 +453,21 @@ class Sugar
     /**
      * Escape the input string according to the current value of {@link Sugar::$charset}.
      *
-     * @param string $output String to escape.
+     * @param string $string String to escape.
      * @return string Escaped output.
      */
-    public function escape($output)
+    public function escape($string)
     {
-        // do not escape for raw values - just return text
-        if ($output instanceof SugarEscaped)
-            return $output->getText();
-
         // perform proper escaping for current mode
         switch ($this->output) {
         case SUGAR_OUTPUT_HTML:
-            return htmlentities($output, ENT_COMPAT, $this->charset);
+            return htmlentities($string, ENT_COMPAT, $this->charset);
         case SUGAR_OUTPUT_XHTML:
         case SUGAR_OUTPUT_XML:
-            return htmlspecialchars($output, ENT_QUOTES, $this->charset);
+            return htmlspecialchars($string, ENT_QUOTES, $this->charset);
         case SUGAR_OUTPUT_TEXT:
         default:
-            return $output;
+            return $string;
         }
     }
 

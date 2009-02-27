@@ -129,6 +129,13 @@ class SugarRuntime
                 else
                     echo $sugar->escape(SugarRuntime::showValue($val));
                 break;
+            case 'rawprint':
+                $val = array_pop($stack);
+                if ($sugar->cacheHandler)
+                    $sugar->cacheHandler->addOutput(SugarRuntime::showValue($val));
+                else
+                    echo SugarRuntime::showValue($val);
+                break;
             case 'push':
                 $str = $code[++$i];
                 $stack []= $str;

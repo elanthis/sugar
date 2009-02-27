@@ -3,7 +3,7 @@
 
 <p>Test: showHtml html='&lt;b&gt;bold&lt;/b&gt;'<br>
 Expect: <b>bold</b><br>
-Result: {% showHtml html='<b>bold</b>' %}
+Result: {% showHtml|raw html='<b>bold</b>' %}
 
 <p>Test: one str='test'<br>
 Expect: Unotest<br>

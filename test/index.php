@@ -27,7 +27,7 @@ $sugar->set('templates', $templates);
 
 // various test functions
 function sugar_function_showhtml(&$sugar, $args) {
-	return new SugarEscaped($args['html']);
+	return $args['html'];
 }
 $sugar->addFunction('showHtml');
 
@@ -59,7 +59,7 @@ class Test {
 }
 
 // set source variable is s is on
-$sugar->set('source', '<div style="white-space: pre; border: 1px solid #000; padding: 4px; background: #eee;"><b>Source</b><br/>'.htmlentities($sugar->getSource($file)).'</div>');
+$sugar->set('source', $sugar->getSource($file));
 
 // test variables
 $sugar->set('i', 10);

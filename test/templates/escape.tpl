@@ -1,6 +1,10 @@
 {% $title = 'Escape Modifier' %}
 {% include tpl='header' %}
 
+<p>Test: '&lt;test&gt;'<br/>
+Expect: &lt;test&gt;<br/>
+Result: {% '<test>' %}
+
 <p>Test: '&lt;test&gt;'|escape<br/>
 Expect: &lt;test&gt;<br/>
 Result: {% '<test>'|escape %}

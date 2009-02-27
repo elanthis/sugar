@@ -211,9 +211,10 @@ class SugarGrammar
      *
      * @param bool $skip Hack to skip the first terminal, used in some hacky parsing routines.
      * @param bool $modifiers If set to false, do not look for modifiers after the expression.
+     * @param bool $escape_flag Out parameter, set false if escaping should be disabled.
      * @return array Bytecode of expression.
      */
-    private function compileExpr($skip = false, $modifiers = true)
+    private function compileExpr($skip = false, $modifiers = true, &$escape_flag = true)
     {
         // wrap operator stack
         $this->stack []= '(';
@@ -276,26 +277,36 @@ class SugarGrammar
         $expr = array_pop($this->output);
 
         // look for and apply modifiers, if present
-        if ($modifiers) {
-            while ($this->tokens->accept('|'))
-                $expr = array_merge($expr, $this->compileModifier());
-        }
+        if ($modifiers && $this->tokens->accept('|'))
+            $expr = array_merge($expr, $this->compileModifiers($escape_flag));
 
         return $expr;
     }
 
     /**
      * Parses a modifier, not include the leading pipe.
+     * @param bool $escape_flag Out parameter, set to false if escaping should be disabled.
+     * @param array Opcodes
      */
-    private function compileModifier()
+    private function compileModifiers(&$escape_flag = true)
     {
-        $this->tokens->expect('name', $name);
+        $opcodes = array();
+        do {
+            $this->tokens->expect('name', $name);
 
-        $params = array();
-        while ($this->tokens->accept(':'))
-            $params []= $this->compileExpr(false, false);
+            // parse and compile modifier parameters
+            $params = array();
+            while ($this->tokens->accept(':'))
+                $params []= $this->compileExpr(false, false);
 
-        return array('modifier', $name, $params);
+            // if the modifier was |raw, flag it
+            if ($name == 'raw' || $name == 'escape')
+                $escape_flag = false;
+            if ($name != 'raw')
+                array_push($opcodes, 'modifier', $name, $params);
+        } while ($this->tokens->accept('|'));
+
+        return $opcodes;
     }
 
     /**
@@ -519,41 +530,45 @@ class SugarGrammar
                     // push the variable request, compile expr skipping first term
                     // DIRTY HACK
                     $this->output []= array('lookup', $name);
-                    $ops = $this->compileExpr(true);
+                    $escape_flag = true;
+                    $ops = $this->compileExpr(true, true, $escape_flag);
                     $this->tokens->expect('term');
 
                     $block []= $ops;
-                    $block []= array('print');
+                    $block []= array($escape_flag ? 'print' : 'rawprint');
                 }
 
             // function call?
             } elseif ($this->tokens->accept('name', $func)) {
                 // get modifier, if present
-                $modifier = null;
+                $modifiers = null;
+                $escape_flag = true;
                 if ($this->tokens->accept('|'))
-                    $modifier = $this->compileModifier();
+                    $modifiers = $this->compileModifiers($escape_flag);
 
                 // parameters
                 $params = $this->parseFunctionArgs();
 
                 // build function call
-                if ($modifier) {
-                    $call = array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
-                    $block []= array_merge($call, $modifier, array('print'));
-                } else {
-                    $block []= array('pcall', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
-                }
+                $block []= array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
+                if ($modifiers)
+                    $block []= $modifiers;
+                $block []= array($escape_flag ? 'print' : 'rawprint');
 
             // we have a statement
             } else {
-                $ops = $this->compileExpr();
+                $escape_flag = true;
+                $ops = $this->compileExpr(false, true, $escape_flag);
                 $this->tokens->expect('term');
 
                 if (SugarGrammar::isData($ops)) {
-                    $block []= array('echo', $this->sugar->escape(SugarRuntime::showValue($ops[1])));
+                    if ($escape_flag)
+                        $block []= array('echo', $this->sugar->escape(SugarRuntime::showValue($ops[1])));
+                    else
+                        $block []= array('echo', SugarRuntime::showValue($ops[1]));
                 } else {
                     $block []= $ops;
-                    $block []= array('print');
+                    $block []= array($escape_flag ? 'print' : 'rawprint');
                 }
             }
         }
