@@ -41,7 +41,7 @@
  * @package Sugar
  * @subpackage Compiler
  * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008 Mojodo, Inc. and contributors
+ * @copyright 2008,2009 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
  * @version 0.81
  * @link http://php-sugar.net
@@ -56,7 +56,7 @@
  * @package Sugar
  * @subpackage Compiler
  * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008 Mojodo, Inc. and contributors
+ * @copyright 2008,2009 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
  * @version 0.81
  * @link http://php-sugar.net
