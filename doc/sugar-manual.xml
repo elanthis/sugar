@@ -1,16 +1,16 @@
 <?xml version='1.0'?>
 <!DOCTYPE set PUBLIC "-//OASIS//DTD DocBook XML V4.3//EN" "http://www.oasis-open.org/docbook/xml/4.3/docbookx.dtd">
 <set>
-	<title>PHP-Sugar</title>
+	<title>Sugar (PHP Template Engine)</title>
 	<book>
-		<title>PHP-Sugar Syntax</title>
+		<title>Sugar Syntax</title>
 		<preface>
 			<title>Introduction</title>
-			<para>PHP-Sugar is a PHP templating engine aimed at being powerful, easy and safe to use, and fast.</para>
+			<para>Sugar is a PHP templating engine aimed at being powerful, easy and safe to use, and fast.</para>
 		</preface>
 		<chapter>
 			<title>Templates</title>
-			<para>PHP-Sugar process template files, which generally end in the <filename>.tpl</filename> extension.  Template files are mostly regular HTML, with special markup for Sugar expressions.</para>
+			<para>Sugar process template files, which generally end in the <filename>.tpl</filename> extension.  Template files are mostly regular HTML, with special markup for Sugar expressions.</para>
 			<para>Sugar markup is any code within the <code>{%</code> and <code>%}</code> delimiters.  For example,</para>
 			<example>
 				<title>Sugar markup</title>
@@ -21,7 +21,7 @@
 		</chapter>
 		<chapter>
 			<title>Statements</title>
-			<para>Sugar markup consists of statements.  There are several different kinds of statements within PHP-Sugar.</para>
+			<para>Sugar markup consists of statements.  There are several different kinds of statements within Sugar.</para>
 			<section>
 				<title>Expression statements</title>
 				<para>The most common statement is the expression, which is a simple variable name or operator applied to variables which are then displayed in the output.</para>
@@ -121,9 +121,9 @@ baz is 300</programlisting>
 		</chapter>
 		<chapter>
 			<title>Expressions</title>
-			<para>PHP-Sugar offers fairly extensive support for code expressions within templates.  Expressions include many arithmetic operators, logical and comparison operators, and array/object lookup operators.</para>
+			<para>Sugar offers fairly extensive support for code expressions within templates.  Expressions include many arithmetic operators, logical and comparison operators, and array/object lookup operators.</para>
 			<para>Expressions should look pretty similar to PHP expressions, which a few key differences.</para>
-			<para>Expression statements will always escape the expression's value according to the configurable escape mode of PHP-Sugar.  You will need to use a function call in order to display an expression without any escaping.</para>
+			<para>Expression statements will always escape the expression's value according to the configurable escape mode of Sugar.  You will need to use a function call in order to display an expression without any escaping.</para>
 			<section>
 				<title>Values</title>
 				<para>A value an expression which is any number, string literal, or one of the keywords true, false, or null.</para>
@@ -148,7 +148,7 @@ $foo = [1, 2, 3]</programlisting>
 			</section>
 			<section>
 				<title>Arithmetic</title>
-				<para>The arithmetic operators supportd by PHP-Sugar are add, subtract, multiply, divide, modulus, and negate.  The operators all support standard operator precedence; that is, multiplies will be done before additions, and so on.</para>
+				<para>The arithmetic operators supportd by Sugar are add, subtract, multiply, divide, modulus, and negate.  The operators all support standard operator precedence; that is, multiplies will be done before additions, and so on.</para>
 				<para>Grouping by way of parenthesis is also supported.</para>
 				<example>
 					<title>Arithmetic operators</title>
@@ -172,7 +172,7 @@ $foo = [1, 2, 3]</programlisting>
 			</section>
 			<section>
 				<title>Logical operators</title>
-				<para>PHP-Sugar supports the logical operators AND, OR, and NOT.  AND is represented using either <code>and</code> or <code>&amp;&amp;</code>.  OR is represented using either <code>or</code> or <code>||</code>.  Not is represented using <code>!</code>.</para>
+				<para>Sugar supports the logical operators AND, OR, and NOT.  AND is represented using either <code>and</code> or <code>&amp;&amp;</code>.  OR is represented using either <code>or</code> or <code>||</code>.  Not is represented using <code>!</code>.</para>
 			</section>
 			<section>
 				<title>Array construction</title>
@@ -205,7 +205,7 @@ $object[function param=1]</programlisting>
 		</chapter>
 	</book>
 	<book>
-		<title>PHP-Sugar API</title>
+		<title>Sugar API</title>
 		<preface>
 			<title>Introduction</title>
 			<para>ok</para>

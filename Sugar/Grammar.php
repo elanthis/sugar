@@ -46,7 +46,7 @@ require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
 /**
  * Template parser.
  *
- * This class implements the grammar parsing language for the PHP-Sugar
+ * This class implements the grammar parsing language for the Sugar
  * template language.
  *
  * @category Template

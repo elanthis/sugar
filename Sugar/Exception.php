@@ -39,7 +39,7 @@
 /**
  * Generic Sugar exception.
  *
- * This is the base class for any exception thrown by PHP-Sugar.  It
+ * This is the base class for any exception thrown by Sugar.  It
  * is provided to make it easier to catch all Sugar errors.
  *
  * @category Template
@@ -68,7 +68,7 @@ class SugarException extends Exception
  * Parse error.
  *
  * Thrown during the template parsing stage when the template contains
- * invalid PHP-Sugar template markup that cannot be processed.  This
+ * invalid Sugar template markup that cannot be processed.  This
  * is a fatal, non-recoverable error inside the parser.
  *
  * @category Template

@@ -1,8 +1,8 @@
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Sugar (PHP Template Engine)
  *
- * This file includes the core framework for PHP-Sugar, and auto-
+ * This file includes the core framework for Sugar, and auto-
  * includes all necessary sub-modules.
  *
  * PHP version 5
@@ -37,8 +37,8 @@
  */
 
 /**
- * Directory in which PHP-Sugar is installed.  Used for including
- * additional PHP-Sugar source files.
+ * Directory in which Sugar is installed.  Used for including
+ * additional Sugar source files.
  */
 define('SUGAR_ROOTDIR', dirname(__FILE__));
 
@@ -65,12 +65,12 @@ require_once SUGAR_ROOTDIR.'/Sugar/Util.php';
 /**#@-*/
 
 /**
- * PHP-Sugar Standard Library.
+ * Sugar Standard Library.
  */
 require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
 
 /**
- * Version of PHP-Sugar.
+ * Version of Sugar.
  */
 define('SUGAR_VERSION', '0.81');
 
@@ -134,9 +134,9 @@ define('SUGAR_OUTPUT_TEXT', 4);
 /**#@-*/
 
 /**
- * PHP-Sugar core class.
+ * Sugar core class.
  *
- * Instantiate this class to use PHP-Sugar.
+ * Instantiate this class to use Sugar.
  *
  * @category Template
  * @package Sugar

@@ -1,14 +1,14 @@
-PHP-Sugar Template Engine
+Sugar (PHP Template Engine)
 =======================================================================
 Copyright (C) 2008,2009  AwesomePlay Productions, Inc.
 Sean Middleditch <sean@awesomeplay.com>
 See LICENSE for copying and distribution details.
 
 -----------------------------------------------------------------------
-I.   About PHP-Sugar
+I.   About Sugar
 
-PHP-Sugar is a new template engine, inspired by the author's experience
-with the Smarty template engine.  PHP-Sugar aims to provide a simple
+Sugar is a new template engine, inspired by the author's experience
+with the Smarty template engine.  Sugar aims to provide a simple
 but flexible API, a friendly and easy macro language, and intelligent
 and easy caching functionality.
 
@@ -20,7 +20,7 @@ not capable of providing.
 -----------------------------------------------------------------------
 II.  Installation
 
-To install PHP-Sugar, simply copy the Sugar.php file into the PHP
+To install Sugar, simply copy the Sugar.php file into the PHP
 include path.  Then copy the Sugar/ folder and its contents into the
 same folder in which Sugar.php is installed.
 
@@ -34,7 +34,7 @@ writable to work.
 -----------------------------------------------------------------------
 III. Basic Syntax
 
-All PHP-Sugar code is put with the tags {% and %}.  For example:
+All Sugar code is put with the tags {% and %}.  For example:
 
   {% if $count > 10 %}
     <ul>
@@ -237,8 +237,8 @@ identically:
 -----------------------------------------------------------------------
 IV.  Sugar API
 
-The PHP-Sugar engine is controlled mainly by the Sugar class.  To use
-PHP-Sugar, first include the Sugar.php file and instantiate an object
+The Sugar engine is controlled mainly by the Sugar class.  To use
+Sugar, first include the Sugar.php file and instantiate an object
 of the Sugar class.
 
   require_once 'Sugar.php';
@@ -367,10 +367,10 @@ operations when the results are already cached.
 -----------------------------------------------------------------------
 V.   Extending Sugar
 
-PHP-Sugar offers two core means of extending its functionality.
-First, users may register new functions to be used by templates.
-Second, users may over-ride the storage and cache drivers used by the
-Sugar engine.
+Sugar offers two core means of extending its functionality.  First,
+users may register new functions to be used by templates.  Second,
+users may over-ride the storage and cache drivers used by the Sugar
+engine.
 
 Storage drivers are classes derived from ISugarStorage.  The following
 methods must be implemented.  All methods return true on success or

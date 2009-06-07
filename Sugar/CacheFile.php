@@ -1,6 +1,6 @@
 <?php
 /**
- * File-based cache driver for PHP-Sugar
+ * File-based cache driver for Sugar
  *
  * This class implements a file-based cache driver, which loads and saves
  * cache files in the $sugar->cacheDir directory.

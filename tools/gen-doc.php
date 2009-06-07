@@ -1,7 +1,7 @@
 #!/usr/bin/php
 <?php
 /**
- * PHP-Sugar Template Engine
+ * Sugar (PHP Template Engine)
  *
  * Copyright (c) 2008  AwesomePlay Productions, Inc. and
  * contributors.  All rights reserved.
