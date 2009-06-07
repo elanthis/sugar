@@ -5,6 +5,7 @@
 + Improved documentation.
 + Added modifiers.
 + Converted several stdlib functions to modifiers.
++ Renamed to Sugar for PHP License compatibility.
 
 ==================
 ** Version 0.80 **
