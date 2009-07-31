@@ -458,6 +458,9 @@ class Sugar
      */
     public function escape($string)
     {
+        // make sure this is a valid string
+        $string = strval($string);
+
         // perform proper escaping for current mode
         switch ($this->output) {
         case SUGAR_OUTPUT_HTML:
