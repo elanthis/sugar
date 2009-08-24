@@ -73,31 +73,6 @@ require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
  * Version of Sugar.
  */
 define('SUGAR_VERSION', '0.81');
-
-/**
- * All output will be escaped using htmlentities() with the
- * ENT_QUOTES flag set, using the {@link Sugar::$charset} setting.  This
- * is the default behavior.
- */
-define('SUGAR_OUTPUT_HTML', 1);
-
-/**
- * Identical to {@link SUGAR_OUTPUT_HTML}.
- */
-define('SUGAR_OUTPUT_XHTML', 2);
-
-/**
- * All output will be escaped using htmlspecialchars() with the
- * ENT_QUOTES flag set, using the {@link Sugar::$charset} setting.  This
- * differs from {@link SUGAR_OUTPUT_HTML} as only <, >, ", ', and & will
- * escaped.
- */
-define('SUGAR_OUTPUT_XML', 3);
-
-/**
- * Disables all output escaping.
- */
-define('SUGAR_OUTPUT_TEXT', 4);
 /**#@-*/
 
 /**
@@ -147,6 +122,31 @@ class Sugar
      * The error will be silently ignored.
      */
     const ERROR_IGNORE = 4;
+
+    /**
+     * All output will be escaped using htmlentities() with the
+     * ENT_QUOTES flag set, using the {@link Sugar::$charset} setting.  This
+     * is the default behavior.
+     */
+    const OUTPUT_HTML = 1;
+
+    /**
+     * Identical to {@link Sugar::OUTPUT_HTML}.
+     */
+    const OUTPUT_XHTML = 2;
+
+    /**
+     * All output will be escaped using htmlspecialchars() with the
+     * ENT_QUOTES flag set, using the {@link Sugar::$charset} setting.  This
+     * differs from {@link Sugar::OUTPUT_HTML} as only <, >, ", ', and & will
+     * escaped.
+     */
+    const OUTPUT_XML = 3;
+
+    /**
+     * Disables all output escaping.
+     */
+    const OUTPUT_TEXT = 4;
 
     /**
      * Stack of variable sets.  Each template invocation creates a new
@@ -221,14 +221,14 @@ class Sugar
      * This is the output escaping method to be used.  This is necessary
      * for many formats, such as XML and HTML, to ensure that special
      * are escaped properly.
-     * - {@link SUGAR_OUTPUT_HTML}: escape HTML special characters (default)
-     * - {@link SUGAR_OUTPUT_XHTML}: equivalent to SUGAR_OUTPUT_HTML
-     * - {@link SUGAR_OUTPUT_XML}: escapes XML special characters
-     * - {@link SUGAR_OUTPUT_TEXT}: no escaping is performed
+     * - {@link Sugar::OUTPUT_HTML}: escape HTML special characters (default)
+     * - {@link Sugar::OUTPUT_XHTML}: equivalent to self::OUTPUT_HTML
+     * - {@link Sugar::OUTPUT_XML}: escapes XML special characters
+     * - {@link Sugar::OUTPUT_TEXT}: no escaping is performed
      *
      * @var int
      */
-    public $output = SUGAR_OUTPUT_HTML;
+    public $output;
 
     /**
      * This is the default storage driver to use when no storage driver
@@ -295,6 +295,7 @@ class Sugar
         $this->storage ['file']= new SugarStorageFile($this);
         $this->cache = new SugarCacheFile($this);
         $this->errors = self::ERROR_PRINT;
+        $this->output = self::OUTPUT_HTML;
     }
 
     /**
@@ -464,12 +465,12 @@ class Sugar
 
         // perform proper escaping for current mode
         switch ($this->output) {
-        case SUGAR_OUTPUT_HTML:
+        case self::OUTPUT_HTML:
             return htmlentities($string, ENT_COMPAT, $this->charset);
-        case SUGAR_OUTPUT_XHTML:
-        case SUGAR_OUTPUT_XML:
+        case self::OUTPUT_XHTML:
+        case self::OUTPUT_XML:
             return htmlspecialchars($string, ENT_QUOTES, $this->charset);
-        case SUGAR_OUTPUT_TEXT:
+        case self::OUTPUT_TEXT:
         default:
             return $string;
         }
