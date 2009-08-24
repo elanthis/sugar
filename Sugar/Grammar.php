@@ -606,7 +606,7 @@ class SugarGrammar
         $this->tokens = null;
 
         // create meta-block
-        $code = array('type' => 'ctpl', 'version' => SUGAR_VERSION, 'bytecode' => $bytecode);
+        $code = array('type' => 'ctpl', 'version' => Sugar::VERSION, 'bytecode' => $bytecode);
         return $code;
     }
 }

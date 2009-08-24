@@ -58,22 +58,15 @@ require_once SUGAR_ROOTDIR.'/Sugar/StorageFile.php';
 require_once SUGAR_ROOTDIR.'/Sugar/CacheFile.php';
 /**#@-*/
 
-/**#@+
- * Utility includes.
+/**
+ * Utility routines.
  */
 require_once SUGAR_ROOTDIR.'/Sugar/Util.php';
-/**#@-*/
 
 /**
  * Sugar Standard Library.
  */
 require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
-
-/**
- * Version of Sugar.
- */
-define('SUGAR_VERSION', '0.81');
-/**#@-*/
 
 /**
  * Sugar core class.
@@ -90,6 +83,11 @@ define('SUGAR_VERSION', '0.81');
  */
 class Sugar
 {
+    /**
+     * Version of Sugar.
+     */
+    const VERSION = '0.81';
+
     /**
      * Passed to cache drivers to indicate that a compile cache is requested.
      */
@@ -557,7 +555,7 @@ class Sugar
         if (!$this->debug && $cstamp !== false && $cstamp > $sstamp) {
             $data = $this->cache->load($ref, self::CACHE_TPL);
             // if version checks out, run it
-            if ($data !== false && $data['version'] == SUGAR_VERSION) {
+            if ($data !== false && $data['version'] === self::VERSION) {
                 $this->execute($data, $vars);
                 return;
             }
@@ -609,7 +607,7 @@ class Sugar
         // load the cache data, fail if loading fails or the
         // version doesn't match
         $data = $this->cache->load($ref, self::CACHE_HTML);
-        if ($data === false || $data['version'] != SUGAR_VERSION)
+        if ($data === false || $data['version'] !== self:VERSION)
             return false;
 
         // compare stamps with the included references

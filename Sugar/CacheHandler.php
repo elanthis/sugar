@@ -144,7 +144,7 @@ class SugarCacheHandler
     public function getOutput()
     {
         $this->compact();
-        return array('type' => 'chtml', 'version' => SUGAR_VERSION, 'refs' => $this->refs, 'bytecode' => $this->bc);
+        return array('type' => 'chtml', 'version' => Sugar::VERSION, 'refs' => $this->refs, 'bytecode' => $this->bc);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
