@@ -52,7 +52,7 @@ foo param1=$bar param2=5*5</programlisting>
 					<title>Simple if</title>
 					<programlisting>{% if $foo == 5 %}
 	Foo is equal to five
-{% end %}</programlisting>
+{% /if %}</programlisting>
 				</example>
 				<para>It is also possible to have a part of a template only shown if the test fails, using the <code>else</code> statement within an <code>if</code> statement.</para>
 				<example>
@@ -61,7 +61,7 @@ foo param1=$bar param2=5*5</programlisting>
 	Foo is equal to five
 {% else %}
 	Foo is not five
-{% end %}</programlisting>
+{% /if %}</programlisting>
 				</example>
 				<para>It is also possible to chain multiple <code>if</code> statements together using the <code>elif</code> statement.  Each statement is tried until one succeeds.  If none of them succeed, then the <code>else</code> statement (if present) is executed.</para>
 				<example>
@@ -72,7 +72,7 @@ foo param1=$bar param2=5*5</programlisting>
 	Foo is greater than five
 {% else %}
 	Foo is less than five
-{% end %}</programlisting>
+{% /if %}</programlisting>
 				</example>
 			</section>
 			<section>
@@ -83,7 +83,7 @@ foo param1=$bar param2=5*5</programlisting>
 					<title>Loop statement</title>
 					<programlisting><![CDATA[{% loop $number in 1,10,2 %}
 	{% $number %}<br />
-{% end %}]]></programlisting>
+{% /loop %}]]></programlisting>
 					<para>The above code will print out:</para>
 					<programlisting>1
 3
@@ -99,7 +99,7 @@ foo param1=$bar param2=5*5</programlisting>
 					<title>Foreach loop</title>
 					<programlisting><![CDATA[{% foreach $value in [1,2,3] %}
 	{% $value %}<br />
-{% end %}]]></programlisting>
+{% /foreach %}]]></programlisting>
 					<para>The above code will print out:</para>
 					<programlisting>1
 2
@@ -111,7 +111,7 @@ foo param1=$bar param2=5*5</programlisting>
 					<programlisting><![CDATA[
 {% foreach $key,$value in $array %}
 	{% $key %} is {% $value %}<br />
-{% end %}]]></programlisting>
+{% /foreach %}]]></programlisting>
 					<para>The above code will print out:</para>
 					<programlisting>foo is 100
 bar is 200

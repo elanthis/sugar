@@ -8,6 +8,6 @@
 
 {% nocache %}
 <p>nocache: {% random %}</p>
-{% end %}
+{% /nocache %}
 
 {% include tpl= 'footer' %}

@@ -6,6 +6,7 @@
 + Added modifiers.
 + Converted several stdlib functions to modifiers.
 + Renamed to Sugar for PHP License compatibility.
++ Support Smarty-style block terminators (e.g. /if).
 
 ==================
 ** Version 0.80 **

@@ -248,7 +248,7 @@ class SugarLexer
 
         // get next token
         $this->tokline = $this->line;
-        if (($token = $this->getRegex('/(?:'.preg_quote($this->delimEnd).'|\$\w+|\d+(?:[.]\d+)?|\w+|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA')) === false)
+        if (($token = $this->getRegex('/(?:'.preg_quote($this->delimEnd).'|\$\w+|\d+(?:[.]\d+)?|\/(?:if|foreach|loop|while|nocache)|\w+|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA')) === false)
             throw new SugarParseException($this->file, $this->line, 'garbage at: '.substr($this->src, $this->pos, 12));
         $token = $token[0];
 
@@ -274,7 +274,7 @@ class SugarLexer
         elseif ($token == $this->delimEnd || $token == ';')
             return array('term', $token);
         // keyword or special symbol
-        elseif (in_array($token, array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache')))
+        elseif (in_array($token, array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache', '/if', '/foreach', '/loop', '/while', '/nocache')))
             return array($token, null);
         // integer
         elseif (preg_match('/^\d+$/', $token))
@@ -341,15 +341,20 @@ class SugarLexer
      * stored in the second parameter.  If the token does not match,
      * a {@link SugarParseException} is raised.
      *
-     * @param string $accept Which token type to accept.
+     * @param mixed $accept Which token type to accept, or a list of tokens.
      * @param mixed $data Token token.
      * @throws SugarParseException when the next token does not match $accept.
      */
     public function expect($expect, &$data = null)
     {
         // throw an error if it's the wrong token
-        if ($this->token[0] != $expect)
-            throw new SugarParseException($this->file, $this->tokline, 'expected '.$expect.'; found '.SugarLexer::tokenName($this->token));
+        if (is_array($expect)) {
+            if (!in_array($this->token[0], $expect))
+                throw new SugarParseException($this->file, $this->tokline, 'expected '.implode(' or ', $expect).'; found '.SugarLexer::tokenName($this->token));
+        } else {
+            if ($this->token[0] != $expect)
+                throw new SugarParseException($this->file, $this->tokline, 'expected '.$expect.'; found '.SugarLexer::tokenName($this->token));
+        }
 
         // store value
         $data = $this->token[1];

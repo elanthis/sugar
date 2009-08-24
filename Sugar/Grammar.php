@@ -406,7 +406,7 @@ class SugarGrammar
         $block = array();
 
         // build byte-code
-        while (!$this->tokens->peekAny(array('eof', 'else', 'elif', 'end'))) {
+        while (!$this->tokens->peekAny(array('eof', 'else', 'elif', 'end', '/if', '/foreach', '/while', '/loop', '/nocache'))) {
             // raw string
             if ($this->tokens->accept('literal', $literal)) {
                 $block []= array('echo', $literal);
@@ -437,7 +437,7 @@ class SugarGrammar
                     $clauses []= array(false, $body);
                 }
 
-                $this->tokens->expect('end');
+                $this->tokens->expect(array('/if', 'end'));
                 $this->tokens->expect('term');
 
                 // push block
@@ -451,7 +451,7 @@ class SugarGrammar
 
                 // get body
                 $body = $this->compileBlock();
-                $this->tokens->expect('end');
+                $this->tokens->expect(array('/while', 'end'));
                 $this->tokens->expect('term');
 
                 // push block
@@ -476,7 +476,7 @@ class SugarGrammar
 
                 // block
                 $body = $this->compileBlock();
-                $this->tokens->expect('end');
+                $this->tokens->expect(array('/loop', 'end'));
                 $this->tokens->expect('term');
 
                 // push block
@@ -506,7 +506,7 @@ class SugarGrammar
 
                 // and the block itself
                 $body = $this->compileBlock();
-                $this->tokens->expect('end');
+                $this->tokens->expect(array('/foreach', 'end'));
                 $this->tokens->expect('term');
 
                 // store foreach block
@@ -517,7 +517,7 @@ class SugarGrammar
             } elseif ($this->tokens->accept('nocache')) {
                 // get block
                 $body = $this->compileBlock();
-                $this->tokens->expect('end');
+                $this->tokens->expect(array('/nocache', 'end'));
 
                 $block []= array('nocache', $body);
 
