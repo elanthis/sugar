@@ -40,33 +40,33 @@
  * Directory in which Sugar is installed.  Used for including
  * additional Sugar source files.
  */
-define('SUGAR_ROOTDIR', dirname(__FILE__));
+$__sugar_rootdir = dirname(__FILE__);
 
 /**#@+
  * Core includes.
  */
-require_once SUGAR_ROOTDIR.'/Sugar/Exception.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Ref.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Storage.php';
-require_once SUGAR_ROOTDIR.'/Sugar/Cache.php';
+require_once $__sugar_rootdir.'/Sugar/Exception.php';
+require_once $__sugar_rootdir.'/Sugar/Ref.php';
+require_once $__sugar_rootdir.'/Sugar/Storage.php';
+require_once $__sugar_rootdir.'/Sugar/Cache.php';
 /**#@-*/
 
 /**#@+
  * Drivers.
  */
-require_once SUGAR_ROOTDIR.'/Sugar/StorageFile.php';
-require_once SUGAR_ROOTDIR.'/Sugar/CacheFile.php';
+require_once $__sugar_rootdir.'/Sugar/StorageFile.php';
+require_once $__sugar_rootdir.'/Sugar/CacheFile.php';
 /**#@-*/
 
 /**
  * Utility routines.
  */
-require_once SUGAR_ROOTDIR.'/Sugar/Util.php';
+require_once $__sugar_rootdir.'/Sugar/Util.php';
 
 /**
  * Sugar Standard Library.
  */
-require_once SUGAR_ROOTDIR.'/Sugar/Stdlib.php';
+require_once $__sugar_rootdir.'/Sugar/Stdlib.php';
 
 /**
  * Sugar core class.
@@ -516,7 +516,7 @@ class Sugar
             /**
              * Runtime.
              */
-            require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
+            require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
 
             // execute bytecode
             $rs = SugarRuntime::execute($this, $data['bytecode']);
@@ -564,7 +564,7 @@ class Sugar
         /**
          * Compiler.
          */
-        require_once SUGAR_ROOTDIR.'/Sugar/Grammar.php';
+        require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
 
         // compile
         $source = $ref->storage->load($ref);
@@ -607,7 +607,7 @@ class Sugar
         // load the cache data, fail if loading fails or the
         // version doesn't match
         $data = $this->cache->load($ref, self::CACHE_HTML);
-        if ($data === false || $data['version'] !== self:VERSION)
+        if ($data === false || $data['version'] !== self::VERSION)
             return false;
 
         // compare stamps with the included references
@@ -737,7 +737,7 @@ class Sugar
                 /**
                  * Cache handler.
                  */
-                require_once SUGAR_ROOTDIR.'/Sugar/CacheHandler.php';
+                require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheHandler.php';
 
                 // create cache
                 $this->cacheHandler = new SugarCacheHandler($this);
@@ -794,7 +794,7 @@ class Sugar
             /**
              * Compiler.
              */
-            require_once SUGAR_ROOTDIR.'/Sugar/Grammar.php';
+            require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
 
             // compile
             $parser = new SugarGrammar($this);

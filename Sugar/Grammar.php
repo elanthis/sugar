@@ -36,12 +36,12 @@
 /**
  * Source tokenizer.
  */
-require_once SUGAR_ROOTDIR.'/Sugar/Lexer.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Lexer.php';
 
 /**
  * Runtime engine, used for optimization.
  */
-require_once SUGAR_ROOTDIR.'/Sugar/Runtime.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
 
 /**
  * Template parser.
