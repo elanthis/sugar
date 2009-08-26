@@ -7,7 +7,12 @@
 	padding: 10px;
 	font-size: 140%;
 	font-weight: bold;
-	background: #ccc;
+}
+.sugardoc_function .sugardoc_name {
+	background: #cec;
+}
+.sugardoc_modifier .sugardoc_name {
+	background: #cce;
 }
 .sugardoc_alias {
 	margin: 0 0 10px 10px;

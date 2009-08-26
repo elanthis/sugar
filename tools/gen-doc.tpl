@@ -7,16 +7,31 @@
 <table width="100%"><tr><td valign="top">
 
 	<a name="top"></a>
+
+	<a href="#functions">Functions</a><br/>
+	<a href="#modifiers">Modifiers</a><br/>
+	<br/>
+
+	<a name="functions"></a>
+	<b>Functions</b>
 	<ul>
-		{% foreach $block in $blocks %}
+		{% foreach $block in $functions %}
+		<li><a href="#sugardoc_block_{% $block.name %}">{% $block.name %}</a></li>
+		{% end %}
+	</ul>
+
+	<a name="modifiers"></a>
+	<b>Modifiers</b>
+	<ul>
+		{% foreach $block in $modifiers %}
 		<li><a href="#sugardoc_block_{% $block.name %}">{% $block.name %}</a></li>
 		{% end %}
 	</ul>
 
 </td><td>
 
-	{% foreach $block in $blocks %}
-	<div class="sugardoc_block"><a name="sugardoc_block_{% $block.name %}"></a>
+	{% foreach $block in $functions %}
+	<div class="sugardoc_block sugardoc_function"><a name="sugardoc_block_{% $block.name %}"></a>
 		<div class="sugardoc_name"><div style="float:right;font-size:50%;font-weight:normal;"><a href="#top">[top]</a></div>{% $block.name %}</div>
 		<div class="sugardoc_body">
 			{% if $block.alias %}
@@ -77,17 +92,17 @@
 							// clear any blank lines
 							$empty = false;
 							// start dic
-							echo value='<div class="sugardoc_code">';
+							'<div class="sugardoc_code">'|raw;
 						// already in code mode
 						else;
 							// handle empty line
 							if $empty;
 								$empty = false;
-								echo value='<br/>';
+								'<br/>'|raw;
 							end;
 						end;
 						// display line
-						$line; echo value='<br />';
+						$line; '<br />'|raw;
 					// regular line
 					else;
 						// if we're in code block mode, end it
@@ -96,13 +111,13 @@
 							// clear empty line flag
 							$empty = false;
 							// end the code block
-							echo value='</div>';
+							'</div>'|raw;
 						// not in code block mode
 						else;
 							// handle empty line
 							if $empty;
 								$empty = false;
-								echo value='<br/><br/>';
+								'<br/><br/>'|raw;
 							end;
 						end;
 						// display the line
@@ -113,7 +128,104 @@
 				end;
 				// terminate code block if we're in it
 				if $lmode == 'c';
-					echo value='</div>';
+					'</div>'|raw;
+				end;
+				%}
+			</div>
+		</div>
+	</div>
+	{% end %}
+
+	{% foreach $block in $modifiers %}
+	<div class="sugardoc_block sugardoc_modifier"><a name="sugardoc_block_{% $block.name %}"></a>
+		<div class="sugardoc_name"><div style="float:right;font-size:50%;font-weight:normal;"><a href="#top">[top]</a></div>{% $block.name %}</div>
+		<div class="sugardoc_body">
+			{% if $block.alias %}
+				<div class="sugardoc_heading">Also Known As:</div>
+				<div class="sugardoc_alias">
+					{% join separator=', ' array=$block.alias %}
+				</div>
+			{% end %}
+			<div class="sugardoc_heading">Call Prototype:</div>
+			<div class="sugardoc_call">
+				{% foreach $name in merge one=[$block.name] two=$block.alias %}
+					<span class="sugardoc_call_name">| {% $name %}</span>
+					{% foreach $param in $block.param %}
+						: <span class="sugardoc_call_type">{% $param.type %}</span>
+					{% end %}
+					{% if $block.varargs %}
+						: <span class="sugardoc_call_type">{% $block.varargs %}</span>...
+					{% end %}
+					<br />
+				{% end %}
+			</div>
+			{% if $block.param %}
+			<div class="sugardoc_heading">Parameters:</div>
+			<div class="sugardoc_params">
+				{% foreach $param in $block.param %}
+					<div class="sugardoc_heading">{% $param.type %}</div>
+					<div class="sugardoc_doc">{% $param.doc %}</div>
+				{% end %}
+			</div>
+			{% end %}
+			<div class="sugardoc_heading">Description:</div>
+			<div class="sugardoc_doc">
+				{%
+				// mode: r for regular text, c for code blocks
+				$lmode = 'r';
+				// set to true after encountering an empty line
+				$empty = false;
+				// iterator over each line
+				foreach $line in $block.doc;
+					// if we have an empty line, remember that,
+					// but don't display anything just yet
+					if $line == '';
+						$empty = true;
+					// this line is part of a code block
+					elif (substr string=$line length=2) == '  ';
+						// if we're not currently in code block mode, switch
+						if $lmode != 'c';
+							$lmode = 'c';
+							// clear any blank lines
+							$empty = false;
+							// start dic
+							'<div class="sugardoc_code">'|raw;
+						// already in code mode
+						else;
+							// handle empty line
+							if $empty;
+								$empty = false;
+								'<br/>'|raw;
+							end;
+						end;
+						// display line
+						$line; '<br />'|raw;
+					// regular line
+					else;
+						// if we're in code block mode, end it
+						if $lmode == 'c';
+							$lmode = 'r';
+							// clear empty line flag
+							$empty = false;
+							// end the code block
+							'</div>'|raw;
+						// not in code block mode
+						else;
+							// handle empty line
+							if $empty;
+								$empty = false;
+								'<br/><br/>'|raw;
+							end;
+						end;
+						// display the line
+						$line;
+						// put a space between end of this line and beginning of next
+						' ';
+					end;
+				end;
+				// terminate code block if we're in it
+				if $lmode == 'c';
+					'</div>'|raw;
 				end;
 				%}
 			</div>

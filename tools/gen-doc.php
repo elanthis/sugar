@@ -37,8 +37,10 @@ $data = file_get_contents(dirname(__FILE__).'/../Sugar/Stdlib.php');
 if (!$data)
 	die('File not found');
 
+$functions = array();
+$modifiers = array();
+
 // read in doc blocks
-$blocks = array();
 $block = array();
 foreach(explode("\n", $data) as $lno=>$line) {
 	$file = 'Sugar/Stdlib.php:'.($lno+1);
@@ -50,7 +52,10 @@ foreach(explode("\n", $data) as $lno=>$line) {
 	// new block?
 	if (preg_match('/\*\+\+/', $line)) {
 		if ($block) {
-			$blocks [$block['group'].'.'.$block['name']]= $block;
+			if ($block['modifier'])
+				$modifiers[$block['group'].'.'.$block['name']] = $block;
+			else
+				$functions[$block['group'].'.'.$block['name']] = $block;
 			$block = array();
 		}
 		continue;
@@ -84,6 +89,9 @@ foreach(explode("\n", $data) as $lno=>$line) {
 		case 'varargs':
 			$block['varargs'] = $ar[2];
 			break;
+		case 'modifier':
+			$block['modifier'] = true;
+			break;
 		default:
 			die("$file: Unknown attribute {$ar[1]}");
 		}
@@ -92,17 +100,23 @@ foreach(explode("\n", $data) as $lno=>$line) {
 			$block['doc'] []= $line;
 	}
 }
-if ($block)
-	$blocks [$block['group'].'.'.$block['name']]= $block;
+if ($block) {
+	if ($block['modifier'])
+		$modifiers[$block['group'].'.'.$block['name']] = $block;
+	else
+		$functions[$block['group'].'.'.$block['name']] = $block;
+}
 
 // sort
-ksort($blocks);
+ksort($modifiers);
+ksort($functions);
 
 // display
 require_once dirname(__FILE__).'/../Sugar.php';
 $sugar = new Sugar();
 $sugar->cacheDir = dirname(__FILE__).'/../test/templates/cache';
 $sugar->templateDir = dirname(__FILE__);
-$sugar->set('blocks', $blocks);
+$sugar->set('modifiers', $modifiers);
+$sugar->set('functions', $functions);
 $sugar->set('light', $_GET['light'] || in_array('-light', (array)$_SERVER['argv']));
 $sugar->display('gen-doc.tpl');
