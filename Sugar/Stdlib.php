@@ -305,10 +305,9 @@ function sugar_function_truncate($sugar, $params)
 
 /*++
  *+ @name escape
- *+ @type modifier
+ *+ @modifier
  *+ @param mixed $value String (or any other type) to escape.
  *+ @param string $mode Escape format to use.  (default 'html')
- *+ @return raw Escaped value.
  *+
  *+ Mode must be one of 'html', 'xml', 'json', or 'url'.
  *+
@@ -597,9 +596,8 @@ function sugar_function_psplit($sugar, $params)
 
 /*++
  *+ @name int 
- *+ @type modifier
+ *+ @modifier
  *+ @param mixed $value Value to convert.
- *+ @return int Value converted to an integer.
  *+
  *+ Converts the input value into an integer.
  *+
@@ -612,9 +610,8 @@ function sugar_modifier_int($value)
 
 /*++
  *+ @name upper 
- *+ @type modifier
+ *+ @modifier
  *+ @param string $value String to convert.
- *+ @return string String with all letters converted to upper case.
  *+
  *+ Converts a string to all upper case letters.
  *+
@@ -627,9 +624,8 @@ function sugar_modifier_upper($value)
 
 /*++
  *+ @name lower 
- *+ @type modifier
+ *+ @modifier
  *+ @param string $value String to convert.
- *+ @return string String with all letters converted to lower case.
  *+
  *+ Converts a string to all lower case letters.
  *+
@@ -642,10 +638,9 @@ function sugar_modifier_lower($value)
 
 /*++
  *+ @name default
- *+ @type modifier
+ *+ @modifier
  *+ @param mixed $value Value to test.
  *+ @param mixed $default Value to use if $value is unset.
- *+ @return mixed $value, or $default if $value is null.
  *+
  *+ If $value is not null, return $value, otherwise return $default.
  *+
