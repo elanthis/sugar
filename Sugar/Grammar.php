@@ -132,7 +132,7 @@ class SugarGrammar
         $params = array();
         while (!$this->tokens->peekAny(array(')', ']', '}', ',', 'term'))) {
             // check for name= assignment
-            $this->tokens->expect('name', $name);
+            $this->tokens->expect('id', $name);
             $this->tokens->expect('=');
 
             // assign parameter
@@ -237,7 +237,7 @@ class SugarGrammar
             $this->collapseOps(SugarGrammar::$precedence[$op]);
 
             // if it's an array or object . or -> op, we can also take a name
-            if (($op == '.' || $op == '->') && $this->tokens->accept('name', $name)) {
+            if (($op == '.' || $op == '->') && $this->tokens->accept('id', $name)) {
                 // check if this is a method call
                 if ($this->tokens->accept('(')) {
                     // get name and parameters
@@ -299,7 +299,7 @@ class SugarGrammar
     {
         $opcodes = array();
         do {
-            $this->tokens->expect('name', $name);
+            $this->tokens->expect('id', $name);
 
             // parse and compile modifier parameters
             $params = array();
@@ -376,7 +376,7 @@ class SugarGrammar
             $this->tokens->expect(')');
 
         // function call
-        } elseif ($this->tokens->accept('name', $name)) {
+        } elseif ($this->tokens->accept('id', $name)) {
             // parse modifiers
             $modifiers = array();
             if ($this->tokens->accept('|'))
@@ -553,7 +553,7 @@ class SugarGrammar
                 }
 
             // function call?
-            } elseif ($this->tokens->accept('name', $func)) {
+            } elseif ($this->tokens->accept('id', $func)) {
                 // get modifier, if present
                 $modifiers = null;
                 $escape_flag = true;

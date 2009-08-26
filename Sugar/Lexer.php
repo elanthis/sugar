@@ -153,7 +153,7 @@ class SugarLexer
     {
         switch($token[0]) {
         case 'eof': return '<eof>';
-        case 'name': return 'name '.$token[1];
+        case 'id': return 'identifier '.$token[1];
         case 'var': return 'variable $'.$token[1];
         case 'data':
             if (is_string($token[1]))
@@ -162,6 +162,8 @@ class SugarLexer
                 return 'float '.$token[1];
             elseif (is_int($token[1]))
                 return 'integer '.$token[1];
+            elseif (is_object($token[1]))
+                return 'object '.get_class($token[1]);
             else
                 return gettype($token[1]);
         case 'term': return $token[1];
@@ -297,7 +299,7 @@ class SugarLexer
             return array('data', false);
         // name
         elseif (isset($token[4]) && $token[4] !== '')
-            return array('name', $token[4]);
+            return array('id', $token[4]);
         // generic operator
         else
             return array($token[0], null);
