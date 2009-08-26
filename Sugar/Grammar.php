@@ -89,6 +89,13 @@ class SugarGrammar
     private $sugar;
 
     /**
+     * Block stack.
+     *
+     * @var array $blocks
+     */
+    private $blocks = array();
+
+    /**
      * Operator precedence map.
      *
      * @var array $precedence
@@ -406,7 +413,7 @@ class SugarGrammar
         $block = array();
 
         // build byte-code
-        while (!$this->tokens->peekAny(array('eof', 'else', 'elif', 'end', '/if', '/foreach', '/while', '/loop', '/nocache'))) {
+        while (!$this->tokens->peekAny(array('eof', 'else', 'elif', 'end', 'end-block'))) {
             // raw string
             if ($this->tokens->accept('literal', $literal)) {
                 $block []= array('echo', $literal);
@@ -437,7 +444,7 @@ class SugarGrammar
                     $clauses []= array(false, $body);
                 }
 
-                $this->tokens->expect(array('/if', 'end'));
+                $this->tokens->expectEndBlock('if');
                 $this->tokens->expect('term');
 
                 // push block
@@ -451,7 +458,7 @@ class SugarGrammar
 
                 // get body
                 $body = $this->compileBlock();
-                $this->tokens->expect(array('/while', 'end'));
+                $this->tokens->expectEndBlock('while');
                 $this->tokens->expect('term');
 
                 // push block
@@ -476,7 +483,7 @@ class SugarGrammar
 
                 // block
                 $body = $this->compileBlock();
-                $this->tokens->expect(array('/loop', 'end'));
+                $this->tokens->expectEndBlock('loop');
                 $this->tokens->expect('term');
 
                 // push block
@@ -506,7 +513,7 @@ class SugarGrammar
 
                 // and the block itself
                 $body = $this->compileBlock();
-                $this->tokens->expect(array('/foreach', 'end'));
+                $this->tokens->expectEndBlock('foreach');
                 $this->tokens->expect('term');
 
                 // store foreach block
@@ -517,7 +524,8 @@ class SugarGrammar
             } elseif ($this->tokens->accept('nocache')) {
                 // get block
                 $body = $this->compileBlock();
-                $this->tokens->expect(array('/nocache', 'end'));
+                $this->tokens->expectEndBlock('nocache');
+                $this->tokens->expect('term');
 
                 $block []= array('nocache', $body);
 

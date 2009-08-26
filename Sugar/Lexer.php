@@ -137,8 +137,8 @@ class SugarLexer
     {
         $this->src = $src;
         $this->file = $file;
-	$this->delimStart = $delimStart;
-	$this->delimEnd = $delimEnd;
+        $this->delimStart = $delimStart;
+        $this->delimEnd = $delimEnd;
 
         $this->token = $this->next();
     }
@@ -165,6 +165,7 @@ class SugarLexer
             else
                 return gettype($token[1]);
         case 'term': return $token[1];
+        case 'end-block': return '/'.$token[1];
         default: return $token[0];
         }
     }
@@ -240,7 +241,7 @@ class SugarLexer
         // skip spaces and comments
         while (($ar = $this->getRegex('/(?:\s+|(?:\/\*.*?\*\/|\/\/.*?($|'.preg_quote($this->delimEnd).')))/msA')) !== false) {
             // line comment ended with an end delimiter
-            if (isset($ar[1]) && $ar[1] == $this->delimEnd) {
+            if (isset($ar[1]) && $ar[1] === $this->delimEnd) {
                 $this->inCmd = false;
                 return array('term', $this->delimEnd);
             }
@@ -248,56 +249,58 @@ class SugarLexer
 
         // get next token
         $this->tokline = $this->line;
-        if (($token = $this->getRegex('/(?:'.preg_quote($this->delimEnd).'|\$\w+|\d+(?:[.]\d+)?|\/(?:if|foreach|loop|while|nocache)|\w+|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA')) === false)
+        if (($token = $this->getRegex('/(?:'.preg_quote($this->delimEnd).'|\$(\w+)|(\d+(?:[.]\d+)?)|\/([A-Za-z_]\w+)|(\w+)|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA')) === false)
             throw new SugarParseException($this->file, $this->line, 'garbage at: '.substr($this->src, $this->pos, 12));
-        $token = $token[0];
 
         // if at end, mark that
-        if ($token == $this->delimEnd)
+        if ($token[0] === $this->delimEnd)
             $this->inCmd = false;
 
         // string
-        if ($token == '"') {
+        if ($token[0] === '"') {
             if (($string = $this->getRegex('/((?:[^"\\\\]*\\\\.)*[^"]*)"/msA')) === false)
                 throw new SugarParseException($this->file, $this->line, 'unterminated string constant at: '.substr($this->src, $this->pos, 12));
             return array('data', SugarLexer::decodeSlashes($string[1]));
-        } elseif ($token == '\'') {
+        } elseif ($token[0] === '\'') {
             if (($string = $this->getRegex('/((?:[^\'\\\\]*\\\\.)*[^\']*)\'/msA')) === false)
                 throw new SugarParseException($this->file, $this->line, 'unterminated string constant at: '.substr($this->src, $this->pos, 12));
             return array('data', SugarLexer::decodeSlashes($string[1]));
         }
 
         // variable
-        if (strlen($token) > 1 && $token[0] == '$') 
-            return array('var', substr($token, 1));
-        // terminator
-        elseif ($token == $this->delimEnd || $token == ';')
-            return array('term', $token);
+        if (isset($token[1]) && $token[1] !== '') 
+            return array('var', $token[1]);
+        // statement terminator
+        elseif ($token[0] === $this->delimEnd || $token[0] === ';')
+            return array('term', $token[0]);
         // keyword or special symbol
-        elseif (in_array($token, array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache', '/if', '/foreach', '/loop', '/while', '/nocache')))
-            return array($token, null);
+        elseif (isset($token[4]) && in_array($token[4], array('if', 'elif', 'else', 'end', 'foreach', 'in', 'loop', 'while', 'nocache')))
+            return array($token[4], null);
+        // block terminator
+        elseif (isset($token[3]) && $token[3] !== '')
+            return array('end-block', $token[3]);
+        // floating point number
+        elseif (isset($token[2]) && $token[2] !== '' && strpos($token[2], '.') !== FALSE)
+            return array('data', floatval($token[2]));
         // integer
-        elseif (preg_match('/^\d+$/', $token))
-            return array('data', intval($token));
-        // float
-        elseif (preg_match('/^\d+[.]\d+$/', $token))
-            return array('data', floatval($token));
+        elseif (isset($token[2]) && $token[2] !== '')
+            return array('data', intval($token[2]));
         // and and or
-        elseif ($token == 'and')
+        elseif ($token[0] === 'and')
             return array('&&', null);
-        elseif ($token == 'or')
+        elseif ($token[0] === 'or')
             return array('||', null);
         // true and false
-        elseif ($token == 'true')
+        elseif ($token[0] === 'true')
             return array('data', true);
-        elseif ($token == 'false')
+        elseif ($token[0] === 'false')
             return array('data', false);
         // name
-        elseif (preg_match('/^\w+$/', $token))
-            return array('name', $token);
+        elseif (isset($token[4]) && $token[4] !== '')
+            return array('name', $token[4]);
         // generic operator
         else
-            return array($token, null);
+            return array($token[0], null);
     }
 
     /**
@@ -358,6 +361,19 @@ class SugarLexer
 
         // store value
         $data = $this->token[1];
+
+        // get next token
+        $this->token = $this->next();
+    }
+
+    /**
+     * Block terminator expect wrapper.
+     *
+     * @param string $name Block name to expect.
+     */
+    public function expectEndBlock($name) {
+        if ($this->token[0] != 'end' && ($this->token[0] != 'end-block' || $this->token[1] != $name))
+            throw new SugarParseException($this->file, $this->tokline, 'expected /'.$name.'; found '.SugarLexer::tokenName($this->token));
 
         // get next token
         $this->token = $this->next();
