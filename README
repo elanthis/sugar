@@ -1,11 +1,11 @@
 Sugar (PHP Template Engine)
 =======================================================================
-Copyright (C) 2008,2009  AwesomePlay Productions, Inc.
+Copyright (C) 2008,2009  Mojodo, Inc.
 Sean Middleditch <sean@awesomeplay.com>
 See LICENSE for copying and distribution details.
 
------------------------------------------------------------------------
 I.   About Sugar
+-----------------------------------------------------------------------
 
 Sugar is a new template engine, inspired by the author's experience
 with the Smarty template engine.  Sugar aims to provide a simple
@@ -17,8 +17,8 @@ runtime, allowing for both quite flexible language features and for
 powerful expressions that a regular-expression engine like Smarty is
 not capable of providing.
 
------------------------------------------------------------------------
 II.  Installation
+-----------------------------------------------------------------------
 
 To install Sugar, simply copy the Sugar.php file into the PHP
 include path.  Then copy the Sugar/ folder and its contents into the
@@ -31,59 +31,59 @@ by the application (e.g. the Apache user) in order to work.  The
 default cache directory is ./templates/cache/ which also must be
 writable to work.
 
------------------------------------------------------------------------
 III. Basic Syntax
+-----------------------------------------------------------------------
 
 All Sugar code is put with the tags {% and %}.  For example:
 
-  {% if $count > 10 %}
-    <ul>
-    {% foreach $key,$value in $list %}
-      <li>{% $key %}: <b>{% $value %}</b></li>
-    {% /foreach %}
-    </ul>
-  {% /if %}
+    {% if $count > 10 %}
+      <ul>
+      {% foreach $key,$value in $list %}
+        <li>{% $key %}: <b>{% $value %}</b></li>
+      {% /foreach %}
+      </ul>
+    {% /if %}
 
 Variables are the dollar sign $ followed by letters, numbers, and/or
 underscores.  Variables can be assigned by the Sugar API or by using
 the equal = operator in a template.
 
-  {% $myvar = "a test" %}
-  My Var is {% $myvar %}.
+    {% $myvar = "a test" %}
+    My Var is {% $myvar %}.
 
 The above code will print:
 
-  My Var is a test.
+    My Var is a test.
 
 To print the value of a variable, simply place the name of the
 variable in script tags.  You can also perform various mathematical
 and logical operations on the variable in the tag, which is called
 an expression.  Example:
 
-  {% $i = 7 %}
-  {% $i %} is 7
-  {% 1+$i %} is 8
-  {% $i*($i%5) %} is 14
+    {% $i = 7 %}
+    {% $i %} is 7
+    {% 1+$i %} is 8
+    {% $i*($i%5) %} is 14
 
-  {% $s = "test" %}
-  {% $s %} is test
-  {% $s+7 %} is test7
-  {% $s+" again" %} is test again
+    {% $s = "test" %}
+    {% $s %} is test
+    {% $s+7 %} is test7
+    {% $s+" again" %} is test again
 
-  {% $test = $s+$i %}
-  {% $test %} is test7
+    {% $test = $s+$i %}
+    {% $test %} is test7
 
 Array keys can be accessed using the . operator or the [] array
 subscript operator.  Examples:
 
-  {% $array.key %}
-  {% $array."the key" %}
-  {% $array.0 %}
-  {% $array.8 %}
-  {% $array.$var %}
-  {% $array[$var] %}
-  {% $array[$var-6] %}
-  {% $array["key"] %}
+    {% $array.key %}
+    {% $array."the key" %}
+    {% $array.0 %}
+    {% $array.8 %}
+    {% $array.$var %}
+    {% $array[$var] %}
+    {% $array[$var-6] %}
+    {% $array["key"] %}
 
 Arrays can be constructed using the array initializer function
 or using the [] initializer syntax.  The array function can
@@ -91,172 +91,172 @@ make map arrays (arrays with arbitrary keys) while the [] syntax
 can make vectors (arrays with consecutive integer keys).
 Examples:
 
-  {% $vector = [1, 2, 5] %}
-  {% $map = (array first=1 second=2 third=5) %}
+    {% $vector = [1, 2, 5] %}
+    {% $map = (array first=1 second=2 third=5) %}
 
 Object properties can be accessed using the . or [] operators, just
 like arrays.  Object methods, if enabled, can be invoked using the
 . operator followed by a method name, then a list of comma-separated
 parameters within ().  Example:
 
-  {% $obj.name %}
-  {% $obj[$var] %}
-  {% $obj.method() %}
-  {% $obj.foobar(1, $var, "test") %}
+    {% $obj.name %}
+    {% $obj[$var] %}
+    {% $obj.method() %}
+    {% $obj.foobar(1, $var, "test") %}
 
 The value of a variable is always HTML-escaped by default.  To
 display the value of a variable with no escaping, use the raw
 modifier.
 
-  {% $html = "<b>bold</b>" %}
-  {% $html %} = &lt;b&gt;bold&lt;/b&gt;
-  {% $html|raw %} = <b>bold</b>
+    {% $html = "<b>bold</b>" %}
+    {% $html %} = &lt;b&gt;bold&lt;/b&gt;
+    {% $html|raw %} = <b>bold</b>
 
 A function can be called by giving the name of the function, and
 then listing the parameters.  Each function parameters is given as
 a parameter name, an equals sign, and then the parameter value.
 Example:
 
-  {% myFunc %}
-  {% myFunc value=$var %}
-  {% myFunc value=$var*2 other="test" last=4+($i*7) %}
+    {% myFunc %}
+    {% myFunc value=$var %}
+    {% myFunc value=$var*2 other="test" last=4+($i*7) %}
 
 Functions may also be called within an expression.  It is recommended
 to put the whole function inside of parenthesis, although this is
 not required.
 Examples:
 
-  {% "show "+getTime %}
-  {% "show "+getTime 'tomorrow' %}
-  {% 12*1+(foobar test="enable" time="now") %}
+    {% "show "+getTime %}
+    {% "show "+getTime 'tomorrow' %}
+    {% 12*1+(foobar test="enable" time="now") %}
 
 Sugar supports a feature called modifiers, which allow for any
 expression to be passed through a special function that modifies the
 value of the expression.  Modifiers are used by putting a pipe (|)
 followed by the modifier name.
 
-  {% 'some text'|upper %} becomes SOME TEXT
-  {% 'Niagara Falls'|lower %} becomes niagara falls
+    {% 'some text'|upper %} becomes SOME TEXT
+    {% 'Niagara Falls'|lower %} becomes niagara falls
 
 A modifier can be applied to a function by putting the modifier
 directly after the function's name.  Putting the modifier after
 function parameters will result in the modifier being applied to
 the last parameter value, not the function itself!
 
-  {% myFunc|upper value=$var %} modifier applied to result of myFunc
+    {% myFunc|upper value=$var %} modifier applied to result of myFunc
 	{% myFunc value=$var|upper %} modifier applied to $var
 
 Parameters can be passed to a modifier by using a colon (:) followed
 by the parameter.  Any number of parameters can be used.
 
-  {% $var|modifier:1:2:'three':4 %}
+    {% $var|modifier:1:2:'three':4 %}
 	{% myFunc|modifier:'parameter' value=$var %}
 
 Modifiers can be chained together, allowing for multiple modifications
 to a single expression.
 
-  {% $var|default:'string'|upper %}
+    {% $var|default:'string'|upper %}
 
 Conditional execution can be performed using the if, elif, and else
 statements.  Example:
 
-  {% if $i > 7 %}
-    The value is greater than 7.
-  {% elif $i < -7 %}
-    The value is less than 7.
-  {% elif $i = $v %}
-    The value is equal to $v.
-  {% else %}
-    The value is {% $i %}
-    {% if $i < 0 %}
-      which is negative
-    {% elif $i > 0 %}
-      which is positive
+    {% if $i > 7 %}
+      The value is greater than 7.
+    {% elif $i < -7 %}
+      The value is less than 7.
+    {% elif $i = $v %}
+      The value is equal to $v.
     {% else %}
-      which is zero
+      The value is {% $i %}
+      {% if $i < 0 %}
+        which is negative
+      {% elif $i > 0 %}
+        which is positive
+      {% else %}
+        which is zero
+      {% /if %}
     {% /if %}
-  {% /if %}
 
 An array or PHP iterator can be looped over using the foreach
 statement.  Either the array values or both the array keys and
 values can be iterated over.
 
-  Just the values:
-  {% foreach $i in $mylist %}
-    {% $i %}
-  {% /foreach %}
+    Just the values:
+    {% foreach $i in $mylist %}
+      {% $i %}
+    {% /foreach %}
 
-  Keys and values:
-  {% foreach $k,$i in $mylist %}
-    {% $k %}={% $i %}
-  {% /foreach %}
+    Keys and values:
+    {% foreach $k,$i in $mylist %}
+      {% $k %}={% $i %}
+    {% /foreach %}
 
-  Inline array:
-  {% foreach $k in [1,2,3] %}
-    {% $k %}
-  {% /foreach %}
+    Inline array:
+    {% foreach $k in [1,2,3] %}
+      {% $k %}
+    {% /foreach %}
 
 A code block can be expected a specific number of times by using the
 range loop statement.  The range loop is given a start number, an end
 number, and an optional step value.  The follow example displays the
 numbers 1 through 5.
 
-  {% loop $i in 1,5 %}
-    {% $i %}
-  {% /loop %}
+    {% loop $i in 1,5 %}
+      {% $i %}
+    {% /loop %}
 
 This example displays the numbers 6, 4, and 2.
 
-  {% loop $i in 3*2,1,-2 %}
-    {% $i %}
-  {% /loop %}
+    {% loop $i in 3*2,1,-2 %}
+      {% $i %}
+    {% /loop %}
 
 Other template files can be included using the include function.  Code
 can be executed using the eval function.
 
-  {% include "header" %}
-  {% include 'some/other/template' %}
-  {% eval 'var is {% $var+1 %}' %}
-  {% eval getCode %}
+    {% include "header" %}
+    {% include 'some/other/template' %}
+    {% eval 'var is {% $var+1 %}' %}
+    {% eval getCode %}
 
 Caching can be suppressed for part of a template by using the nocache
 block directive.
 
-  {% nocache %}
-    This value is not cached: {% $value %}
-  {% /nocache %}
+    {% nocache %}
+      This value is not cached: {% $value %}
+    {% /nocache %}
 
 The semi-colon (;) character can be used to separate statements within
 Sugar tags.  The following two blocks of Sugar code function
 identically:
 
-  {% if $value %}Value: {% $value %}{% /if %}
+    {% if $value %}Value: {% $value %}{% /if %}
 
-  {% if $value ; 'Value: '; $value; /if %}
+    {% if $value ; 'Value: '; $value; /if %}
 
------------------------------------------------------------------------
 IV.  Sugar API
+-----------------------------------------------------------------------
 
 The Sugar engine is controlled mainly by the Sugar class.  To use
 Sugar, first include the Sugar.php file and instantiate an object
 of the Sugar class.
 
-  require_once 'Sugar.php';
+    require_once 'Sugar.php';
 
-  $sugar = new Sugar();
+    $sugar = new Sugar();
 
 To declare variables for use by template files, use the set() method.
 The first parameter is the variable name (do not include the $) and the
 second parameter is the value to assign to the variable.
 
-  $sugar->set('life', 42);
-  $sugar->set('results', getDatabaseResults());
-  $sugar->set('name', $user->name);
+    $sugar->set('life', 42);
+    $sugar->set('results', getDatabaseResults());
+    $sugar->set('name', $user->name);
 
 The code delimiters ({% and %}) can be changed by using the
 setDelimiters() method.
 
-  $sugar->setDelimiters('<!--{', '}-->');
+    $sugar->setDelimiters('<!--{', '}-->');
 
 Registering new function requires the Sugar::addFunction() method.  The first
 parameter is the name of the function as used within templates.  The second
@@ -266,23 +266,23 @@ invoked.  A third optional parameter controls whether the function can be
 cached or not.  The fourth optional parameter controls whether the function
 output is escaped by default or not.
 
-  $sugar->addFunction('myFunc');
-  $sugar->addFunction('foo', 'some_function');
-  $sugar->addFunction('getCost', array($cart, 'get_cost'));
-  $sugar->addFunction('dynamic', 'my_dynamic', false);
-  $sugar->addFunction('writeHtml', 'html_func', true, false);
+    $sugar->addFunction('myFunc');
+    $sugar->addFunction('foo', 'some_function');
+    $sugar->addFunction('getCost', array($cart, 'get_cost'));
+    $sugar->addFunction('dynamic', 'my_dynamic', false);
+    $sugar->addFunction('writeHtml', 'html_func', true, false);
 
 Functions receive two arguments: the Sugar object and a keyed array
 with the parameters.  Method calls will be called using the native
 PHP approach.
 
-  function sugar_function_printargs ($sugar, $params) {
-    $arg1 = SugarUtil::getArg($params, 'arg1', 0);
-    $arg2 = SugarUtil::getArg($params, 'arg2', 1);
+    function sugar_function_printargs ($sugar, $params) {
+      $arg1 = SugarUtil::getArg($params, 'arg1', 0);
+      $arg2 = SugarUtil::getArg($params, 'arg2', 1);
 
-    return "arg1=$arg1, arg2=$arg2";
-  }
-  $sugar->addFunction('printArgs', 'sugar_function_printargs');
+      return "arg1=$arg1, arg2=$arg2";
+    }
+    $sugar->addFunction('printArgs', 'sugar_function_printargs');
  
 It is not always necessary to use Sugar::addFunction() to expose a
 function to Sugar.  Sugar will automatically look for functions
@@ -320,7 +320,7 @@ The character set used by the escape routines is ISO-8859-1 (latin1)
 by default.  This can be changed by setting the $charset member of
 the $sugar object.
 
-  $sugar->charset = 'UTF-8';
+    $sugar->charset = 'UTF-8';
 
 To render a template, use either the Sugar::display() or the
 Sugar::displayString() methods, or the displayCache() method described
@@ -341,14 +341,14 @@ The template directory can be by setting the $templateDir
 property of the Sugar object.  The cache directory can be changed
 by setting the $cacheDir property.
 
-  $sugar->templateDir = '/var/myapp/tpl';
-  $sugar->cacheDir = '/var/myapp/ctpl';
-  $sugar->debug = true; // force recompilation and disable caching
+    $sugar->templateDir = '/var/myapp/tpl';
+    $sugar->cacheDir = '/var/myapp/ctpl';
+    $sugar->debug = true; // force recompilation and disable caching
 
 The plugins directry can be changed by setting the $pluginDir
 property.
 
-  $sugar->pluginDir = '/var/myapp/plugins';
+    $sugar->pluginDir = '/var/myapp/plugins';
 
 Caching can be performed on a template by using the
 Sugar::displayCache() method.  This method takes a second optional
@@ -358,26 +358,26 @@ product template in an eCommerce application would use a different
 cache identifier for each product.  The second parameter can be
 ommitted if desired.
 
-  $sugar->displayCache('homepage');
-  $sugar->displayCache('product', $product->id);
+    $sugar->displayCache('homepage');
+    $sugar->displayCache('product', $product->id);
 
 The cache lifetime can be changed by setting the $cacheLimit property
 to the number of seconds desired.  The cache lifetime is the number
 of seconds a cache will exist before being forced to re-cache.
 
-  $sugar->cacheLimit = 60*5; // five minutes
+    $sugar->cacheLimit = 60*5; // five minutes
 
 It is possible to check if a valid cache exists for a given template
 and cache identifier using the Sugar::isCached() method.  This allows
 the application to avoid expensive database queries or other
 operations when the results are already cached.
 
-  if (!$sugar->isCached('life', 42))
-    $sugar->set('results', $db->queryData());
+    if (!$sugar->isCached('life', 42))
+      $sugar->set('results', $db->queryData());
 	$sugar->displayCache('life', 42);
 
------------------------------------------------------------------------
 V.   Extending Sugar
+-----------------------------------------------------------------------
 
 Sugar offers two core means of extending its functionality.  First,
 users may register new functions to be used by templates.  Second,
@@ -388,49 +388,49 @@ Storage drivers are classes derived from ISugarStorage.  The following
 methods must be implemented.  All methods return true on success or
 false on error, unless stated otherwise.
 
-  stamp (SugarRef $name): returns the template's timestamp, or false if
-    the specified template does not exist.
-  load (SugarRef $name): returns the template source.
-  path (SugarRef $name): returns a user-friendly name for the template.
+    stamp (SugarRef $name): returns the template's timestamp, or false if
+      the specified template does not exist.
+    load (SugarRef $name): returns the template source.
+    path (SugarRef $name): returns a user-friendly name for the template.
 
 The SugarRef class describes the requested template name.  It has the
 following member variables which are used to distinguish templates:
 
-  $full: the full path name
-  $storageName: the name of the storage driver
-  $storage: the ISugarStorage object associated with the driver name
-  $name: the base name of the template
-  $cacheId: an optional cache identifier (only used for caching)
+    $full: the full path name
+    $storageName: the name of the storage driver
+    $storage: the ISugarStorage object associated with the driver name
+    $name: the base name of the template
+    $cacheId: an optional cache identifier (only used for caching)
 
 To register a new storage driver, use the Sugar::addStorage() method
 of the Sugar object, passing in the desired name and an instance of
 the new driver.
 
-  $sugar->addStorage('db', new SugarDatabaseStorage($sugar));
+    $sugar->addStorage('db', new SugarDatabaseStorage($sugar));
 
 When loading a template, the template name may be prefixed by a
 storage driver name.
 
-  $sugar->display('db:homepage');
+    $sugar->display('db:homepage');
 
 If not storage driver is specified, the value of the
 defaultStorage member variable is used.  By default this is set to
 'file' which is the built-in file-based storage driver that comes
 with Sugar.  This can be changed.
 
-  $sugar->defaultStorage = 'db';
+    $sugar->defaultStorage = 'db';
 
 Cache drivers are classes derived from ISugarCache.  The following
 methods must be implemented.  All methods return true on success or
 false on error, unless stated otherwise.
 
-  stamp (SugarRef $name, $type): returns the cache timestamp, or
-    false if the specified cache does not exist.
-  load (SugarRef $name, $type): loads the specified cache data.
-  store (SugarRef $name, $type, array $data): stores the specified
-    cache, or throw  a SugarException on failure.
-  erase (SugarRef $name, $type): erases the specified cache.
-  clear (): erases all caches.
+    stamp (SugarRef $name, $type): returns the cache timestamp, or
+      false if the specified cache does not exist.
+    load (SugarRef $name, $type): loads the specified cache data.
+    store (SugarRef $name, $type, array $data): stores the specified
+      cache, or throw  a SugarException on failure.
+    erase (SugarRef $name, $type): erases the specified cache.
+    clear (): erases all caches.
 
 The $type parameter is a string, which will either be 'ctpl' for
 compiled templates or 'chtml' or template caches.
@@ -438,4 +438,4 @@ compiled templates or 'chtml' or template caches.
 To change the cache driver, set the $cache property of the Sugar
 object to an instance of the new driver.
 
-  $sugar->cache = new SugarCustomCache($sugar);
+    $sugar->cache = new SugarCustomCache($sugar);
