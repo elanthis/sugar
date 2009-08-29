@@ -41,6 +41,9 @@ function random($sugar, $params) {
 }
 $sugar->addFunction('random', 'random');
 
+$sugar->addFunction('randomNoCache', 'random', false);
+$sugar->addFunction('showHtmlNoEscape', 'sugar_function_showhtml', true, false);
+
 // test class
 class Test {
 	var $bar = 'BAR';

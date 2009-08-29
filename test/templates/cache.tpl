@@ -10,4 +10,8 @@
 <p>nocache: {% random %}</p>
 {% /nocache %}
 
+{% nocache %}
+<p>nocache: {% randomNoCache %}</p>
+{% /nocache %}
+
 {% include tpl= 'footer' %}

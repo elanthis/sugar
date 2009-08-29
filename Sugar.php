@@ -325,13 +325,14 @@ class Sugar
      * @param string $name The name to register the function under.
      * @param callback $invoke Optional PHP callback; if null, the $name parameter is used as the callback.
      * @param bool $cache Whether the function is cacheable.
+     * @param bool $escape Whether the function output should be escaped.
      * @return bool true on success
      */
-    public function addFunction($name, $invoke = null, $cache = true)
+    public function addFunction($name, $invoke = null, $cache = true, $escape = true)
     {
         if (!$invoke)
             $invoke = 'sugar_function_'.strtolower($name);
-        $this->functions [strtolower($name)]= array('name'=>$name, 'invoke'=>$invoke, 'cache'=>$cache);
+        $this->functions [strtolower($name)]= array('name'=>$name, 'invoke'=>$invoke, 'cache'=>$cache, 'escape'=>$escape);
         return true;
     }
 
@@ -384,7 +385,7 @@ class Sugar
         // try to auto-lookup the function
         $invoke = "sugar_function_$name";
         if (function_exists($invoke))
-            return $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
+            return $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true, 'escape'=>true);
 
         // attempt plugin loading
         $file = "{$this->pluginDir}/$invoke.php";
@@ -392,7 +393,7 @@ class Sugar
             @include_once $file;
             if (function_exists($invoke))
             {
-                $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true);
+                $this->functions[$name] = array('name'=>$name, 'invoke'=>$invoke, 'cache'=>true, 'escape'=>true);
                 return $this->functions[$name];
             }
         }

@@ -567,10 +567,9 @@ class SugarGrammar
                 $params = $this->parseFunctionArgs();
 
                 // build function call
-                $block []= array('call', $func, $params, $this->tokens->getFile(), $this->tokens->getLine());
+                $block []= array('call_top', $func, $params, $escape_flag, $this->tokens->getFile(), $this->tokens->getLine());
                 if ($modifiers)
                     $block []= $modifiers;
-                $block []= array($escape_flag ? 'print' : 'rawprint');
 
             // we have a statement
             } else {

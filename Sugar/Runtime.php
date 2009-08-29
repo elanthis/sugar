@@ -101,6 +101,19 @@ class SugarRuntime
     }
 
     /**
+     * Display output, either to the cache handler or to the PHP
+     * output stream.
+     *
+     * @param string $output Output.
+     */
+    private static function display(Sugar $sugar, $output) {
+        if ($sugar->cacheHandler)
+            $sugar->cacheHandler->addOutput($output);
+        else
+            echo $output;
+    }
+
+    /**
      * Executes the given bytecode.  The return value is the last item on
      * the stack, if any.  For complete templates, this should be nothing
      * (null).
@@ -117,26 +130,18 @@ class SugarRuntime
         $stack = array();
 
         for ($i = 0; $i < count($code); ++$i) {
-            switch($code[$i]) {
+            $opcode = $code[$i];
+            switch($opcode) {
             case 'echo':
-                if ($sugar->cacheHandler)
-                    $sugar->cacheHandler->addOutput($code[++$i]);
-                else
-                    echo $code[++$i];
+                self::display($sugar, $code[++$i]);
                 break;
             case 'print':
                 $val = array_pop($stack);
-                if ($sugar->cacheHandler)
-                    $sugar->cacheHandler->addOutput($sugar->escape(SugarRuntime::showValue($val)));
-                else
-                    echo $sugar->escape(SugarRuntime::showValue($val));
+                self::display($sugar, $sugar->escape(self::showValue($val)));
                 break;
             case 'rawprint':
                 $val = array_pop($stack);
-                if ($sugar->cacheHandler)
-                    $sugar->cacheHandler->addOutput(SugarRuntime::showValue($val));
-                else
-                    echo SugarRuntime::showValue($val);
+                self::display($sugar, self::showValue($val));
                 break;
             case 'push':
                 $str = $code[++$i];
@@ -167,7 +172,7 @@ class SugarRuntime
             case '+':
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
-                $stack []= SugarRuntime::addValues($v1, $v2);
+                $stack []= self::addValues($v1, $v2);
                 break;
             case '*':
                 $v2 = array_pop($stack);
@@ -246,8 +251,10 @@ class SugarRuntime
                 $stack []= (is_array($v2) && !in_array($v1, $v2));
                 break;
             case 'call':
+            case 'call_top':
                 $func = $code[++$i];
                 $args = $code[++$i];
+                $escape_flag = $opcode == 'call_top' ? $code[++$i] : false;
                 $debug_file = $code[++$i];
                 $debug_line = $code[++$i];
 
@@ -256,10 +263,13 @@ class SugarRuntime
                 if (!$callable)
                     throw new SugarRuntimeException($debug_file, $debug_line, 'unknown function `'.$func.'`');
 
+                // update escape flag based on function default
+                $escape_flag = $escape_flag && $callable['escape'];
+
                 // compile args
                 $params = array();
                 foreach($args as $name=>$pcode)
-                    $params[$name] = SugarRuntime::execute($sugar, $pcode);
+                    $params[$name] = self::execute($sugar, $pcode);
 
                 // exception net
                 try {
@@ -270,45 +280,13 @@ class SugarRuntime
                     $ret = null;
                 }
 
-                // store return value
-                $stack []= $ret;
-                break;
-            case 'pcall':
-                $func = $code[++$i];
-                $args = $code[++$i];
-                $debug_file = $code[++$i];
-                $debug_line = $code[++$i];
-
-                // lookup function
-                $callable = $sugar->getFunction($func);
-                if (!$callable)
-                    throw new SugarRuntimeException($debug_file, $debug_line, 'unknown function `'.$func.'`');
-
-                // compile args
-                $params = array();
-                foreach($args as $name=>$pcode)
-                    $params[$name] = SugarRuntime::execute($sugar, $pcode);
-
-                // non-cachable function?  handle that
-                if ($sugar->cacheHandler && !$callable['cache']) {
-                    $sugar->cacheHandler->addBlock(array('pcall', $func, $params, $debug_file, $debug_line));
-                    break;
-                }
-
-                // exception net
-                try {
-                    // call function, using appropriate method
-                    $ret = call_user_func($callable['invoke'], $sugar, $params);
-                } catch (Exception $e) {
-                    $sugar->handleError($e);
-                    $ret = null;
-                }
-
-                // show output
-                if ($sugar->cacheHandler)
-                    $sugar->cacheHandler->addOutput($sugar->escape(SugarRuntime::showValue($ret)));
+                // process return value
+                if ($opcode == 'call_top' && $escape_flag)
+                    self::display($sugar, $sugar->escape($ret));
+                elseif ($opcode == 'call_top')
+                    self::display($sugar, self::showValue($ret));
                 else
-                    echo $sugar->escape(SugarRuntime::showValue($ret));
+                    $stack []= $ret;
                 break;
             case 'method':
                 $obj = array_pop($stack);
@@ -327,7 +305,7 @@ class SugarRuntime
                 // compile args
                 $params = array();
                 foreach($args as $pcode)
-                    $params [] = SugarRuntime::execute($sugar, $pcode);
+                    $params [] = self::execute($sugar, $pcode);
 
                 // perform ACL checking on the method call
                 if (!is_null($sugar->method_acl) && !call_user_func($sugar->method_acl, $sugar, $obj, $func, $params))
@@ -355,7 +333,7 @@ class SugarRuntime
                 // compile args
                 $params = array();
                 foreach($args as $pcode)
-                    $params []= SugarRuntime::execute($sugar, $pcode);
+                    $params []= self::execute($sugar, $pcode);
 
                 // exception net
                 try {
@@ -372,8 +350,8 @@ class SugarRuntime
             case 'if':
                 $clauses = $code[++$i];
                 foreach ($clauses as $clause) {
-                    if ($clause[0] === false || SugarRuntime::execute($sugar, $clause[0])) {
-                        SugarRuntime::execute($sugar, $clause[1]);
+                    if ($clause[0] === false || self::execute($sugar, $clause[0])) {
+                        self::execute($sugar, $clause[1]);
                         break;
                     }
                 }
@@ -393,7 +371,7 @@ class SugarRuntime
                 $index = $lower;
                 while (($step < 0 && $index >= $upper) || ($step > 0 && $index <= $upper)) {
                     $sugar->set($name, $index);
-                    SugarRuntime::execute($sugar, $block);
+                    self::execute($sugar, $block);
                     $index += $step;
                 }
                 break;
@@ -407,22 +385,22 @@ class SugarRuntime
                         if ($key)
                             $sugar->set($key, $k);
                         $sugar->set($name, $v);
-                        SugarRuntime::execute($sugar, $block);
+                        self::execute($sugar, $block);
                     }
                 }
                 break;
             case 'while':
                 $test = $code[++$i];
                 $block = $code[++$i];
-                while (SugarRuntime::execute($sugar, $test))
-                    SugarRuntime::execute($sugar, $block);
+                while (self::execute($sugar, $test))
+                    self::execute($sugar, $block);
                 break;
             case 'nocache':
                 $block = $code[++$i];
                 if ($sugar->cacheHandler)
                     $sugar->cacheHandler->addBlock($block);
                 else
-                    SugarRuntime::execute($sugar, $block);
+                    self::execute($sugar, $block);
                 break;
             case '.':
                 $index = array_pop($stack);
@@ -438,11 +416,11 @@ class SugarRuntime
                 $elems = $code[++$i];
                 $array = array();
                 foreach ($elems as $elem)
-                    $array []= SugarRuntime::execute($sugar, $elem);
+                    $array []= self::execute($sugar, $elem);
                 $stack []= $array;
                 break;
             default:
-                throw new SugarException ('internal error: unknown opcode `'.$code[$i].'`');
+                throw new SugarException ('internal error: unknown opcode `'.$opcode.'`');
             }
         }
 
