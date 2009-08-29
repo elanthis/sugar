@@ -286,6 +286,13 @@ class Sugar
     public $delimEnd = '%}';
 
     /**
+     * Callback for checking method access.
+     *
+     * @var callback
+     */
+    public $method_acl;
+
+    /**
      * Constructor
      */
     public function __construct()

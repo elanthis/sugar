@@ -315,25 +315,29 @@ class SugarRuntime
                 $debug_file = $code[++$i];
                 $debug_line = $code[++$i];
 
+                // ensure the object is an object and that the method is a method
                 if (!is_object($obj))
                     throw new SugarRuntimeException($debug_file, $debug_line, 'method call on non-object type `'.gettype($obj).'`');
 
                 if (!method_exists($obj, $func))
                     throw new SugarRuntimeException($debug_file, $debug_line, 'unknown method `'.$func.'` on type `'.gettype($obj).'`');
 
-
                 // compile args
                 $params = array();
                 foreach($args as $pcode)
                     $params [] = SugarRuntime::execute($sugar, $pcode);
 
+                // perform ACL checking on the method call
+                if (!is_null($sugar->method_acl) && !call_user_func($sugar->method_acl, $sugar, $obj, $func, $params))
+                    throw new SugarRuntimeException($debug_file, $debug_line, 'method call to `'.$func.'` on type `'.gettype($obj).'` blocked by ACL');
+
                 // exception net
                 try {
-                        // invoke method
-                        $stack []= @call_user_func_array(array($obj, $func), $params);
+                    // invoke method
+                    $stack []= @call_user_func_array(array($obj, $func), $params);
                 } catch (Exception $e) {
-                        $sugar->handleError($e);
-                        $stack []= null;
+                    $sugar->handleError($e);
+                    $stack []= null;
                 }
                 break;
             case 'modifier':

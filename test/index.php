@@ -56,7 +56,17 @@ class Test {
 	function fail () {
 		throw new Exception("fail() called");
 	}
+
+	function deny_acl () {
+		throw new Exception("I shouldn't be run");
+	}
 }
+
+// ACL test
+function test_acl($smarty, $object, $method) {
+	return $method != 'deny_acl';
+}
+$sugar->method_acl = 'test_acl';
 
 // set source variable is s is on
 $sugar->set('source', $sugar->getSource($file));
