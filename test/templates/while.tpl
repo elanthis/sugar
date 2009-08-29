@@ -1,7 +1,7 @@
 {% $title = 'While Tests' %}
 {% include tpl= 'header' %}
 
-<p>Test: $i = 0; while $i < 10; $i ; $i = $i + 1; /while<br/>
+<p>Test: $i = 0; while $i &lt; 10; $i ; $i = $i + 1; /while<br/>
 Expect: 0123456789<br/>
 Result:
 {% $i = 0; while $i < 10; $i ; $i = $i + 1; /while %}</p>
