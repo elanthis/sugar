@@ -42,7 +42,7 @@
  * @global string Location of core Sugar package files.
  * @internal
  */
-$__sugar_rootdir = dirname(__FILE__);
+$GLOBALS['__sugar_rootdir'] = dirname(__FILE__);
 
 /**#@+
  * Core includes.
