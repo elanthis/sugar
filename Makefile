@@ -11,32 +11,32 @@ all:
 	@echo '  install (install to DESTDIR)'
 
 dist:
-	-[ -d php-sugar-$(VERSION) ] && rm -fr php-sugar-$(VERSION)/
-	mkdir php-sugar-$(VERSION)/
-	cp Sugar.php README LICENSE NEWS Makefile php-sugar-$(VERSION)/
+	-[ -d sugar-$(VERSION) ] && rm -fr sugar-$(VERSION)/
+	mkdir sugar-$(VERSION)/
+	cp Sugar.php README LICENSE NEWS Makefile sugar-$(VERSION)/
 
-	mkdir php-sugar-$(VERSION)/tools/
-	cp tools/gen-doc.php tools/gen-doc.tpl php-sugar-$(VERSION)/tools/
+	mkdir sugar-$(VERSION)/tools/
+	cp tools/gen-doc.php tools/gen-doc.tpl sugar-$(VERSION)/tools/
 
-	mkdir php-sugar-$(VERSION)/doc/
-	cp doc/sugardoc.css php-sugar-$(VERSION)/doc/
+	mkdir sugar-$(VERSION)/doc/
+	cp doc/sugardoc.css doc/sugar-manual.xml sugar-$(VERSION)/doc/
 
-	mkdir php-sugar-$(VERSION)/Sugar/
-	cp Sugar/*.php php-sugar-$(VERSION)/Sugar/
+	mkdir sugar-$(VERSION)/Sugar/
+	cp Sugar/*.php sugar-$(VERSION)/Sugar/
 
-	mkdir php-sugar-$(VERSION)/test/
-	cp test/index.php php-sugar-$(VERSION)/test/
+	mkdir sugar-$(VERSION)/test/
+	cp test/index.php sugar-$(VERSION)/test/
 
-	mkdir php-sugar-$(VERSION)/test/plugins/
-	cp test/plugins/*.php php-sugar-$(VERSION)/test/plugins/
+	mkdir sugar-$(VERSION)/test/plugins/
+	cp test/plugins/*.php sugar-$(VERSION)/test/plugins/
 
-	mkdir php-sugar-$(VERSION)/test/templates/
-	cp test/templates/*.tpl php-sugar-$(VERSION)/test/templates/
+	mkdir sugar-$(VERSION)/test/templates/
+	cp test/templates/*.tpl sugar-$(VERSION)/test/templates/
 
-	mkdir php-sugar-$(VERSION)/test/templates/cache/
+	mkdir sugar-$(VERSION)/test/templates/cache/
 
-	tar -zcf php-sugar-$(VERSION).tgz php-sugar-$(VERSION)/
-	rm -fr php-sugar-$(VERSION)/
+	tar -zcf sugar-$(VERSION).tar.gz sugar-$(VERSION)/
+	rm -fr sugar-$(VERSION)/
 
 gendoc:
 	[ -d doc ] || mkdir doc
