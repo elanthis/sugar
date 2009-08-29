@@ -32,7 +32,7 @@
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008,2009 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.81
+ * @version 0.82
  * @link http://php-sugar.net
  */
 
@@ -80,7 +80,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Stdlib.php';
  * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008,2009 Mojodo, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.81
+ * @version 0.82
  * @link http://php-sugar.net
  */
 class Sugar
@@ -88,7 +88,7 @@ class Sugar
     /**
      * Version of Sugar.
      */
-    const VERSION = '0.81';
+    const VERSION = '0.82';
 
     /**
      * Passed to cache drivers to indicate that a compile cache is requested.
