@@ -26,11 +26,13 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
- * @subpackage Internals
+ * @subpackage Compiler
  * @author Sean Middleditch <sean@awesomeplay.com>
  * @copyright 2008,2009 AwesomePlay Productions, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
+ * @access private
  */
 
 /**
@@ -57,6 +59,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
  * @license http://opensource.org/licenses/mit-license.php MIT
  * @version 0.81
  * @link http://php-sugar.net
+ * @access private
  */
 class SugarGrammar
 {

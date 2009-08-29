@@ -27,6 +27,7 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
+ * @category Template
  * @package Sugar
  * @subpackage Drivers
  * @author Sean Middleditch <sean@awesomeplay.com>

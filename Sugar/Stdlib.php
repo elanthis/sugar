@@ -41,11 +41,15 @@
  */
 
 /**#@+
- * Standard library functions.
+ * Standard library function
  *
- * Not sure how to document these sanely in phpdoc, since the
- * interesting things to document are the Sugar parameters, not
- * the PHP call interface.
+ * Sugar template functions.  Please view the Sugar reference manual
+ * for documentation on the behavior and use of these functions from
+ * within templates.
+ *
+ * @param Sugar $sugar Sugar object.
+ * @param array $params Template parameters.
+ * @return mixed
  */
 
 /*++

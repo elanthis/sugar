@@ -46,7 +46,8 @@ manual:
 	xmlto -o doc/manual xhtml sugar-manual.xml
 
 phpdoc:
-	phpdoc -o HTML:frames:earthli -f Sugar.php -d Sugar -t doc/phpdoc
+	phpdoc -ti 'Sugar Template Engine' -o HTML:frames:default -f Sugar.php \
+			-q -d Sugar -t doc/phpdoc
 
 install:
 	mkdir -p $(DESTDIR)/Sugar

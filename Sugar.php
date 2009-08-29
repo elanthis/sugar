@@ -39,6 +39,8 @@
 /**
  * Directory in which Sugar is installed.  Used for including
  * additional Sugar source files.
+ * @global string Location of core Sugar package files.
+ * @internal
  */
 $__sugar_rootdir = dirname(__FILE__);
 

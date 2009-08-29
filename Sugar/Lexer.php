@@ -45,6 +45,7 @@
  * @license http://opensource.org/licenses/mit-license.php MIT
  * @version 0.81
  * @link http://php-sugar.net
+ * @access private
  */
 
 /**
@@ -60,6 +61,7 @@
  * @license http://opensource.org/licenses/mit-license.php MIT
  * @version 0.81
  * @link http://php-sugar.net
+ * @access private
  */
 class SugarLexer
 {
