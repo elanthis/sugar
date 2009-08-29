@@ -47,28 +47,28 @@ $GLOBALS['__sugar_rootdir'] = dirname(__FILE__);
 /**#@+
  * Core includes.
  */
-require_once $__sugar_rootdir.'/Sugar/Exception.php';
-require_once $__sugar_rootdir.'/Sugar/Ref.php';
-require_once $__sugar_rootdir.'/Sugar/Storage.php';
-require_once $__sugar_rootdir.'/Sugar/Cache.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Exception.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Ref.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache.php';
 /**#@-*/
 
 /**#@+
  * Drivers.
  */
-require_once $__sugar_rootdir.'/Sugar/StorageFile.php';
-require_once $__sugar_rootdir.'/Sugar/CacheFile.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageFile.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheFile.php';
 /**#@-*/
 
 /**
  * Utility routines.
  */
-require_once $__sugar_rootdir.'/Sugar/Util.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Util.php';
 
 /**
  * Sugar Standard Library.
  */
-require_once $__sugar_rootdir.'/Sugar/Stdlib.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Stdlib.php';
 
 /**
  * Sugar core class.
