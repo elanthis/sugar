@@ -282,7 +282,7 @@ class SugarRuntime
 
                 // process return value
                 if ($opcode == 'call_top' && $escape_flag)
-                    self::display($sugar, $sugar->escape($ret));
+                    self::display($sugar, $sugar->escape(self::showValue($ret)));
                 elseif ($opcode == 'call_top')
                     self::display($sugar, self::showValue($ret));
                 else
