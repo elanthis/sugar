@@ -2,7 +2,7 @@
 error_reporting(E_STRICT|E_ALL);
 date_default_timezone_set('UTC');
 
-$start = microtime(true);
+$begin = microtime(true);
 
 $begin_load = microtime(true);
 require '../Sugar.php';
@@ -21,28 +21,18 @@ $begin_create = microtime(true);
 $sugar = new Sugar();
 $end_create = microtime(true);
 
-// setup
-$sugar->set('t', $file);
-$sugar->set('templates', $templates);
-
 // various test functions
 function sugar_function_showhtml(&$sugar, $args) {
 	return $args['html'];
 }
-$sugar->addFunction('showHtml');
 
 function sugar_function_showtext(&$sugar, $args) {
 	return $args['text'];
 }
-$sugar->addFunction('showText');
 
 function random($sugar, $params) {
 	return rand()%1000;
 }
-$sugar->addFunction('random', 'random');
-
-$sugar->addFunction('randomNoCache', 'random', false);
-$sugar->addFunction('showHtmlNoEscape', 'sugar_function_showhtml', true, false);
 
 // test class
 class Test {
@@ -69,12 +59,11 @@ class Test {
 function test_acl($smarty, $object, $method) {
 	return $method != 'deny_acl';
 }
+
+// configure the sugar object
+$begin_config = microtime(true);
 $sugar->method_acl = 'test_acl';
-
-// set source variable is s is on
-$sugar->set('source', $sugar->getSource($file));
-
-// test variables
+$sugar->debug = isset($_GET['debug']) ? (bool)$_GET['debug'] : false;
 $sugar->set('i', 10);
 $sugar->set('test', 'dancing mice');
 $sugar->set('html', '<b>bold</b>');
@@ -82,26 +71,44 @@ $sugar->set('list', array('one','two','three','foo'=>'bar'));
 $sugar->set('obj', new Test());
 $sugar->set('random', rand()%1000);
 $sugar->set('newlines', "This\nhas\nnewlines!");
+$sugar->set('source', $sugar->getSource($file));
+$sugar->set('t', $file);
+$sugar->set('templates', $templates);
+$sugar->addFunction('showHtml');
+$sugar->addFunction('showText');
+$sugar->addFunction('random', 'random');
+$sugar->addFunction('randomNoCache', 'random', false);
+$sugar->addFunction('showHtmlNoEscape', 'sugar_function_showhtml', true, false);
+$end_config = microtime(true);
 
-// fetch testing
+// get some fetches
+$begin_fetch = microtime(true);
 $sugar->set('fetch_string', $sugar->fetchString('1+{% $i %}={% 1 + $i %}'));
 $sugar->set('fetch_file', $sugar->fetch('fetch.file'));
 $sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
-
-// display file
-$sugar->debug = isset($_GET['debug']) ? (bool)$_GET['debug'] : false;
+$end_fetch = microtime(true);
 
 $begin_display = microtime(true);
 $sugar->displayCache('file:'.$file.'.tpl');
-//$sugar->display($file);
 $end_display = microtime(true);
 
 $end = microtime(true);
+
+$load_time = $end_load - $begin_load;
+$create_time = $end_create - $begin_create;
+$display_time = $end_display - $begin_display;
+$config_time = $end_config - $begin_config;
+$fetch_time = $end_fetch - $begin_fetch;
+$total_time = $end - $begin;
+$misc_time = $total_time - $load_time - $create_time - $display_time - $config_time - $fetch_time;
+
 printf('<p style="font-size: small; color: #666; white-space: pre;">');
 printf('debug:       %s<br/>', $sugar->debug?'ON (no caching)':'OFF');
-printf('includes:    %0.6f seconds<br/>', $end_load-$begin_load);
-printf('constructor: %0.6f seconds<br/>', $end_create-$begin_create);
-printf('display():   %0.6f seconds<br/>', $end_display-$begin_display);
-printf('misc.:       %0.6f seconds<br/>', ($end-$start)-($end_load-$begin_load)-($end_create-$begin_create)-($end_display-$begin_display));
-printf('TOTAL:       %0.6f seconds</p>', $end-$start);
+printf('includes:    %0.6f seconds<br/>', $load_time);
+printf('constructor: %0.6f seconds<br/>', $create_time);
+printf('config:      %0.6f seconds<br/>', $config_time);
+printf('fetch:       %0.6f seconds<br/>', $fetch_time);
+printf('display:     %0.6f seconds<br/>', $display_time);
+printf('misc.:       %0.6f seconds<br/>', $misc_time);
+printf('TOTAL:       %0.6f seconds</p>', $total_time);
 ?>
