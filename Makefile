@@ -43,7 +43,9 @@ gendoc:
 	php tools/gen-doc.php > doc/reference.html
 
 manual:
-	xmlto -o doc/manual xhtml sugar-manual.xml
+	[ -d doc/manual ] && rm -fr doc/manual
+	mkdir doc/manual
+	xmlto html doc/sugar-manual.xml -o doc/manual
 
 phpdoc:
 	phpdoc -ti 'Sugar Template Engine' -o HTML:frames:default -f Sugar.php \
