@@ -794,6 +794,9 @@ class Sugar
     /**
      * Compile and display the template source code given as a string.
      *
+     * It is recommended that this method be avoided in real applications,
+     * as it can have drastic performance consequences.
+     *
      * @param string $source Template code to display.
      * @param array $vars Additional vars to set during execution.
      * @return bool true on success.
@@ -824,6 +827,9 @@ class Sugar
     /**
      * Processes template source using {@link Sugar::displayString}, but
      * returns the result as a string instead of displaying it to the user.
+     *
+     * It is recommended that this method be avoided in real applications,
+     * as it can have drastic performance consequences.
      *
      * @param string $Source Template code to process.
      * @param array $vars Additional vars to set during execution.
