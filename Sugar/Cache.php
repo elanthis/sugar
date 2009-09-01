@@ -29,28 +29,28 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    SVN: $Id$
+ * @link       http://php-sugar.net
  */
 
 /**
  * Interface for Sugar cache drivers.  These are used for storing and
  * retrieving bytecode and HTML caches.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    Release: 0.82
+ * @link       http://php-sugar.net
  */
 interface ISugarCache
 {
@@ -58,8 +58,9 @@ interface ISugarCache
      * Returns the timestamp for the given reference, or zero if the file
      * is not in the cache.
      *
-     * @param SugarRef $ref File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
+     * @param SugarRef $ref  File reference to lookup.
+     * @param string   $type Either 'ctpl' or 'chtml'.
+     *
      * @return int Timestamp, or 0 if the file does not exist.
      * @abstract
      */
@@ -68,8 +69,9 @@ interface ISugarCache
     /**
      * Returns the bytecode for the requested reference.
      *
-     * @param SugarRef $ref File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
+     * @param SugarRef $ref  File reference to lookup.
+     * @param string   $type Either 'ctpl' or 'chtml'.
+     *
      * @return array Bytecode, or false if not in the cache.
      * @abstract
      */
@@ -78,9 +80,12 @@ interface ISugarCache
     /**
      * Adds the bytecode to the cache.
      *
-     * @param SugarRef $ref File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
-     * @param array $data Bytecode.
+     * @param SugarRef $ref  File reference to lookup.
+     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param array    $data Bytecode.
+     *
+     * @return bool True on success.
+     *
      * @abstract
      */
     function store(SugarRef $ref, $type, $data);
@@ -88,14 +93,19 @@ interface ISugarCache
     /**
      * Erases the bytecode for the requested reference.
      *
-     * @param SugarRef $ref File reference for the bytecode to erase.
-     * @param string $type Either 'ctpl' or 'chtml'.
+     * @param SugarRef $ref  File reference for the bytecode to erase.
+     * @param string   $type Either 'ctpl' or 'chtml'.
+     *
+     * @return bool True on success.
+     *
      * @abstract
      */
     function erase(SugarRef $ref, $type);
 
     /**
      * Clears all caches the driver is responsible for.
+     *
+     * @return bool True on success.
      *
      * @abstract
      */

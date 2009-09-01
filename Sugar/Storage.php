@@ -28,14 +28,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    SVN: $Id$
+ * @link       http://php-sugar.net
  */
 
 /**
@@ -44,14 +44,14 @@
  * Interface for storage drivers.  These are used to load template from
  * different resources, such as the file system or a database.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    Release: 0.82
+ * @link       http://php-sugar.net
  */
 interface ISugarStorage
 {
@@ -60,6 +60,7 @@ interface ISugarStorage
      * not exist.
      *
      * @param SugarRef $ref Reference to lookup.
+     *
      * @return int Timestamp if it exists, or zero if it cannot be found.
      */
     function stamp(SugarRef $ref);
@@ -68,6 +69,7 @@ interface ISugarStorage
      * Returns the source for the requested reference.
      *
      * @param SugarRef $ref Reference to lookup.
+     *
      * @return string Source of reference.
      */
     function load(SugarRef $ref);
@@ -80,6 +82,7 @@ interface ISugarStorage
      * adequate for many drivers.
      *
      * @param SugarRef $ref Reference to lookup.
+     *
      * @return string User-friendly path to reference.
      */
     function path(SugarRef $ref);

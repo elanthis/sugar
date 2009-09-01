@@ -33,15 +33,15 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Runtime
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
- * @access private
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    SVN: $Id$
+ * @link       http://php-sugar.net
+ * @access     private
  */
 
 /**
@@ -50,15 +50,15 @@
  * This class is a namespace containing static function relevant to 
  * executing Sugar bytecode.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Runtime
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
- * @access private
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    Release: 0.82
+ * @link       http://php-sugar.net
+ * @access     private
  */
 class SugarRuntime
 {
@@ -68,16 +68,18 @@ class SugarRuntime
      * not natively user-visible formats.
      *
      * @param mixed $value Value to convert.
+     *
      * @return string User-visible rendition of the value.
      */
     public static function showValue($value)
     {
-        if (is_bool($value))
+        if (is_bool($value)) {
             return $value?'true':'false';
-        elseif (is_array($value))
+        } elseif (is_array($value)) {
             return SugarUtil::json($value);
-        else
+        } else {
             return $value;
+        }
     }
 
     /**
@@ -86,31 +88,39 @@ class SugarRuntime
      * performs an array_merge() on the arrays.  Otherwise, both values
      * are concatenated with the dot operator.
      *
-     * @param mixed $left The left-hand operand to add.
+     * @param mixed $left  The left-hand operand to add.
      * @param mixed $right The right-hand operand to add.
+     *
      * @return mixed The result of the addition.
      */
     public static function addValues($left, $right)
     {
-        if (is_numeric($left) && is_numeric($right))
+        if (is_numeric($left) && is_numeric($right)) {
             return $left + $right;
-        elseif (is_array($left) && is_array($rihgt))
+        } elseif (is_array($left) && is_array($right)) {
             return array_merge($left, $right);
-        else
+        } else {
             return $left . $right;
+        }
     }
 
     /**
      * Display output, either to the cache handler or to the PHP
      * output stream.
      *
+     * @param Sugar  $sugar  Sugar object.
      * @param string $output Output.
+     *
+     * @return bool True on success.
      */
-    private static function display(Sugar $sugar, $output) {
-        if ($sugar->cacheHandler)
-            $sugar->cacheHandler->addOutput($output);
-        else
+    private static function _display(Sugar $sugar, $output)
+    {
+        if ($sugar->cacheHandler) {
+            return $sugar->cacheHandler->addOutput($output);
+        } else {
             echo $output;
+            return true;
+        }
     }
 
     /**
@@ -119,7 +129,8 @@ class SugarRuntime
      * (null).
      *
      * @param Sugar $sugar Sugar instance.
-     * @param array $code Bytecode to execute.
+     * @param array $code  Bytecode to execute.
+     *
      * @return mixed Last value on stack.
      * @throws SugarRuntimeException when the user has provided code that
      * cannot be executed, such as attempting to call a function that does
@@ -133,15 +144,15 @@ class SugarRuntime
             $opcode = $code[$i];
             switch($opcode) {
             case 'echo':
-                self::display($sugar, $code[++$i]);
+                self::_display($sugar, $code[++$i]);
                 break;
             case 'print':
                 $val = array_pop($stack);
-                self::display($sugar, $sugar->escape(self::showValue($val)));
+                self::_display($sugar, $sugar->escape(self::showValue($val)));
                 break;
             case 'rawprint':
                 $val = array_pop($stack);
-                self::display($sugar, self::showValue($val));
+                self::_display($sugar, self::showValue($val));
                 break;
             case 'push':
                 $str = $code[++$i];
@@ -187,18 +198,20 @@ class SugarRuntime
             case '/':
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
-                if ($v2 == 0)
+                if ($v2 == 0) {
                     $stack []= null;
-                else
+                } else {
                     $stack []= $v1 / $v2;
+                }
                 break;
             case '%':
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
-                if ($v2 == 0)
+                if ($v2 == 0) {
                     $stack []= null;
-                else
+                } else {
                     $stack []= $v1 % $v2;
+                }
                 break;
             case '==':
                 $v2 = array_pop($stack);
@@ -260,16 +273,22 @@ class SugarRuntime
 
                 // lookup function
                 $callable = $sugar->getFunction($func);
-                if (!$callable)
-                    throw new SugarRuntimeException($debug_file, $debug_line, 'unknown function `'.$func.'`');
+                if (!$callable) {
+                    throw new SugarRuntimeException(
+                        $debug_file,
+                        $debug_line,
+                        'unknown function `'.$func.'`'
+                    );
+                }
 
                 // update escape flag based on function default
                 $escape_flag = $escape_flag && $callable['escape'];
 
                 // compile args
                 $params = array();
-                foreach($args as $name=>$pcode)
+                foreach ($args as $name=>$pcode) {
                     $params[$name] = self::execute($sugar, $pcode);
+                }
 
                 // exception net
                 try {
@@ -281,12 +300,13 @@ class SugarRuntime
                 }
 
                 // process return value
-                if ($opcode == 'call_top' && $escape_flag)
-                    self::display($sugar, $sugar->escape(self::showValue($ret)));
-                elseif ($opcode == 'call_top')
-                    self::display($sugar, self::showValue($ret));
-                else
+                if ($opcode == 'call_top' && $escape_flag) {
+                    self::_display($sugar, $sugar->escape(self::showValue($ret)));
+                } elseif ($opcode == 'call_top') {
+                    self::_display($sugar, self::showValue($ret));
+                } else {
                     $stack []= $ret;
+                }
                 break;
             case 'method':
                 $obj = array_pop($stack);
@@ -296,20 +316,47 @@ class SugarRuntime
                 $debug_line = $code[++$i];
 
                 // ensure the object is an object and that the method is a method
-                if (!is_object($obj))
-                    throw new SugarRuntimeException($debug_file, $debug_line, 'method call on non-object type `'.gettype($obj).'`');
+                if (!is_object($obj)) {
+                    throw new SugarRuntimeException(
+                        $debug_file,
+                        $debug_line,
+                        'method call on non-object type `'.gettype($obj).'`'
+                    );
+                }
 
-                if (!method_exists($obj, $func))
-                    throw new SugarRuntimeException($debug_file, $debug_line, 'unknown method `'.$func.'` on type `'.gettype($obj).'`');
+                if (!method_exists($obj, $func)) {
+                    throw new SugarRuntimeException(
+                        $debug_file,
+                        $debug_line,
+                        'unknown method `'.$func.'` on type `'.gettype($obj).'`'
+                    );
+                }
 
                 // compile args
                 $params = array();
-                foreach($args as $pcode)
+                foreach ($args as $pcode) {
                     $params [] = self::execute($sugar, $pcode);
+                }
 
                 // perform ACL checking on the method call
-                if (!is_null($sugar->method_acl) && !call_user_func($sugar->method_acl, $sugar, $obj, $func, $params))
-                    throw new SugarRuntimeException($debug_file, $debug_line, 'method call to `'.$func.'` on type `'.gettype($obj).'` blocked by ACL');
+                if (!is_null($sugar->method_acl)) {
+                    $check = call_user_func(
+                        $sugar->method_acl,
+                        $sugar,
+                        $obj,
+                        $func,
+                        $params
+                    );
+
+                    if (!$check) {
+                        throw new SugarRuntimeException(
+                            $debug_file,
+                            $debug_line,
+                            'method call to `'.$func.'` on type `'.
+                                gettype($obj).'` blocked by ACL'
+                        );
+                    }
+                }
 
                 // exception net
                 try {
@@ -327,13 +374,19 @@ class SugarRuntime
 
                 // lookup function
                 $callable = $sugar->getModifier($name);
-                if (!$callable)
-                    throw new SugarRuntimeException('FIXME', 1, 'unknown modifier `'.$name.'`');
+                if (!$callable) {
+                    throw new SugarRuntimeException(
+                        'FIXME',
+                        1,
+                        'unknown modifier `'.$name.'`'
+                    );
+                }
 
                 // compile args
                 $params = array();
-                foreach($args as $pcode)
+                foreach ($args as $pcode) {
                     $params []= self::execute($sugar, $pcode);
+                }
 
                 // exception net
                 try {
@@ -364,12 +417,15 @@ class SugarRuntime
                 $block = $code[++$i];
 
                 // if step is 0, fail
-                if ($step == 0)
+                if ($step === 0) {
                     throw new SugarException ('step of 0 in range loop');
+                }
 
                 // iterate
                 $index = $lower;
-                while (($step < 0 && $index >= $upper) || ($step > 0 && $index <= $upper)) {
+                while (($step < 0 && $index >= $upper)
+                    || ($step > 0 && $index <= $upper)
+                ) {
                     $sugar->set($name, $index);
                     self::execute($sugar, $block);
                     $index += $step;
@@ -381,9 +437,10 @@ class SugarRuntime
                 $name = $code[++$i];
                 $block = $code[++$i];
                 if (is_array($array) || is_object($array)) {
-                    foreach($array as $k=>$v) {
-                        if ($key)
+                    foreach ($array as $k=>$v) {
+                        if ($key) {
                             $sugar->set($key, $k);
+                        }
                         $sugar->set($name, $v);
                         self::execute($sugar, $block);
                     }
@@ -392,35 +449,41 @@ class SugarRuntime
             case 'while':
                 $test = $code[++$i];
                 $block = $code[++$i];
-                while (self::execute($sugar, $test))
+                while (self::execute($sugar, $test)) {
                     self::execute($sugar, $block);
+                }
                 break;
             case 'nocache':
                 $block = $code[++$i];
-                if ($sugar->cacheHandler)
+                if ($sugar->cacheHandler) {
                     $sugar->cacheHandler->addBlock($block);
-                else
+                } else {
                     self::execute($sugar, $block);
+                }
                 break;
             case '.':
                 $index = array_pop($stack);
                 $obj = array_pop($stack);
-                if (is_array($obj) && isset($obj[$index]))
+                if (is_array($obj) && isset($obj[$index])) {
                     $stack []= $obj[$index];
-                elseif (is_object($obj) && isset($obj->$index))
+                } elseif (is_object($obj) && isset($obj->$index)) {
                     $stack []= $obj->$index;
-                else
+                } else {
                     $stack []= null;
+                }
                 break;
             case 'array':
                 $elems = $code[++$i];
                 $array = array();
-                foreach ($elems as $elem)
+                foreach ($elems as $elem) {
                     $array []= self::execute($sugar, $elem);
+                }
                 $stack []= $array;
                 break;
             default:
-                throw new SugarException ('internal error: unknown opcode `'.$opcode.'`');
+                throw new SugarException(
+                    'internal error: unknown opcode `'.$opcode.'`'
+                );
             }
         }
 

@@ -30,14 +30,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Stdlib
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    SVN: $Id$
+ * @link       http://php-sugar.net
  */
 
 /**#@+
@@ -47,8 +47,9 @@
  * for documentation on the behavior and use of these functions from
  * within templates.
  *
- * @param Sugar $sugar Sugar object.
+ * @param Sugar $sugar  Sugar object.
  * @param array $params Template parameters.
+ *
  * @return mixed
  */
 

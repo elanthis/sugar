@@ -26,14 +26,14 @@
  * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
  * THE SOFTWARE.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    SVN: $Id$
+ * @link       http://php-sugar.net
  */
 
 /**
@@ -44,14 +44,14 @@
  * This class is a namespace containing static function relevant to 
  * executing Sugar bytecode.
  *
- * @category Template
- * @package Sugar
+ * @category   Template
+ * @package    Sugar
  * @subpackage Drivers
- * @author Sean Middleditch <sean@mojodo.com>
- * @copyright 2008,2009 Mojodo, Inc. and contributors
- * @license http://opensource.org/licenses/mit-license.php MIT
- * @version 0.82
- * @link http://php-sugar.net
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    Release: 0.82
+ * @link       http://php-sugar.net
  */
 class SugarStorageFile implements ISugarStorage
 {
@@ -60,7 +60,7 @@ class SugarStorageFile implements ISugarStorage
      *
      * @var Sugar $sugar
      */
-    private $sugar;
+    private $_sugar;
 
     /**
      * Constructor.
@@ -69,7 +69,7 @@ class SugarStorageFile implements ISugarStorage
      */
     public function __construct($sugar)
     {
-        $this->sugar = $sugar;
+        $this->_sugar = $sugar;
     }
 
     /**
@@ -77,30 +77,34 @@ class SugarStorageFile implements ISugarStorage
      * not exist.
      *
      * @param SugarRef $ref Reference to lookup.
+     *
      * @return int Timestamp if it exists, or zero if it cannot be found.
      */
     public function stamp(SugarRef $ref)
     {
-        $path = $this->sugar->templateDir.'/'.$ref->name.'.tpl';
-        if (is_file($path) && is_readable($path))
+        $path = $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
+        if (is_file($path) && is_readable($path)) {
             return filemtime($path);
-        else
+        } else {
             return false;
+        }
     }
 
     /**
      * Returns the source for the requested reference.
      *
      * @param SugarRef $ref Reference to lookup.
+     *
      * @return string Source of reference.
      */
     public function load(SugarRef $ref)
     {
-        $path = $this->sugar->templateDir.'/'.$ref->name.'.tpl';
-        if (is_file($path) && is_readable($path))
+        $path = $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
+        if (is_file($path) && is_readable($path)) {
             return file_get_contents($path);
-        else
+        } else {
             return false;
+        }
     }
 
     /**
@@ -111,11 +115,12 @@ class SugarStorageFile implements ISugarStorage
      * adequate for many drivers.
      *
      * @param SugarRef $ref Reference to lookup.
+     *
      * @return string User-friendly path to reference.
      */
     public function path(SugarRef $ref)
     {
-        return $this->sugar->templateDir.'/'.$ref->name.'.tpl';
+        return $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
