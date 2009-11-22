@@ -59,28 +59,28 @@ class SugarCacheHandler
     /**
      * Sugar reference.
      *
-     * @var Sugar $sugar
+     * @var Sugar
      */
     private $_sugar;
 
     /**
      * Text output.
      *
-     * @var string $output
+     * @var string
      */
     private $_output;
 
     /**
      * Bytecode result.
      *
-     * @var array $bc
+     * @var array
      */
     private $_bc;
 
     /**
      * List of file references used, stored as strings.
      *
-     * @var array $refs
+     * @var array
      */
     private $_refs;
 
