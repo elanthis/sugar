@@ -162,7 +162,8 @@ class SugarCacheHandler
             'type' => 'chtml',
             'version' => Sugar::VERSION,
             'refs' => $this->_refs,
-            'bytecode' => $this->_bc
+            'bytecode' => $this->_bc,
+            'sections' => array()
         );
     }
 }

@@ -568,7 +568,7 @@ class Sugar
             include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
 
             // execute bytecode
-            $rs = SugarRuntime::execute($this, $data['bytecode']);
+            $rs = SugarRuntime::execute($this, $data['bytecode'], $data['sections']);
 
             // cleanup
             array_pop($this->_vars);

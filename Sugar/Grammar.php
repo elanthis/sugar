@@ -103,6 +103,13 @@ class SugarGrammar
     private $_blocks = array();
 
     /**
+     * Sections list.
+     *
+     * @var array
+     */
+    private $_sections = array();
+
+    /**
      * Operator precedence map.
      *
      * @var array
@@ -191,7 +198,7 @@ class SugarGrammar
 
                 // optimize away if operand is data
                 if (self::_isData($right)) {
-                    $this->_output []= array('push', SugarRuntime::execute($this->_sugar, array_merge($right, array($op))));
+                    $this->_output []= array('push', SugarRuntime::execute($this->_sugar, array_merge($right, array($op)), array()));
                 } else {
                     // can't optimize away - emit opcodes
                     $this->_output []= array_merge($right, array($op));
@@ -203,7 +210,7 @@ class SugarGrammar
 
                 // optimize away if both operands are constant data
                 if (self::_isData($left) && self::_isData($right)) {
-                    $this->_output []= array('push', SugarRuntime::execute($this->_sugar, array_merge($left, $right, array($op))));
+                    $this->_output []= array('push', SugarRuntime::execute($this->_sugar, array_merge($left, $right, array($op)), array()));
                 } else {
                     // can't optimize away - emit opcodes
                     $this->_output []= array_merge($left, $right, array($op));
@@ -450,7 +457,7 @@ class SugarGrammar
      *
      * @return array Block's bytecode.
      */
-    public function compileBlock()
+    public function compileBlock($toplevel = false)
     {
         $block = array();
 
@@ -597,6 +604,44 @@ class SugarGrammar
                     $block []= array($escape_flag ? 'print' : 'rawprint');
                 }
 
+            // new section?
+            } elseif ($this->_tokens->accept('section')) {
+                // get section identifier
+                $this->_tokens->expect('id', $name);
+
+                // do not allow nested sections
+                if (!$toplevel) {
+                    throw new SugarParseException(
+                        $this->_tokens->getFile(),
+                        $this->_tokens->getLine(),
+                        'sections can only be defined at the top level'
+                    );
+                }
+
+                // do not allow duplicate sections
+                if (isset($this->_sections[$name])) {
+                    throw new SugarParseException(
+                        $this->_tokens->getFile(),
+                        $this->_tokens->getLine(),
+                        'section `' . $name . '` already defined'
+                    );
+                }
+
+                // parse section body
+                $body = $this->compileBlock();
+
+                // finish up
+                $this->_tokens->expectEndBlock('section');
+                $this->_sections[$name] = $body;
+
+            // insert section
+            } elseif ($this->_tokens->accept('insert')) {
+                // name of section to include
+                $this->_tokens->expect('id', $name);
+
+                // push opcode
+                $block []= array('insert', $name);
+
             // function call?
             } elseif ($this->_tokens->accept('id', $func)) {
                 // get modifier, if present
@@ -664,19 +709,24 @@ class SugarGrammar
             $src, $file, $this->_sugar->delimStart, $this->_sugar->delimEnd
         );
 
-        // build byte-code
-        $bytecode = $this->compileBlock();
+        // build byte-code for content section
+        $bytecode = $this->compileBlock(true);
         $this->_tokens->expect('eof');
-
-        // free tokenizer
-        $this->_tokens = null;
 
         // create meta-block
         $code = array(
             'type' => 'ctpl',
             'version' => Sugar::VERSION,
-            'bytecode' => $bytecode
+            'bytecode' => $bytecode,
+            'sections' => $this->_sections
         );
+
+        // free tokenizer
+        $this->_tokens = null;
+
+        // free sections array
+        $this->_sections = array();
+
         return $code;
     }
 }

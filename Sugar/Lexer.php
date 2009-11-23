@@ -312,7 +312,7 @@ class SugarLexer
             return array('term', $token[0]);
         } elseif (isset($token[4]) && in_array($token[4], array(
             'if', 'elif', 'else', 'end', 'foreach', 'in', 'loop',
-            'while', 'nocache'))
+            'while', 'nocache', 'section', 'insert'))
         ) {
             // keyword or special symbol
             return array($token[4], null);

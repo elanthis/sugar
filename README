@@ -234,6 +234,15 @@ identically:
 
     {% if $value ; 'Value: '; $value; /if %}
 
+Sections of content can be defined inside of templates using the
+section block directive.  Sections are not immediately displayed in
+the output.  A section can be instantiated in the output by using the
+insert directive.
+
+    {% section title %}My Title{% /section %}
+
+		Title is: {% insert title %}
+
 IV.  Sugar API
 -----------------------------------------------------------------------
 
