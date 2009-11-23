@@ -643,7 +643,7 @@ class Sugar
      *
      * @return false|array Cache data on success, false on error.
      */
-    public function loadCache(SugarRef $ref)
+    private function _loadCache(SugarRef $ref)
     {
         // if the file is already loaded, use that
         if (isset($this->_files[$ref->uid])) {
@@ -774,7 +774,7 @@ class Sugar
         }
 
         // if the cache can be loaded, it is valid
-        return $this->loadCache($ref) !== false;
+        return $this->_loadCache($ref) !== false;
     }
 
     /**
@@ -797,7 +797,7 @@ class Sugar
 
         try {
             // if cache exists and is up-to-date and debug is off, load cache
-            $data = $this->loadCache($ref);
+            $data = $this->_loadCache($ref);
             if (!$this->debug && $data !== false) {
                 $this->_execute($data, $vars);
                 return true;
