@@ -1,5 +1,4 @@
-{% $title = 'Variable Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Variable Tests{% /section %}
 
 <p>Expect: dancing mice<br>
 Result: {% $test %}
@@ -15,5 +14,3 @@ Result: {% $i=7 ; $i %}</p>
 
 <p>Expect: 35<br/>
 Result: {% $i*5 %}</p>
-
-{% include tpl= 'footer' %}

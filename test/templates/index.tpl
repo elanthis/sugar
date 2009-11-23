@@ -1,5 +1,4 @@
-{% $title = 'All Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Sugar Template Test Cases{% /section %}
 
 <ul>
 {% foreach $tpl in $templates%}
@@ -8,5 +7,3 @@
 	{% /if %}
 {% /foreach %}
 </ul>
-
-{% include tpl= 'footer' %}

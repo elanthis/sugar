@@ -1,5 +1,4 @@
-{% $title = 'Expression Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Expression Tests{% /section %}
 
 {% $a = 4 %}
 {% $b = 15 %}
@@ -16,5 +15,3 @@ Result: {% 0||0+1 %}
 
 <p>Expect: 9<br>
 Result: {% 3*(-8+$a/2)/-2 %}
-
-{% include tpl= 'footer' %}

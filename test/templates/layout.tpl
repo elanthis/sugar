@@ -1,3 +1,15 @@
+<?xml version="1.0"?>
+<html>
+	<head>
+		<title>{% section title %}NO TITLE{% /section %}{% insert title %}</title>
+	</head>
+	<body style="font-family: monospace;">
+		<p style="font-size: large; font-weight: bold;">{% insert title %}</p>
+		{% if $t != 'index' %}<p><a href="index.php">[index]</a>{% /if %}
+
+		<div id="content">
+			{% insert content %}
+		</div>
 
 		<div id="hide_source">
 			<a href="#" onClick="this.parentNode.style.display='none'; document.getElementById('show_source').style.display='block';">[view source]</a>

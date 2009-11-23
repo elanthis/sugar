@@ -1,5 +1,4 @@
-{% $title = 'Object Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Object Tests{% /section %}
 
 <p>cause exception (will see <i>[[ Exception: fail() called ]]</i> at the top of the page)</p>
 {% $obj->fail() %}
@@ -31,5 +30,3 @@ Result: {% $obj->foo() %}</p>
 <p>Test: 1+$obj->foo()*5<br/>
 Expect: 16<br/>
 Result: {% 1+$obj->foo()*5 %}</p>
-
-{% include tpl= 'footer' %}

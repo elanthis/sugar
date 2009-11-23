@@ -1,5 +1,4 @@
-{% $title = 'Foreach Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Foreach Tests{% /section %}
 
 <p>Test: foreach $i in $list; $i..','; /foreach<br/>
 Expect: one,two,three,bar,<br/>
@@ -12,5 +11,3 @@ Result: {% foreach $k,$i in $list; $k .. '=' .. $i .. ','; /foreach %}</p>
 <p>Test: foreach $i in [1, 'one', 'bar', 42]; $i..','; /foreach<br/>
 Expect: 1,one,bar,42,<br/>
 Result: {% foreach $i in [1, 'one', 'bar', 42]; $i..','; /foreach %}</p>
-
-{% include tpl= 'footer' %}

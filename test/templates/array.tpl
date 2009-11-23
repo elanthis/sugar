@@ -1,5 +1,4 @@
-{% $title = 'Array Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Array Tests{% /section %}
 
 <p>Test: [1,2,3]<br/>
 Expect: [1,2,3]<br>
@@ -64,5 +63,3 @@ Result: {% $c=2 ; $list.$c %}</p>
 <p>Test: $c=2 ; $list[$c]<br/>
 Expect: three<br>
 Result: {% $c=2 ; $list[$c] %}</p>
-
-{% include tpl= 'footer' %}

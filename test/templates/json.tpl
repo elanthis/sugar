@@ -1,5 +1,4 @@
-{% $title = 'json Tests' %}
-{% include tpl= 'header' %}
+{% section title %}json Tests{% /section %}
 
 <p>Test: json value=$test<br>
 Expect: 'dancing mice'<br>
@@ -20,5 +19,3 @@ Result: {% json value=$obj %}
 <p>Test: json value=$newlines<br>
 Expect: 'This\nhas\nnewlines!'<br>
 Result: {% json value=$newlines %}
-
-{% include tpl= 'footer' %}

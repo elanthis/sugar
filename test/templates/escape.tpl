@@ -1,5 +1,4 @@
-{% $title = 'Escape Modifier' %}
-{% include tpl='header' %}
+{% section title %}Escape Modifier{% /section %}
 
 <p>Test: '&lt;test&gt;'<br/>
 Expect: &lt;test&gt;<br/>
@@ -32,5 +31,3 @@ Result: {% '"test"'|escape:'js'|escape %}</p>
 <p>Test: showHtmlNoEscape html='&lt;b&gt;hi&lt;/b&gt;'<br/>
 Expect: <b>hi</b><br/>
 Test: {% showHtmlNoEscape html='<b>hi</b>' %}</p>
-
-{% include tpl='footer' %}

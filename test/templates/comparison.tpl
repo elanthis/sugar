@@ -1,5 +1,4 @@
-{% $title = 'Comparison Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Comparison Tests{% /section %}
 
 <p>Expect: true<br>
 Result: {% 1+1=2 %}
@@ -19,5 +18,3 @@ Result: {% 2>3 %}
 <p>Expect: true<br>
 Result: {% 3>1 %}
 
-
-{% include tpl= 'footer' %}

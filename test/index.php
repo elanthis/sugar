@@ -14,7 +14,12 @@ if (isset($_GET['t']))
 	$file = $_GET['t'];
 
 // scan available templates
-$templates = preg_replace('/[.]tpl$/', '', preg_grep('/^[^.]+[.]tpl$/', scandir('templates')));
+$templates = array();
+foreach (glob('templates/*.tpl') as $tpl) {
+	if ($tpl != 'templates/layout.tpl') {
+		$templates []= preg_replace(';(^templates/|[.]tpl$);', '', $tpl);
+	}
+}
 
 // create parser
 $begin_create = microtime(true);
@@ -89,7 +94,7 @@ $sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
 $end_fetch = microtime(true);
 
 $begin_display = microtime(true);
-$sugar->displayCache('file:'.$file.'.tpl');
+$sugar->displayCache('file:'.$file.'.tpl', null, null, 'file:layout.tpl');
 $end_display = microtime(true);
 
 $end = microtime(true);

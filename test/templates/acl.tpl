@@ -1,8 +1,5 @@
-{% $title = 'Method ACL Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Method ACL Tests{% /section %}
 
 <p>Test: $obj-&gt;deny_acl()<br/>
 Expect: <br/>
 Result: {% $obj->deny_acl() %}</p>
-
-{% include tpl= 'footer' %}

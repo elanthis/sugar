@@ -1,5 +1,4 @@
-{% $title = 'stdlib tests' %}
-{% include tpl= 'header' %}
+{% section title %}stdlib tests{% /section %}
 
 <p>Test: date 'Y-m-d'<br/>
 Expect: <i>current date in YYYY-MM-DD format</i><br/>
@@ -32,5 +31,3 @@ Result: {% urlencode string='this+is%(illegal)in#url' %}</p>
 <p>Test: urlencode string=(array a='foo' bar='baz+gar' boo='1%2 3')<br/>
 Expect: a=foo&amp;bar=baz%2Bgar&amp;boo=1%252+3<br/>
 Result: {% urlencode array=(array a='foo' bar='baz+gar' boo='1%2 3') %}
-
-{% include tpl= 'footer' %}

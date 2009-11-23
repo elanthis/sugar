@@ -1,5 +1,4 @@
-{% $title = 'Function Tests' %}
-{% include tpl= 'header' %}
+{% section title %}Function Tests{% /section %}
 
 <p>Test: showHtml html='&lt;b&gt;bold&lt;/b&gt;'<br>
 Expect: &lt;b&gt;bold&lt;b&gt;<br>
@@ -24,5 +23,3 @@ Result: {% showText text=one %}</p>
 <p>Test: array foo='a string' bar=['an', 'array'] number=42<br>
 Expect: {'foo':'a string','bar':['an','array'],'number':42}<br>
 Result: {% array foo='a string' bar=['an', 'array'] number=42 %}</p>
-
-{% include tpl= 'footer' %}

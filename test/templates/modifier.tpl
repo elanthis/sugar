@@ -1,5 +1,4 @@
-{% $title = 'Modifier Tests' %}
-{% include tpl='header' %}
+{% section title %}Modifier Tests{% /section %}
 
 <p>Test: one str='test'|upper<br/>
 Expect: UnoTEST<br/>
@@ -28,5 +27,3 @@ Result: {% $undefined|default:(one)|upper %}</p>
 <p>Test: '&lt;b&gt;bold&lt;/b&gt;'|raw<br/>
 Expect: <b>bold</b><br/>
 Result: {% '<b>bold</b>'|raw %}</p>
-
-{% include tpl='footer' %}
