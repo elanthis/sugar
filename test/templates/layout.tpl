@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <html>
 	<head>
-		<title>{% section title %}NO TITLE{% /section %}{% insert title %}</title>
+		<title>{% section|insert title %}NO TITLE{% /section %}</title>
 	</head>
 	<body style="font-family: monospace;">
 		<p style="font-size: large; font-weight: bold;">{% insert title %}</p>

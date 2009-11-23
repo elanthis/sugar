@@ -129,7 +129,7 @@ class SugarGrammar
     /**
      * Constructor.
      *
-     * @param Sugar $sugar Sugar instance.
+     * @param Sugar $sugar  Sugar instance.
      */
     public function __construct($sugar)
     {
@@ -606,6 +606,13 @@ class SugarGrammar
 
             // new section?
             } elseif ($this->_tokens->accept('section')) {
+                // check if insertion is requested
+                $add_insert = false;
+                if ($this->_tokens->accept('|')) {
+                    $this->_tokens->expect('insert');
+                    $add_insert = true;
+                }
+ 
                 // get section identifier
                 $this->_tokens->expect('id', $name);
 
@@ -614,7 +621,7 @@ class SugarGrammar
                     throw new SugarParseException(
                         $this->_tokens->getFile(),
                         $this->_tokens->getLine(),
-                        'sections can only be defined at the top level'
+                        'sections cannot be defined inside any other block'
                     );
                 }
 
@@ -629,10 +636,15 @@ class SugarGrammar
 
                 // parse section body
                 $body = $this->compileBlock();
-
-                // finish up
                 $this->_tokens->expectEndBlock('section');
+
+                // store section
                 $this->_sections[$name] = $body;
+
+                // add insert instruction if requested
+                if ($add_insert) {
+                    $block []= array('insert', $name);
+                }
 
             // insert section
             } elseif ($this->_tokens->accept('insert')) {

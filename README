@@ -243,6 +243,11 @@ insert directive.
 
 		Title is: {% insert title %}
 
+A section can be defined and inserted at the same time by using the
+|insert modifier to the section:
+
+    <title><% section|insert title %>My Title<% /section %></title>
+
 Templates can also be nested inside of another template, called a
 layout template.  This functionality is the primary use of sections.
 The layout template can define one or more sections which are overriden
