@@ -243,6 +243,12 @@ insert directive.
 
 		Title is: {% insert title %}
 
+Templates can also be nested inside of another template, called a
+layout template.  This functionality is the primary use of sections.
+The layout template can define one or more sections which are overriden
+by content in the main template.  Layouts can use the default 'content'
+section to insert the body of the main template.
+
 IV.  Sugar API
 -----------------------------------------------------------------------
 
@@ -342,6 +348,19 @@ Sugar::display().
 
 	$sugar->display('myTemplate'); // loads templates/myTemplate.tpl
 	$sugar->displayString('Var = {% $var %}');
+
+Extra variables can be passed to a template by using the second
+parameter to the Sugar::display(), Sugar::displayString(),
+Sugar::fetch(), or Sugar::fetchString(), or by using the third
+parameter to the Sugar::displayCache() or Sugar::fetchCache()
+methods.  This parameter is an associative array of name/value
+pairs.
+
+Layout templates can be specified by passing the template name as
+the third parameter to the Sugar::display(), Sugar::displayString(),
+Sugar::fetch(), or Sugar::fetchString(), or by using the fourth
+parameter to the Sugar::displayCache() or Sugar::fetchCache()
+methods.
 
 By default, compiled templates and caches are stored in
 templates/cache/.

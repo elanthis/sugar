@@ -91,6 +91,13 @@ class SugarRef
     public $cacheId;
 
     /**
+     * Layout wrapper.
+     *
+     * @var string $layout
+     */
+    public $layout;
+
+    /**
      * Unique identifier.
      *
      * @var string $uid
@@ -108,7 +115,8 @@ class SugarRef
      *
      * @return SugarRef
      */
-    static function create($path, Sugar $sugar, $cacheId = null)
+    static function create($path, Sugar $sugar, $cacheId = null,
+    $layout = null)
     {
         $storage = $sugar->defaultStorage;
         $name = $path;
@@ -141,7 +149,7 @@ class SugarRef
 
         // return new reg
         $drv = $sugar->storage[$storage];
-        return new SugarRef($path, $storage, $drv, $name, $cacheId);
+        return new SugarRef($path, $storage, $drv, $name, $cacheId, $layout);
     }
 
     /**
@@ -153,15 +161,17 @@ class SugarRef
      * @param ISugarStorage $storage     Storage driver.
      * @param string        $name        The file name of the path.
      * @param string        $cacheId     The cache ID for the reference.
+     * @param string        $layout      Template used for layout wrapper.
      */
     private function __construct($full, $storageName, ISugarStorage $storage,
-    $name, $cacheId) {
+    $name, $cacheId, $layout) {
         $this->full = $full;
         $this->storageName = $storageName;
         $this->storage = $storage;
         $this->name = $name;
         $this->cacheId = $cacheId;
-        $this->uid = $full.';'.$cacheId;
+        $this->layout = $layout;
+        $this->uid = $full.';'.$layout.';'.$cacheId;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

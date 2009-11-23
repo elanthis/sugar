@@ -581,17 +581,14 @@ class Sugar
     }
 
     /**
-     * Load the requested template, compile it if necessary, and then
-     * execute the bytecode.
+     * Load the requested template and compile it if necessary.
      *
-     * @param SugarRed $ref  The template to load.
-     * @param array    $vars Additional vars to set during execution.
+     * @param SugarRef $ref    The template to load.
      *
-     * @return mixed Return value of bytecode.
+     * @return mixed Compiled bytecode information.
      * @throws SugarApiException when the template cannot be found.
      */
-    private function _loadExecute(SugarRef $ref, $vars)
-    {
+    private function _loadCompile(SugarRef $ref) {
         // check template exists, and remember stamp
         $sstamp = $ref->storage->stamp($ref);
         if ($sstamp === false) {
@@ -609,7 +606,7 @@ class Sugar
             $data = $this->cache->load($ref, self::CACHE_TPL);
             // if version checks out, run it
             if ($data !== false && $data['version'] === self::VERSION) {
-                return $this->_execute($data, $vars);
+                return $data;
             }
         }
 
@@ -630,8 +627,47 @@ class Sugar
         // store
         $this->cache->store($ref, self::CACHE_TPL, $data);
 
-        // execute
-        return $this->_execute($data, $vars);
+        return $data;
+    }
+
+    /**
+     * Load the requested template, compile it if necessary, and then
+     * execute the bytecode.
+     *
+     * @param SugarRef $ref    The template to load.
+     * @param array    $vars   Additional vars to set during execution.
+     * @param string   $layout Template to use as a layout wrapper.
+     *
+     * @return mixed Return value of bytecode.
+     * @throws SugarApiException when the template cannot be found.
+     */
+    private function _loadExecute(SugarRef $ref, $vars, $layout)
+    {
+        // load compiled template
+        $data = $this->_loadCompile($ref);
+
+        // if we have no layout, execute the template as-is
+        if (!$layout) {
+            return $this->_execute($data, $vars);
+        }
+
+        // load compiled layout
+        $layoutRef = SugarRef::Create($layout, $this, $ref->cacheId, null);
+        $layoutData = $this->_loadCompile($layoutRef);
+
+        // merge layout with page template
+        $merged = $layoutData;
+        $merged['sections'] = array_merge($layoutData['sections'], $data['sections']);
+
+        // set page main bytecode as content section if and only if
+        // the page template did not define its own explicit content
+        // section.
+        if (!isset($data['sections']['content'])) {
+            $merged['sections']['content'] = $data['bytecode'];
+        }
+
+        // execute merged template
+        return $this->_execute($merged, $vars);
     }
     
     /**
@@ -698,17 +734,18 @@ class Sugar
     /**
      * Load, compile, and display the requested template.
      *
-     * @param string $file Template to display.
-     * @param array  $vars Additional vars to set during execution.
+     * @param string $file   Template to display.
+     * @param array  $vars   Additional vars to set during execution.
+     * @Param string $layout Template to use for layout wrapper.
      *
      * @return bool true on success.
      * @throws SugarApiException when the template name is invalid or
      * the template cannot be found.
      */
-    public function display($file, $vars = null)
+    public function display($file, $vars = null, $layout = null)
     {
         // validate name
-        $ref = SugarRef::create($file, $this);
+        $ref = SugarRef::create($file, $this, null, $layout);
         if ($ref === false) {
             throw new SugarApiException('illegal template name: '.$file);
         }
@@ -720,7 +757,7 @@ class Sugar
 
         // load and run
         try {
-            $this->_loadExecute($ref, $vars);
+            $this->_loadExecute($ref, $vars, $layout);
             return true;
         } catch (SugarException $e) {
             $this->handleError($e);
@@ -734,15 +771,16 @@ class Sugar
      * Displays a template using {@link Sugar::display}, but returns
      * the result as a string instead of displaying it to the user.
      *
-     * @param string $file Template to process.
-     * @param array  $vars Additional vars to set during execution.
+     * @param string $file   Template to process.
+     * @param array  $vars   Additional vars to set during execution.
+     * @param string $layout Template to use for layout wrapper.
      *
      * @return string Template output.
      */
-    public function fetch($file, $vars = null)
+    public function fetch($file, $vars = null, $layout = null)
     {
         ob_start();
-        $this->display($file, $vars);
+        $this->display($file, $vars, $layout);
         $result = ob_get_contents();
         ob_end_clean();
         return $result;
@@ -756,11 +794,12 @@ class Sugar
      * @param string $file    File to check.
      * @param string $cacheId Optional cache identifier.
      * @param array  $vars    Additional vars to set during execution.
+     * @param string $layout  Template to use for layout wrapper.
      *
      * @return bool True if a valid HTML cache exists for the file.
      * @throws SugarApiException when the template name is invalid.
      */
-    function isCached($file, $cacheId = null, $vars = null)
+    function isCached($file, $cacheId = null, $vars = null, $layout = null)
     {
         // debug always disabled caching
         if ($this->debug) {
@@ -768,7 +807,7 @@ class Sugar
         }
 
         // validate name
-        $ref = SugarRef::create($file, $this, $cacheId);
+        $ref = SugarRef::create($file, $this, $cacheId, $layout);
         if ($ref === false) {
             throw new SugarApiException('illegal template name: '.$file);
         }
@@ -783,14 +822,15 @@ class Sugar
      * @param string $file    Template to display.
      * @param string $cacheId Optinal cache identifier.
      * @param array  $vars    Additional vars to set during execution.
+     * @param string $layout  Template to use for layout wrapper.
      *
      * @return bool true on success.
      * @throws SugarApiException when the template name is invalid.
      */
-    function displayCache($file, $cacheId = null, $vars = null)
+    function displayCache($file, $cacheId = null, $vars = null, $layout = null)
     {
         // validate name
-        $ref = SugarRef::create($file, $this, $cacheId);
+        $ref = SugarRef::create($file, $this, $cacheId, $layout);
         if ($ref === false) {
             throw new SugarApiException('illegal template name: '.$file);
         }
@@ -803,9 +843,10 @@ class Sugar
                 return true;
             }
 
-            // create cache handler if necessary
+            // if we are running inside an existing cache handler,
+            // execute and add to current cache
             if ($this->cacheHandler) {
-                $this->_loadExecute($ref, $vars);
+                $this->_loadExecute($ref, $vars, $layout);
                 return true;
             }
 
@@ -816,7 +857,7 @@ class Sugar
 
             // create cache
             $this->cacheHandler = new SugarCacheHandler($this);
-            $this->_loadExecute($ref, $vars);
+            $this->_loadExecute($ref, $vars, $layout);
             $cache = $this->cacheHandler->getOutput();
             $this->cacheHandler = null;
 
@@ -839,13 +880,15 @@ class Sugar
      * @param string $file    Template to process.
      * @param string $cacheId Optional cache identifier.
      * @param array  $vars    Additional vars to set during execution.
+     * @param string $layout  Template to use for layout wrapper.
      *
      * @return string Template output.
      */
-    public function fetchCache($file, $cacheId = null, $vars = null)
+    public function fetchCache($file, $cacheId = null, $vars = null,
+    $layout = null)
     {
         ob_start();
-        $this->displayCache($file, $cacheId, $vars);
+        $this->displayCache($file, $cacheId, $vars, $layout);
         $result = ob_get_contents();
         ob_end_clean();
         return $result;
