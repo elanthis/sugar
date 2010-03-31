@@ -16,7 +16,7 @@ if (isset($_GET['t']))
 // scan available templates
 $templates = array();
 foreach (glob('templates/*.tpl') as $tpl) {
-	if ($tpl != 'templates/layout.tpl') {
+	if ($tpl != 'templates/layout.tpl' && $tpl != 'templates/fetch.file.tpl') {
 		$templates []= preg_replace(';(^templates/|[.]tpl$);', '', $tpl);
 	}
 }
