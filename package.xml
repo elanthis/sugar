@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<package packagerversion="1.8.0" version="2.0" xmlns="http://pear.php.net/dtd/package-2.0" xmlns:tasks="http://pear.php.net/dtd/tasks-1.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://pear.php.net/dtd/tasks-1.0
+    http://pear.php.net/dtd/tasks-1.0.xsd
+    http://pear.php.net/dtd/package-2.0
+    http://pear.php.net/dtd/package-2.0.xsd">
+ <name>Sugar</name>
+ <channel>pear.php-sugar.net</channel>
+ <summary>Sugar is a powerful and secure template engine.</summary>
+ <description>
+	Sugar is a powerful and secure template engine.
+ </description>
+ <lead>
+  <name>Sean Middleditch</name>
+  <user>sean</user>
+  <email>sean@php-sugar.net</email>
+  <active>yes</active>
+ </lead>
+ <date>2010-04-10</date>
+ <time>16:00:00</time>
+ <version>
+  <release>0.82</release>
+  <api>0.82</api>
+ </version>
+ <stability>
+  <release>alpha</release>
+  <api>alpha</api>
+ </stability>
+ <license uri="http://www.opensource.org/licenses/mit-license.php">MIT</license>
+ <notes>-</notes>
+ <contents>
+   <dir name="/">
+    <file name="LICENSE" role="doc" />
+    <file name="README" role="doc" />
+    <file name="NEWS" role="doc" />
+    <file name="Sugar.php" role="php" />
+	  <dir name="Sugar">
+		</dir>
+     <file name="Sugar/CacheFile.php" role="php"/>
+     <file name="Sugar/CacheHandler.php" role="php"/>
+     <file name="Sugar/Cache.php" role="php"/>
+     <file name="Sugar/Exception.php" role="php"/>
+     <file name="Sugar/Grammar.php" role="php"/>
+     <file name="Sugar/Lexer.php" role="php"/>
+     <file name="Sugar/Ref.php" role="php"/>
+     <file name="Sugar/Runtime.php" role="php"/>
+     <file name="Sugar/Stdlib.php" role="php"/>
+     <file name="Sugar/StorageFile.php" role="php"/>
+     <file name="Sugar/Storage.php" role="php"/>
+     <file name="Sugar/Util.php" role="php"/>
+   </dir>
+ </contents>
+ <dependencies>
+  <required>
+   <php>
+    <min>5.0.0</min>
+   </php>
+   <pearinstaller>
+    <min>1.4.0</min>
+   </pearinstaller>
+  </required>
+ </dependencies>
+ <phprelease />
+</package>
