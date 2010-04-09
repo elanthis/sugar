@@ -1,4 +1,4 @@
-VERSION := 0.82
+VERSION := 0.83
 
 DESTDIR := /usr/share/php
 

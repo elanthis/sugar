@@ -59,7 +59,7 @@
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
- * @version    Release: 0.82
+ * @version    Release: 0.83
  * @link       http://php-sugar.net
  * @access     private
  */
