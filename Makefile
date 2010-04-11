@@ -15,8 +15,8 @@ dist:
 	mkdir sugar-$(VERSION)/
 	cp Sugar.php README LICENSE NEWS Makefile sugar-$(VERSION)/
 
-	mkdir sugar-$(VERSION)/tools/
-	cp tools/gen-doc.php tools/gen-doc.tpl sugar-$(VERSION)/tools/
+	mkdir sugar-$(VERSION)/bin/
+	cp bin/sugardoc sugar-$(VERSION)/bin/
 
 	mkdir sugar-$(VERSION)/doc/
 	cp doc/sugardoc.css doc/sugar-manual.xml sugar-$(VERSION)/doc/
