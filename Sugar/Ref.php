@@ -30,7 +30,7 @@
  * @category   Template
  * @package    Sugar
  * @subpackage Drivers
- * @author     Sean Middleditch <sean@awesomeplay.com>
+ * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    SVN: $Id$

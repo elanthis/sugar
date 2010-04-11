@@ -27,7 +27,7 @@
  * THE SOFTWARE.
  *
  * @package Sugar
- * @author Sean Middleditch <sean@awesomeplay.com>
+ * @author Sean Middleditch <sean@mojodo.com>
  * @copyright 2008 AwesomePlay Productions, Inc. and contributors
  * @license http://opensource.org/licenses/mit-license.php MIT
  */

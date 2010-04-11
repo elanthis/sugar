@@ -31,7 +31,7 @@
  * @category   Template
  * @package    Sugar
  * @subpackage Compiler
- * @author     Sean Middleditch <sean@awesomeplay.com>
+ * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 AwesomePlay Productions, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    SVN: $Id$
