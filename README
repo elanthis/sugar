@@ -1,11 +1,12 @@
 Sugar (PHP Template Engine)
-=======================================================================
-Copyright (C) 2008,2009  Mojodo, Inc.
-Sean Middleditch <sean@awesomeplay.com>
-See LICENSE for copying and distribution details.
+===========================
 
-I.   About Sugar
------------------------------------------------------------------------
+* Copyright &copy; 2008,2009,2010  Mojodo, Inc.
+* Sean Middleditch <sean@awesomeplay.com>
+* See [LICENSE](LICENSE) for copying and distribution details.
+
+About Sugar
+-----------
 
 Sugar is a new template engine, inspired by the author's experience
 with the Smarty template engine.  Sugar aims to provide a simple
@@ -17,8 +18,8 @@ runtime, allowing for both quite flexible language features and for
 powerful expressions that a regular-expression engine like Smarty is
 not capable of providing.
 
-II.  Installation
------------------------------------------------------------------------
+Installation
+-------------
 
 To install Sugar, simply copy the Sugar.php file into the PHP
 include path.  Then copy the Sugar/ folder and its contents into the
@@ -31,8 +32,8 @@ by the application (e.g. the Apache user) in order to work.  The
 default cache directory is ./templates/cache/ which also must be
 writable to work.
 
-III. Basic Syntax
------------------------------------------------------------------------
+Basic Syntax
+------------
 
 All Sugar code is put with the tags {% and %}.  For example:
 
@@ -254,8 +255,8 @@ The layout template can define one or more sections which are overriden
 by content in the main template.  Layouts can use the default 'content'
 section to insert the body of the main template.
 
-IV.  Sugar API
------------------------------------------------------------------------
+Sugar API
+---------
 
 The Sugar engine is controlled mainly by the Sugar class.  To use
 Sugar, first include the Sugar.php file and instantiate an object
@@ -409,8 +410,8 @@ operations when the results are already cached.
       $sugar->set('results', $db->queryData());
 	$sugar->displayCache('life', 42);
 
-V.   Extending Sugar
------------------------------------------------------------------------
+Extending Sugar
+---------------
 
 Sugar offers two core means of extending its functionality.  First,
 users may register new functions to be used by templates.  Second,
