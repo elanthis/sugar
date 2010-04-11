@@ -383,7 +383,7 @@ class SugarGrammar
 
                 // if not pure data, unmark data flag
                 if ($data && !$this->_isData($elem)) {
-                    $data = $false;
+                    $data = false;
                 }
 
                 // if we have a ], end
