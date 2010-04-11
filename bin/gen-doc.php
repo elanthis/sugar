@@ -1,0 +1,365 @@
+#!/usr/bin/php
+<?php
+/**
+ * Sugar (PHP Template Engine)
+ *
+ * Copyright (c) 2008  AwesomePlay Productions, Inc. and
+ * contributors.  All rights reserved.
+ *
+ * LICENSE:
+ * 
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ * 
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ * 
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ *
+ * @package Sugar
+ * @author Sean Middleditch <sean@mojodo.com>
+ * @copyright 2008 AwesomePlay Productions, Inc. and contributors
+ * @license http://opensource.org/licenses/mit-license.php MIT
+ */
+
+// read in StdLib.php
+$data = file_get_contents(dirname(__FILE__).'/../Sugar/Stdlib.php');
+if (!$data)
+	die('File not found');
+
+$template = <<<EOT
+	{% if !\$light %}
+	<html><head><title>Sugar Reference</title>
+	<link rel="stylesheet" type="text/css" href="sugardoc.css" />
+	</head><body>
+	{% end %}
+
+	<table width="100%"><tr><td valign="top">
+
+		<a name="top"></a>
+
+		<a href="#functions">Functions</a><br/>
+		<a href="#modifiers">Modifiers</a><br/>
+		<br/>
+
+		<a name="functions"></a>
+		<b>Functions</b>
+		<ul>
+			{% foreach \$block in \$functions %}
+			<li><a href="#sugardoc_block_{% \$block.name %}">{% \$block.name %}</a></li>
+			{% end %}
+		</ul>
+
+		<a name="modifiers"></a>
+		<b>Modifiers</b>
+		<ul>
+			{% foreach \$block in \$modifiers %}
+			<li><a href="#sugardoc_block_{% \$block.name %}">{% \$block.name %}</a></li>
+			{% end %}
+		</ul>
+
+	</td><td>
+
+		{% foreach \$block in \$functions %}
+		<div class="sugardoc_block sugardoc_function"><a name="sugardoc_block_{% \$block.name %}"></a>
+			<div class="sugardoc_name"><div style="float:right;font-size:50%;font-weight:normal;"><a href="#top">[top]</a></div>{% \$block.name %}</div>
+			<div class="sugardoc_body">
+				{% if \$block.alias %}
+					<div class="sugardoc_heading">Also Known As:</div>
+					<div class="sugardoc_alias">
+						{% join separator=', ' array=\$block.alias %}
+					</div>
+				{% end %}
+				<div class="sugardoc_heading">Call Prototype:</div>
+				<div class="sugardoc_call">
+					{% foreach \$name in merge one=[\$block.name] two=\$block.alias %}
+						<span class="sugardoc_call_name">{% \$name %}</span>
+						{% foreach \$param in \$block.param %}
+							{% if \$param.optional ; '[' ; end %}
+							<span class="sugardoc_call_param">{% \$param.name %}</span>=<span class="sugardoc_call_type">{% \$param.type %}</span>
+							{% if \$param.optional ; ']' ; end %}
+						{% end %}
+						{% if \$block.varargs %}
+							[ <span class="sugardoc_call_type">{% \$block.varargs %}</span> ... ]
+						{% end %}
+						<br />
+					{% end %}
+				</div>
+				{% if \$block.param %}
+				<div class="sugardoc_heading">Parameters:</div>
+				<div class="sugardoc_params">
+					{% foreach \$param in \$block.param %}
+						<div class="sugardoc_heading">{% \$param.name %}</div>
+						<div class="sugardoc_doc">{% \$param.doc %}</div>
+					{% end %}
+				</div>
+				{% end %}
+				{% if \$block.return %}
+				<div class="sugardoc_heading">Return Value:</div>
+				<div class="sugardoc_return">
+					return &rarr; <span class="sugardoc_call_type">{% \$block.return.type %}</span><br /><br />
+					{% \$block.return.doc %}
+				</div>
+				{% end %}
+				<div class="sugardoc_heading">Description:</div>
+				<div class="sugardoc_doc">
+					{%
+					// mode: r for regular text, c for code blocks
+					\$lmode = 'r';
+					// set to true after encountering an empty line
+					\$empty = false;
+					// iterator over each line
+					foreach \$line in \$block.doc;
+						// if we have an empty line, remember that,
+						// but don't display anything just yet
+						if \$line == '';
+							\$empty = true;
+						// this line is part of a code block
+						elif (substr string=\$line length=2) == '  ';
+							// if we're not currently in code block mode, switch
+							if \$lmode != 'c';
+								\$lmode = 'c';
+								// clear any blank lines
+								\$empty = false;
+								// start dic
+								'<div class="sugardoc_code">'|raw;
+							// already in code mode
+							else;
+								// handle empty line
+								if \$empty;
+									\$empty = false;
+									'<br/>'|raw;
+								end;
+							end;
+							// display line
+							\$line; '<br />'|raw;
+						// regular line
+						else;
+							// if we're in code block mode, end it
+							if \$lmode == 'c';
+								\$lmode = 'r';
+								// clear empty line flag
+								\$empty = false;
+								// end the code block
+								'</div>'|raw;
+							// not in code block mode
+							else;
+								// handle empty line
+								if \$empty;
+									\$empty = false;
+									'<br/><br/>'|raw;
+								end;
+							end;
+							// display the line
+							\$line;
+							// put a space between end of this line and beginning of next
+							' ';
+						end;
+					end;
+					// terminate code block if we're in it
+					if \$lmode == 'c';
+						'</div>'|raw;
+					end;
+					%}
+				</div>
+			</div>
+		</div>
+		{% end %}
+
+		{% foreach \$block in \$modifiers %}
+		<div class="sugardoc_block sugardoc_modifier"><a name="sugardoc_block_{% \$block.name %}"></a>
+			<div class="sugardoc_name"><div style="float:right;font-size:50%;font-weight:normal;"><a href="#top">[top]</a></div>{% \$block.name %}</div>
+			<div class="sugardoc_body">
+				{% if \$block.alias %}
+					<div class="sugardoc_heading">Also Known As:</div>
+					<div class="sugardoc_alias">
+						{% join separator=', ' array=\$block.alias %}
+					</div>
+				{% end %}
+				<div class="sugardoc_heading">Call Prototype:</div>
+				<div class="sugardoc_call">
+					{% foreach \$name in merge one=[\$block.name] two=\$block.alias %}
+						<span class="sugardoc_call_name">| {% \$name %}</span>
+						{% foreach \$param in \$block.param %}
+							: <span class="sugardoc_call_type">{% \$param.type %}</span>
+						{% end %}
+						{% if \$block.varargs %}
+							: <span class="sugardoc_call_type">{% \$block.varargs %}</span>...
+						{% end %}
+						<br />
+					{% end %}
+				</div>
+				{% if \$block.param %}
+				<div class="sugardoc_heading">Parameters:</div>
+				<div class="sugardoc_params">
+					{% foreach \$param in \$block.param %}
+						<div class="sugardoc_heading">{% \$param.type %}</div>
+						<div class="sugardoc_doc">{% \$param.doc %}</div>
+					{% end %}
+				</div>
+				{% end %}
+				<div class="sugardoc_heading">Description:</div>
+				<div class="sugardoc_doc">
+					{%
+					// mode: r for regular text, c for code blocks
+					\$lmode = 'r';
+					// set to true after encountering an empty line
+					\$empty = false;
+					// iterator over each line
+					foreach \$line in \$block.doc;
+						// if we have an empty line, remember that,
+						// but don't display anything just yet
+						if \$line == '';
+							\$empty = true;
+						// this line is part of a code block
+						elif (substr string=\$line length=2) == '  ';
+							// if we're not currently in code block mode, switch
+							if \$lmode != 'c';
+								\$lmode = 'c';
+								// clear any blank lines
+								\$empty = false;
+								// start dic
+								'<div class="sugardoc_code">'|raw;
+							// already in code mode
+							else;
+								// handle empty line
+								if \$empty;
+									\$empty = false;
+									'<br/>'|raw;
+								end;
+							end;
+							// display line
+							\$line; '<br />'|raw;
+						// regular line
+						else;
+							// if we're in code block mode, end it
+							if \$lmode == 'c';
+								\$lmode = 'r';
+								// clear empty line flag
+								\$empty = false;
+								// end the code block
+								'</div>'|raw;
+							// not in code block mode
+							else;
+								// handle empty line
+								if \$empty;
+									\$empty = false;
+									'<br/><br/>'|raw;
+								end;
+							end;
+							// display the line
+							\$line;
+							// put a space between end of this line and beginning of next
+							' ';
+						end;
+					end;
+					// terminate code block if we're in it
+					if \$lmode == 'c';
+						'</div>'|raw;
+					end;
+					%}
+				</div>
+			</div>
+		</div>
+		{% end %}
+
+	</td></tr></table>
+
+	{% if !\$light %}
+	</body></html>
+	{% end %}
+EOT;
+
+$functions = array();
+$modifiers = array();
+
+// read in doc blocks
+$block = array('group' => '', 'name' => '');
+foreach(explode("\n", $data) as $lno=>$line) {
+	$file = 'Sugar/Stdlib.php:'.($lno+1);
+
+	// ensure we've got a valid doc line
+	if (!preg_match('/\*\+/', $line))
+		continue;
+
+	// new block?
+	if (preg_match('/\*\+\+/', $line)) {
+		if ($block) {
+			if (isset($block['modifier']))
+				$modifiers[$block['group'].'.'.$block['name']] = $block;
+			else
+				$functions[$block['group'].'.'.$block['name']] = $block;
+			$block = array('group' => '', 'name' => '');
+		}
+		continue;
+	}
+
+	// get line data
+	$line = preg_replace('/.*\*\+\s?(.*?)\s*$/', '\1', $line);
+	
+	// attribute?
+	if (preg_match('/@(\w+)\s*(.*)$/', $line, $ar)) {
+		switch ($ar[1]) {
+		case 'name':
+			$block['name'] = $ar[2];
+			break;
+		case 'group':
+			$block['group'] = $ar[2];
+			break;
+		case 'alias':
+			$block['alias'] []= $ar[2];
+			break;
+		case 'param':
+			if (!preg_match('/([\w|]+)(\??)\s+\$(\w+)\s+(.*)/', $ar[2], $ar))
+				die("$file: Malformed param attribute");
+			$block['param'] []= array('type' => $ar[1], 'optional' => ($ar[2] == '?' ? true : false), 'name' => $ar[3], 'doc' => $ar[4]);
+			break;
+		case 'return':
+			if (!preg_match('/([\w|]+)\s+(.*)/', $ar[2], $ar))
+				die("$file: Malformed return attribute");
+			$block['return'] = array('type' => $ar[1], 'doc' => $ar[2]);
+			break;
+		case 'varargs':
+			$block['varargs'] = $ar[2];
+			break;
+		case 'modifier':
+			$block['modifier'] = true;
+			break;
+		default:
+			die("$file: Unknown attribute {$ar[1]}");
+		}
+	} else {
+		if (isset($block['doc']) || $line)
+			$block['doc'] []= $line;
+	}
+}
+if ($block) {
+	if (isset($block['modifier']))
+		$modifiers[$block['group'].'.'.$block['name']] = $block;
+	else
+		$functions[$block['group'].'.'.$block['name']] = $block;
+}
+
+// sort
+ksort($modifiers);
+ksort($functions);
+
+// display
+require_once dirname(__FILE__).'/../Sugar.php';
+$sugar = new Sugar();
+$sugar->cacheDir = dirname(__FILE__).'/../test/templates/cache';
+$sugar->templateDir = dirname(__FILE__);
+$sugar->set('modifiers', $modifiers);
+$sugar->set('functions', $functions);
+$sugar->set('light', isset($_GET['light']) || in_array('-light', (array)$_SERVER['argv']));
+$sugar->fetchString($template);
