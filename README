@@ -414,6 +414,15 @@ operations when the results are already cached.
       $sugar->set('results', $db->queryData());
     $sugar->displayCache('life', 42);
 
+A template can be removed from the cache by using the `Sugar::uncache()`
+method.  The same parameters that are passed to `Sugar::isCached()`
+must be passed to `Sugar::uncache()` to remove the specific cache
+entry desired.
+
+    $sugar->uncache('template');
+
+All cache entries can be cleared using `Sugar::clearCache()`.
+
 Extending Sugar
 ---------------
 

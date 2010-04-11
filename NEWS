@@ -3,6 +3,8 @@
 ==================
 
 + Include PEAR package.xml file.
++ Added uncache() and clearCache() methods.
++ Renamed documentation tool to sugardoc.
 
 ==================
 ** Version 0.82 **

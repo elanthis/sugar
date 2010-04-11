@@ -817,6 +817,35 @@ class Sugar
     }
 
     /**
+     * Erases the HTML cache for a template if it exists.
+     *
+     * @param string $file    File to check.
+     * @param string $cacheId Optional cache identifier.
+     * @param string $layout  Optional layout template.
+     *
+     * @throws SugarApiException when the template name is invalid.
+     */
+    function uncache($file, $cacheId = null, $layout = null)
+    {
+        // validate name
+        $ref = SugarRef::create($file, $this, $cacheId, $layout);
+        if ($ref === false) {
+            throw new SugarApiException('illegal template name: '.$file);
+        }
+
+        // erase the cache entry
+        $this->cache->erase($ref, self::CACHE_HTML);
+    }
+
+    /**
+     * Clear all HTML cache files.
+     */
+    function clearCache()
+    {
+        $this->cache->clear();
+    }
+
+    /**
      * Load, compile, and display a template, caching the result.
      *
      * @param string $file    Template to display.
