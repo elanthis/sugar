@@ -1,9 +1,9 @@
 <?php
 /**
- * File-based cache driver for Sugar
+ * Memcache-based cache driver for Sugar
  *
- * This class implements a file-based cache driver, which loads and saves
- * cache files in the $sugar->cacheDir directory.
+ * This class implements a memcache-based cache driver, which loads and saves
+ * cache files to a memcached server pool.
  *
  * PHP version 5
  *
@@ -31,17 +31,16 @@
  * @package    Sugar
  * @subpackage Drivers
  * @author     Sean Middleditch <sean@mojodo.com>
- * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
- * @version    SVN: $Id$
+ * @version    SVN: $Id: Memcache.php 305 2010-04-12 04:01:03Z Sean.Middleditch $
  * @link       http://php-sugar.net
  */
 
 /**
- * File-based cache driver.
+ * Memcache-based cache driver.
  *
- * Uses {@link Sugar::$cacheDir} and {$link Sugar::$cacheTime} to control
- * behavior.
+ * Uses {$link Sugar::$cacheTime} to control behavior.
  *
  * @category   Template
  * @package    Sugar
@@ -52,44 +51,46 @@
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-class Sugar_Cache_File implements Sugar_CacheDriver
+class Sugar_Cache_Memcache implements Sugar_CacheDriver
 {
     /**
      * Sugar instance.
      *
-     * @var Sugar $sugar
+     * @var Sugar $_sugar
      */
     private $_sugar;
+
+    /**
+     * Instance of Memcached.
+     *
+     * @var Memcached $_memcached;
+     */
+    private $_memcached;
 
     /**
      * Constructor.
      *
      * @param Sugar $sugar Sugar instance.
      */
-    public function __construct($sugar)
+    public function __construct($sugar, Memcached $memcached)
     {
         $this->_sugar = $sugar;
+        $this->_memcached = $memcached;
     }
 
     /**
-     * Makes a path for the given reference.
+     * Makes a key for the given reference.
      *
      * @param SugarRef $ref  File reference.
      * @param string   $type Either 'ctpl' or 'chtml'.
      *
-     * @return string Path.
+     * @return string Key.
      */
-    private function _makePath(SugarRef $ref, $type)
+    private function _makeKey(SugarRef $ref, $type)
     {
-        $path = $this->_sugar->cacheDir.'/';
         $cid = $type == Sugar::CACHE_HTML ? $ref->cacheId : null;
-        $path .= md5($ref->storageName . $ref->name . $cid);
-        $path .= ',' . $ref->storageName . ',' . str_replace('/', '%', $ref->name);
-        if ($cid !== null) {
-            $path .= ',' . preg_replace('/[^A-Za-z0-9._-]+/', '%', $cid);
-        }
-        $path .= ',' . $type;
-        return $path;
+        $key = $ref->storageName . ':' . $ref->name . ':' . $cid . ':' . $type;
+        return $key;
     }
 
     /**
@@ -102,15 +103,12 @@ class Sugar_Cache_File implements Sugar_CacheDriver
      */
     public function stamp(SugarRef $ref, $type)
     {
-        $path = $this->_makePath($ref, $type);
+        // fetch the item from the cache
+        $key = $this->_makeKey($ref, $type);
+        $item = $this->memcached->get($key);
 
-        // check exists, return stamp
-        if (file_exists($path)
-            && is_file($path)
-            && is_readable($path)
-            && time() - filemtime($path) <= $this->_sugar->cacheLimit
-        ) {
-            return filemtime($path);
+        if ($item !== FALSE) {
+            return $item['stamp'];
         } else {
             return false;
         }
@@ -126,18 +124,12 @@ class Sugar_Cache_File implements Sugar_CacheDriver
      */
     public function load(SugarRef $ref, $type)
     {
-        $path = $this->_makePath($ref, $type);
-    
-        // must exist, be readable, and not be older than $cacheLimit seconds
-        if (file_exists($path)
-            && is_file($path)
-            && is_readable($path)
-            && time() - filemtime($path) <= $this->_sugar->cacheLimit
-        ) {
-            // load, deserialize
-            $data = file_get_contents($path);
-            $data = unserialize($data);
-            return $data;
+        // fetch the item from the cache
+        $key = $this->_makeKey($ref, $type);
+        $item = $this->memcached->get($key);
+
+        if ($item !== FALSE) {
+            return $item['data'];
         } else {
             return false;
         }
@@ -156,29 +148,9 @@ class Sugar_Cache_File implements Sugar_CacheDriver
      */
     public function store(SugarRef $ref, $type, $data)
     {
-        $path = $this->_makePath($ref, $type);
-
-        // ensure we can save the cache file
-        if (!file_exists($this->_sugar->cacheDir)) {
-            throw new Sugar_Exception(
-                'cache directory does not exist: '.$this->_sugar->cacheDir
-            );
-        }
-        if (!is_dir($this->_sugar->cacheDir)) {
-            throw new Sugar_Exception(
-                'cache directory is not a directory: '.$this->_sugar->cacheDir
-            );
-        }
-        if (!is_writeable($this->_sugar->cacheDir)) {
-            throw new Sugar_Exception(
-                'cache directory is not writable: '.$this->_sugar->cacheDir
-            );
-        }
-
-        // encode, save
-        $data = serialize($data);
-        file_put_contents($path, $data);
-        return true; 
+        $key = $this->_makeKey($ref, $type);
+        $this->_memcached->set($key, array('stamp' => time(), 'data' => $data), $this->_sugar->cacheTime);
+        return true;
     }
 
     /**
@@ -191,18 +163,8 @@ class Sugar_Cache_File implements Sugar_CacheDriver
      */
     public function erase(SugarRef $ref, $type)
     {
-        $path = $this->_makePath($ref, $type);
-
-        // if the file exists and the directory is writeable, erase it
-        if (file_exists($path)
-            && is_file($path)
-            && is_writeable($this->_sugar->cacheDir)
-        ) {
-            unlink($path);
-            return true;
-        } else {
-            return false;
-        }
+        $key = $this->_makeKey($ref, $type);
+        $this->_memcached->delete($key);
     }
 
     /**
@@ -212,22 +174,7 @@ class Sugar_Cache_File implements Sugar_CacheDriver
      */
     public function clear()
     {
-        // directory must exist, and be both readable and writable
-        if (!file_exists($this->_sugar->cacheDir)
-            || !is_dir($this->_sugar->cacheDir)
-            || !is_writable($this->_sugar->cacheDir)
-            || !is_readable($this->_sugar->cacheDir)
-        ) {
-            return false;
-        }
-
-        $dir = opendir($this->_sugar->cacheDir);
-        while ($cache = readdir($dir)) {
-            if (preg_match('/^[^.].*[.](ctpl|chtml)$/', $cache)) {
-                unlink($this->_sugar->cacheDir.'/'.$cache);
-            }
-        }
-
+        $this->_memcached->flush();
         return true;
     }
 }
