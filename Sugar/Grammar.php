@@ -198,7 +198,7 @@ class Sugar_Grammar
 
                 // optimize away if operand is data
                 if (self::_isData($right)) {
-                    $this->_output []= array('push', SugarRuntime::execute($this->_sugar, array_merge($right, array($op)), array()));
+                    $this->_output []= array('push', Sugar_Runtime_Execute($this->_sugar, array_merge($right, array($op)), array()));
                 } else {
                     // can't optimize away - emit opcodes
                     $this->_output []= array_merge($right, array($op));
@@ -210,7 +210,7 @@ class Sugar_Grammar
 
                 // optimize away if both operands are constant data
                 if (self::_isData($left) && self::_isData($right)) {
-                    $this->_output []= array('push', SugarRuntime::execute($this->_sugar, array_merge($left, $right, array($op)), array()));
+                    $this->_output []= array('push', Sugar_Runtime_Execute($this->_sugar, array_merge($left, $right, array($op)), array()));
                 } else {
                     // can't optimize away - emit opcodes
                     $this->_output []= array_merge($left, $right, array($op));
@@ -685,11 +685,11 @@ class Sugar_Grammar
                     if ($escape_flag) {
                         $block []= array(
                             'echo', $this->_sugar->escape(
-                                SugarRuntime::showValue($ops[1])
+                                Sugar_Runtime_ShowValue($ops[1])
                             )
                         );
                     } else {
-                        $block []= array('echo', SugarRuntime::showValue($ops[1]));
+                        $block []= array('echo', Sugar_Runtime_ShowValue($ops[1]));
                     }
                 } else {
                     $block []= $ops;
