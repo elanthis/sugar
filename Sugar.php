@@ -190,9 +190,9 @@ class Sugar
 
     /**
      * This is the cache driver to use for storing bytecode and HTML caches.
-     * This is initialized to the {@link SugarCacheFile} driver by default.
+     * This is initialized to the {@link Sugar_Cache_File} driver by default.
      *
-     * @var ISugarCache
+     * @var Sugar_CacheDriver
      */
     public $cache = null;
 
@@ -300,7 +300,7 @@ class Sugar
     public function __construct()
     {
         $this->storage ['file']= new SugarStorageFile($this);
-        $this->cache = new SugarCacheFile($this);
+        $this->cache = new Sugar_Cache_File($this);
         $this->errors = self::ERROR_PRINT;
         $this->output = self::OUTPUT_HTML;
     }

@@ -52,7 +52,7 @@
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-interface ISugarCache
+interface Sugar_CacheDriver
 {
     /**
      * Returns the timestamp for the given reference, or zero if the file

@@ -489,27 +489,27 @@ with Sugar.  This can be changed.
 
     $sugar->defaultStorage = 'db';
 
-Cache drivers are classes derived from `ISugarCache`.  The following
+Cache drivers are classes derived from `Sugar_CacheDriver`.  The following
 methods must be implemented.  All methods return true on success or
 false on error, unless stated otherwise.
 
-+ `ISugarCache::stamp(SugarRef $name, $type)`
++ `Sugar_CacheDriver::stamp(SugarRef $name, $type)`
 
   Returns the cache timestamp, or false if the specified cache does not exist.
 
-+ `ISugarCache::load(SugarRef $name, $type)`
++ `Sugar_CacheDriver::load(SugarRef $name, $type)`
 
   Loads the specified cache data.
 
-+ `ISugarCache::store(SugarRef $name, $type, array $data)`
++ `Sugar_CacheDriver::store(SugarRef $name, $type, array $data)`
 
   Stores the specified cache, or throw  a Sugar_Exception on failure.
 
-+ `ISugarCache::erase(SugarRef $name, $type)`
++ `Sugar_CacheDriver::erase(SugarRef $name, $type)`
 
   Erases the specified cache.
 
-+ `ISugarCache::clear()`
++ `Sugar_CacheDriver::clear()`
 
   Erases all caches.
 
