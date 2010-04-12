@@ -45,7 +45,7 @@
  *
  * @return mixed Value of parameter if given, or the default value otherwise.
  */
-public function Sugar_Util_GetArg($params, $name, $default = null)
+function Sugar_Util_GetArg($params, $name, $default = null)
 {
     return isset($params[$name]) ? $params[$name] : $default;
 }
@@ -61,7 +61,7 @@ public function Sugar_Util_GetArg($params, $name, $default = null)
  *
  * @return bool True if array is a vector.
  */
-public function Sugar_Util_IsVector($array)
+function Sugar_Util_IsVector($array)
 {
     if (!is_array($array)) {
         return false;
@@ -87,7 +87,7 @@ public function Sugar_Util_IsVector($array)
  *
  * @return string Formatted result.
  */
-public function Sugar_Util_Json($value)
+function Sugar_Util_Json($value)
 {
     switch (gettype($value)) {
     case 'integer':
@@ -137,7 +137,7 @@ public function Sugar_Util_Json($value)
  *
  * @return int Timestamp.
  */
-public function Sugar_Util_ValueToTime($value)
+function Sugar_Util_ValueToTime($value)
 {
     if (is_int($value)) {
         // raw int?  it's a timestamp
