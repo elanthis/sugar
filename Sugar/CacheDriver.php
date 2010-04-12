@@ -58,29 +58,29 @@ interface Sugar_CacheDriver
      * Returns the timestamp for the given reference, or zero if the file
      * is not in the cache.
      *
-     * @param SugarRef $ref  File reference to lookup.
+     * @param Sugar_Ref $ref  File reference to lookup.
      * @param string   $type Either 'ctpl' or 'chtml'.
      *
      * @return int Timestamp, or 0 if the file does not exist.
      * @abstract
      */
-    function stamp(SugarRef $ref, $type);
+    function stamp(Sugar_Ref $ref, $type);
 
     /**
      * Returns the bytecode for the requested reference.
      *
-     * @param SugarRef $ref  File reference to lookup.
+     * @param Sugar_Ref $ref  File reference to lookup.
      * @param string   $type Either 'ctpl' or 'chtml'.
      *
      * @return array Bytecode, or false if not in the cache.
      * @abstract
      */
-    function load(SugarRef $ref, $type);
+    function load(Sugar_Ref $ref, $type);
 
     /**
      * Adds the bytecode to the cache.
      *
-     * @param SugarRef $ref  File reference to lookup.
+     * @param Sugar_Ref $ref  File reference to lookup.
      * @param string   $type Either 'ctpl' or 'chtml'.
      * @param array    $data Bytecode.
      *
@@ -88,19 +88,19 @@ interface Sugar_CacheDriver
      *
      * @abstract
      */
-    function store(SugarRef $ref, $type, $data);
+    function store(Sugar_Ref $ref, $type, $data);
 
     /**
      * Erases the bytecode for the requested reference.
      *
-     * @param SugarRef $ref  File reference for the bytecode to erase.
+     * @param Sugar_Ref $ref  File reference for the bytecode to erase.
      * @param string   $type Either 'ctpl' or 'chtml'.
      *
      * @return bool True on success.
      *
      * @abstract
      */
-    function erase(SugarRef $ref, $type);
+    function erase(Sugar_Ref $ref, $type);
 
     /**
      * Clears all caches the driver is responsible for.

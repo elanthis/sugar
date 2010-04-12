@@ -59,33 +59,33 @@ interface Sugar_StorageDriver
      * Returns the timestamp of the reference, or 0 if the reference does
      * not exist.
      *
-     * @param SugarRef $ref Reference to lookup.
+     * @param Sugar_Ref $ref Reference to lookup.
      *
      * @return int Timestamp if it exists, or zero if it cannot be found.
      */
-    function stamp(SugarRef $ref);
+    function stamp(Sugar_Ref $ref);
 
     /**
      * Returns the source for the requested reference.
      *
-     * @param SugarRef $ref Reference to lookup.
+     * @param Sugar_Ref $ref Reference to lookup.
      *
      * @return string Source of reference.
      */
-    function load(SugarRef $ref);
+    function load(Sugar_Ref $ref);
 
     /**
      * Returns a path name for the reference, mapped as appropriate for
      * the driver.  This is used for error messages.  The result should
      * make it easier for the template writer to identify which template
-     * is being refrenced.  Returning {@link SugarRef::$full} may be
+     * is being refrenced.  Returning {@link Sugar_Ref::$full} may be
      * adequate for many drivers.
      *
-     * @param SugarRef $ref Reference to lookup.
+     * @param Sugar_Ref $ref Reference to lookup.
      *
      * @return string User-friendly path to reference.
      */
-    function path(SugarRef $ref);
+    function path(Sugar_Ref $ref);
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>

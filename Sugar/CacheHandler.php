@@ -54,7 +54,7 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-class SugarCacheHandler
+class Sugar_CacheHandler
 {
     /**
      * Sugar reference.
@@ -126,11 +126,11 @@ class SugarCacheHandler
      * Adds a new file reference to the list of files
      * used in the template.
      *
-     * @param SugarRef $ref New reference.
+     * @param Sugar_Ref $ref New reference.
      *
      * @return bool True on success.
      */
-    public function addRef(SugarRef $ref)
+    public function addRef(Sugar_Ref $ref)
     {
         $this->_refs []= $ref->full;
         return true;

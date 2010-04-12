@@ -435,39 +435,39 @@ Storage drivers are classes derived from `Sugar_StorageDriver`.  The following
 methods must be implemented.  All methods return true on success or
 false on error, unless stated otherwise.
 
-+ `Sugar_StorageDriver::stamp(SugarRef $name)`
++ `Sugar_StorageDriver::stamp(Sugar_Ref $name)`
 
   Returns the template's timestamp, or false if the specified template
   does not exist.
 
-+ `Sugar_StorageDriver::load(SugarRef $name)`
++ `Sugar_StorageDriver::load(Sugar_Ref $name)`
 
   Returns the template source.
 
-+ `Sugar_StorageDriver::path(SugarRef $name)`
++ `Sugar_StorageDriver::path(Sugar_Ref $name)`
 
   Returns a user-friendly name for the template.
 
-The `SugarRef` class describes the requested template name.  It has the
+The `Sugar_Ref` class describes the requested template name.  It has the
 following member variables which are used to distinguish templates:
 
-+ `SugarRef::$full`
++ `Sugar_Ref::$full`
 
   The full path name.
 
-+ `SugarRef::$storageName`
++ `Sugar_Ref::$storageName`
 
   The name of the storage driver.
 
-+ `SugarRef::$storage`
++ `Sugar_Ref::$storage`
 
   The Sugar_StorageDriver object associated with the driver name.
 
-+ `SugarRef::$name`
++ `Sugar_Ref::$name`
 
   The base name of the template.
 
-+ `SugarRef::$cacheId`
++ `Sugar_Ref::$cacheId`
 
   An optional cache identifier (only used for caching).
 
@@ -493,19 +493,19 @@ Cache drivers are classes derived from `Sugar_CacheDriver`.  The following
 methods must be implemented.  All methods return true on success or
 false on error, unless stated otherwise.
 
-+ `Sugar_CacheDriver::stamp(SugarRef $name, $type)`
++ `Sugar_CacheDriver::stamp(Sugar_Ref $name, $type)`
 
   Returns the cache timestamp, or false if the specified cache does not exist.
 
-+ `Sugar_CacheDriver::load(SugarRef $name, $type)`
++ `Sugar_CacheDriver::load(Sugar_Ref $name, $type)`
 
   Loads the specified cache data.
 
-+ `Sugar_CacheDriver::store(SugarRef $name, $type, array $data)`
++ `Sugar_CacheDriver::store(Sugar_Ref $name, $type, array $data)`
 
   Stores the specified cache, or throw  a Sugar_Exception on failure.
 
-+ `Sugar_CacheDriver::erase(SugarRef $name, $type)`
++ `Sugar_CacheDriver::erase(Sugar_Ref $name, $type)`
 
   Erases the specified cache.
 

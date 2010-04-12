@@ -53,7 +53,7 @@
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-class SugarRef
+class Sugar_Ref
 {
     /**
      * Full user-given file reference.
@@ -113,7 +113,7 @@ class SugarRef
      * @param Sugar  $sugar   Sugar instance.
      * @param string $cacheId Optional cache ID.
      *
-     * @return SugarRef
+     * @return Sugar_Ref
      */
     static function create($path, Sugar $sugar, $cacheId = null,
     $layout = null)
@@ -149,7 +149,7 @@ class SugarRef
 
         // return new reg
         $drv = $sugar->storage[$storage];
-        return new SugarRef($path, $storage, $drv, $name, $cacheId, $layout);
+        return new Sugar_Ref($path, $storage, $drv, $name, $cacheId, $layout);
     }
 
     /**
