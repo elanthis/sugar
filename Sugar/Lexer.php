@@ -51,7 +51,7 @@
 /**
  * Sugar language tokenizer.
  *
- * Tokenizes a source file for use by {@link SugarGrammar}.
+ * Tokenizes a source file for use by {@link Sugar_Grammar}.
  *
  * @category   Template
  * @package    Sugar
@@ -63,7 +63,7 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-class SugarLexer
+class Sugar_Lexer
 {
     /**
      * Source code to be tokenized.
@@ -452,7 +452,7 @@ class SugarLexer
     }
 
     /**
-     * Similar to {@link SugarLexer::expect}, except that it checks for
+     * Similar to {@link Sugar_Lexer::expect}, except that it checks for
      * any of standard Sugar operators, and the matched operator (if any)
      * is returned.
      *
@@ -468,7 +468,7 @@ class SugarLexer
         }
 
         // if it's a valid operator, return it
-        if (isset(SugarGrammar::$precedence[$op])) {
+        if (isset(Sugar_Grammar::$precedence[$op])) {
             // get next token
             $this->_token = $this->_next();
 

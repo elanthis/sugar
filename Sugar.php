@@ -620,7 +620,7 @@ class Sugar
         if ($source === false) {
             throw new Sugar_Exception_Usage('template not found: '.$ref->full);
         }
-        $parser = new SugarGrammar($this);
+        $parser = new Sugar_Grammar($this);
         $data = $parser->compile($source, $ref->storage->path($ref));
         $parser = null;
 
@@ -943,7 +943,7 @@ class Sugar
             include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
 
             // compile
-            $parser = new SugarGrammar($this);
+            $parser = new Sugar_Grammar($this);
             $data = $parser->compile($source);
             $parser = null;
 

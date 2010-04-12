@@ -65,12 +65,12 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
  * @link       http://php-sugar.net
  * @access     private
  */
-class SugarGrammar
+class Sugar_Grammar
 {
     /**
      * Tokenizer.
      *
-     * @var SugarLexer
+     * @var Sugar_Lexer
      */
     private $_tokens = null;
 
@@ -717,7 +717,7 @@ class SugarGrammar
     public function compile($src, $file = '<input>')
     {
         // create tokenizer
-        $this->_tokens = new SugarLexer(
+        $this->_tokens = new Sugar_Lexer(
             $src, $file, $this->_sugar->delimStart, $this->_sugar->delimEnd
         );
 
