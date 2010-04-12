@@ -1,4 +1,4 @@
 <?php
 function sugar_function_one($sugar, $params) {
-	return 'Uno'.SugarUtil::getArg($params, 'str');
+	return 'Uno'.Sugar_Util_GetArg($params, 'str');
 }

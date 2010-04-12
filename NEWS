@@ -5,6 +5,9 @@
 + Include PEAR package.xml file.
 + Added uncache() and clearCache() methods.
 + Renamed documentation tool to sugardoc.
++ Renamed most classes to follow the Sugar_Foo naming convention.
++ Added experimental Memcached-based cache driver.
++ Changed the SugarUtil methods to functions.
 
 ==================
 ** Version 0.82 **

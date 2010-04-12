@@ -302,8 +302,8 @@ with the parameters.  Method calls will be called using the native
 PHP approach.
 
     function sugar_function_printargs ($sugar, $params) {
-      $arg1 = SugarUtil::getArg($params, 'arg1', 0);
-      $arg2 = SugarUtil::getArg($params, 'arg2', 1);
+      $arg1 = Sugar_Util_GetArg($params, 'arg1', 0);
+      $arg2 = Sugar_Util_GetArg($params, 'arg2', 1);
 
       return "arg1=$arg1, arg2=$arg2";
     }
@@ -318,7 +318,7 @@ Sugar will also search in the directory `$sugar->pluginDir` for
 files named sugar_function_foo.php to attempt to load up unknown
 function names.
 
-The `SugarUtil::getArg()` function is a utility function to help make
+The `Sugar_Util_GetArg()` function is a utility function to help make
 writing Sugar function handlers easier.  The first parameter is the
 $params array received by the Sugar function handler, the second
 parameter is the name of the parameter (when named parameters are

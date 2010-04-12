@@ -61,7 +61,7 @@
  */
 function sugar_function_include($sugar, $params)
 {
-    $tpl = SugarUtil::getArg($params, 'tpl');
+    $tpl = Sugar_Util_GetArg($params, 'tpl');
     unset($params['tpl']);
 
     $sugar->display($tpl, $params);
@@ -76,7 +76,7 @@ function sugar_function_include($sugar, $params)
  */
 function sugar_function_eval($sugar, $params)
 {
-    $source = SugarUtil::getArg($params, 'source');
+    $source = Sugar_Util_GetArg($params, 'source');
     unset($params['source']);
 
     $sugar->displayString($source, $params);
@@ -94,8 +94,8 @@ function sugar_function_eval($sugar, $params)
  */
 function sugar_function_urlencode($sugar, $params)
 {
-    $string = (string)SugarUtil::getArg($params, 'string');
-    $array = SugarUtil::getArg($params, 'array');
+    $string = (string)Sugar_Util_GetArg($params, 'string');
+    $array = Sugar_Util_GetArg($params, 'array');
     if (is_array($array)) {
         $result = array();
         foreach($array as $k=>$v)
@@ -117,7 +117,7 @@ function sugar_function_urlencode($sugar, $params)
  */
 function sugar_function_json($sugar, $params)
 {
-    return SugarUtil::json(SugarUtil::getArg($params, 'value'));
+    return Sugar_Util_Json(Sugar_Util_GetArg($params, 'value'));
 }
 
 /*++
@@ -130,9 +130,9 @@ function sugar_function_json($sugar, $params)
  */
 function sugar_function_date($sugar, $params)
 {
-    $format = SugarUtil::getArg($params, 'format', 'r');
-    $date = SugarUtil::getArg($params, 'date');
-    $stamp = SugarUtil::valueToTime($date);
+    $format = Sugar_Util_GetArg($params, 'format', 'r');
+    $date = Sugar_Util_GetArg($params, 'date');
+    $stamp = Sugar_Util_ValueToTime($date);
     return date($format, $stamp);
 }
 
@@ -147,8 +147,8 @@ function sugar_function_date($sugar, $params)
  */
 function sugar_function_printf($sugar, $params)
 {
-    $format = (string)SugarUtil::getArg($params, 'format');
-    $args = SugarUtil::getArg($params, 'params');
+    $format = (string)Sugar_Util_GetArg($params, 'format');
+    $args = Sugar_Util_GetArg($params, 'params');
     if (is_array($args))
         return vsprintf($format, $args);
     else
@@ -180,11 +180,11 @@ function sugar_function_sprintf($s, $p)
  */
 function sugar_function_default($sugar, $params)
 {
-    $value = SugarUtil::getArg($params, 'value');
+    $value = Sugar_Util_GetArg($params, 'value');
     if ($value)
         return $value;
     else
-        return SugarUtil::getArg($params, 'default');
+        return Sugar_Util_GetArg($params, 'default');
 }
 
 /*++
@@ -197,7 +197,7 @@ function sugar_function_default($sugar, $params)
  */
 function sugar_function_count($sugar, $params)
 {
-    return count(SugarUtil::getArg($params, 'array'));
+    return count(Sugar_Util_GetArg($params, 'array'));
 }
 
 /*++
@@ -216,7 +216,7 @@ function sugar_function_count($sugar, $params)
  */
 function sugar_function_selected($sugar, $params)
 {
-    if (SugarUtil::getArg($params, 'test'))
+    if (Sugar_Util_GetArg($params, 'test'))
         return ' selected="selected" ';
 }
 
@@ -235,7 +235,7 @@ function sugar_function_selected($sugar, $params)
  */
 function sugar_function_checked($sugar, $params)
 {
-    if (SugarUtil::getArg($params, 'test'))
+    if (Sugar_Util_GetArg($params, 'test'))
         return ' checked="checked" ';
 }
 
@@ -253,7 +253,7 @@ function sugar_function_checked($sugar, $params)
  */
 function sugar_function_disabled($sugar, $params)
 {
-    if (SugarUtil::getArg($params, 'test'))
+    if (Sugar_Util_GetArg($params, 'test'))
         return ' disabled="disabled" ';
 }
 
@@ -274,8 +274,8 @@ function sugar_function_disabled($sugar, $params)
  */
 function sugar_function_select($sugar, $params)
 {
-    $value = SugarUtil::getArg($params, 'value');
-    $default = SugarUtil::getArg($params, 'default', $value);
+    $value = Sugar_Util_GetArg($params, 'value');
+    $default = Sugar_Util_GetArg($params, 'default', $value);
 
     if (isset($params[$value]))
         return $params[$value];
@@ -299,9 +299,9 @@ function sugar_function_select($sugar, $params)
  */
 function sugar_function_truncate($sugar, $params)
 {
-    $text = (string)SugarUtil::getArg($params, 'string');
-    $length = (int)SugarUtil::getArg($params, 'length', 72);
-    $end = (string)SugarUtil::getArg($params, 'end', '...');
+    $text = (string)Sugar_Util_GetArg($params, 'string');
+    $length = (int)Sugar_Util_GetArg($params, 'length', 72);
+    $end = (string)Sugar_Util_GetArg($params, 'end', '...');
     if (strlen($text) <= $length)
         return $text;
     else
@@ -341,7 +341,7 @@ function sugar_modifier_escape($value, $sugar, $params)
     case 'javascript':
     case 'js':
     case 'json':
-        return SugarUtil::json($value);
+        return Sugar_Util_Json($value);
     case 'url':
         return urlencode($value);
     default:
@@ -365,7 +365,7 @@ function sugar_modifier_escape($value, $sugar, $params)
  */
 function sugar_function_var($sugar, $params)
 {
-    $name = (string)SugarUtil::getArg($params, 'name');
+    $name = (string)Sugar_Util_GetArg($params, 'name');
     return $sugar->getVariable($name);
 }
 
@@ -392,7 +392,7 @@ function sugar_function_array($sugar, $params)
  */
 function sugar_function_strtolower($sugar, $params)
 {
-    return strtolower((string)SugarUtil::getArg($params, 'string'));
+    return strtolower((string)Sugar_Util_GetArg($params, 'string'));
 }
 
 /*++
@@ -404,7 +404,7 @@ function sugar_function_strtolower($sugar, $params)
  */
 function sugar_function_strtoupper($sugar, $params)
 {
-    return strtoupper((string)SugarUtil::getArg($params, 'string'));
+    return strtoupper((string)Sugar_Util_GetArg($params, 'string'));
 }
 
 /*++
@@ -425,9 +425,9 @@ function sugar_function_strtoupper($sugar, $params)
  */
 function sugar_function_substr($sugar, $params)
 {
-    $string = (string)SugarUtil::getArg($params, 'string');
-    $start = (int)SugarUtil::getArg($params, 'start');
-    $length = (int)SugarUtil::getArg($params, 'length');
+    $string = (string)Sugar_Util_GetArg($params, 'string');
+    $start = (int)Sugar_Util_GetArg($params, 'start');
+    $length = (int)Sugar_Util_GetArg($params, 'length');
     return substr($string, $start, $length);
 }
 
@@ -440,7 +440,7 @@ function sugar_function_substr($sugar, $params)
  */
 function sugar_function_nl2br($sugar, $params)
 {
-    $string = SugarUtil::getArg($params, 'string');
+    $string = Sugar_Util_GetArg($params, 'string');
     return nl2br($sugar->escape($string));
 }
 
@@ -473,8 +473,8 @@ function sugar_function_cycle($sugar, $params)
  */
 function sugar_function_isset($sugar, $params)
 {
-    $obj = SugarUtil::getArg($params, 'object');
-    $index = SugarUtil::getArg($params, 'index');
+    $obj = Sugar_Util_GetArg($params, 'object');
+    $index = Sugar_Util_GetArg($params, 'index');
     if (is_array($obj) && isset($obj[$index]))
         return true;
     elseif (is_object($obj) && isset($obj->$index))
@@ -503,7 +503,7 @@ function sugar_function_time($sugar, $params)
  */
 function sugar_function_basename($sugar, $params)
 {
-    return basename(SugarUtil::getArg($params, 'path'));
+    return basename(Sugar_Util_GetArg($params, 'path'));
 }
 
 /*++
@@ -542,8 +542,8 @@ function sugar_function_merge($sugar, $params)
  */
 function sugar_function_join($sugar, $params)
 {
-    $sep = (string)SugarUtil::getArg($params, 'separator', ' ');
-    $array = (array)SugarUtil::getArg($params, 'array');
+    $sep = (string)Sugar_Util_GetArg($params, 'separator', ' ');
+    $array = (array)Sugar_Util_GetArg($params, 'array');
     return implode($sep, $array);
 }
 function sugar_function_implode($s, $p)
@@ -564,9 +564,9 @@ function sugar_function_implode($s, $p)
  */
 function sugar_function_split($sugar, $params)
 {
-    $sep = (string)SugarUtil::getArg($params, 'delimiter', ' ');
-    $string = (string)SugarUtil::getArg($params, 'string');
-    $count = (int)SugarUtil::getArg($params, 'count');
+    $sep = (string)Sugar_Util_GetArg($params, 'delimiter', ' ');
+    $string = (string)Sugar_Util_GetArg($params, 'string');
+    $count = (int)Sugar_Util_GetArg($params, 'count');
     if ($count > 0)
         return explode($sep, $string, $count);
     else
@@ -593,9 +593,9 @@ function sugar_function_explode($s, $p)
  */
 function sugar_function_psplit($sugar, $params)
 {
-    $expr = (string)SugarUtil::getArg($params, 'expr', '/\s+/');
-    $string = (string)SugarUtil::getArg($params, 'string');
-    $count = (int)SugarUtil::getArg($params, 'count');
+    $expr = (string)Sugar_Util_GetArg($params, 'expr', '/\s+/');
+    $string = (string)Sugar_Util_GetArg($params, 'string');
+    $count = (int)Sugar_Util_GetArg($params, 'count');
     return preg_split($expr, $string, $count);
 }
 

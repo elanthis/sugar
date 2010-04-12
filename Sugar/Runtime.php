@@ -76,7 +76,7 @@ class SugarRuntime
         if (is_bool($value)) {
             return $value?'true':'false';
         } elseif (is_array($value)) {
-            return SugarUtil::json($value);
+            return Sugar_Util_Json($value);
         } else {
             return $value;
         }
