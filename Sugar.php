@@ -50,14 +50,14 @@ $GLOBALS['__sugar_rootdir'] = dirname(__FILE__);
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Exception.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Ref.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 /**#@-*/
 
 /**#@+
  * Drivers.
  */
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageFile.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheFile.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache/File.php';
 /**#@-*/
 
 /**
