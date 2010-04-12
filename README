@@ -431,20 +431,20 @@ users may register new functions to be used by templates.  Second,
 users may over-ride the storage and cache drivers used by the Sugar
 engine.
 
-Storage drivers are classes derived from `ISugarStorage`.  The following
+Storage drivers are classes derived from `Sugar_StorageDriver`.  The following
 methods must be implemented.  All methods return true on success or
 false on error, unless stated otherwise.
 
-+ `ISugarStorage::stamp(SugarRef $name)`
++ `Sugar_StorageDriver::stamp(SugarRef $name)`
 
   Returns the template's timestamp, or false if the specified template
   does not exist.
 
-+ `ISugarStorage::load(SugarRef $name)`
++ `Sugar_StorageDriver::load(SugarRef $name)`
 
   Returns the template source.
 
-+ `ISugarStorage::path(SugarRef $name)`
++ `Sugar_StorageDriver::path(SugarRef $name)`
 
   Returns a user-friendly name for the template.
 
@@ -461,7 +461,7 @@ following member variables which are used to distinguish templates:
 
 + `SugarRef::$storage`
 
-  The ISugarStorage object associated with the driver name.
+  The Sugar_StorageDriver object associated with the driver name.
 
 + `SugarRef::$name`
 

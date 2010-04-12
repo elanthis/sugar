@@ -49,14 +49,14 @@ $GLOBALS['__sugar_rootdir'] = dirname(__FILE__);
  */
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Exception.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Ref.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 /**#@-*/
 
 /**#@+
  * Drivers.
  */
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageFile.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage/File.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache/File.php';
 /**#@-*/
 
@@ -299,7 +299,7 @@ class Sugar
      */
     public function __construct()
     {
-        $this->storage ['file']= new SugarStorageFile($this);
+        $this->storage ['file']= new Sugar_Storage_File($this);
         $this->cache = new Sugar_Cache_File($this);
         $this->errors = self::ERROR_PRINT;
         $this->output = self::OUTPUT_HTML;
@@ -462,11 +462,11 @@ class Sugar
      *
      * @param string        $name   Name to register driver under, used in
      *                              template references.
-     * @param ISugarStorage $driver Driver object to register.
+     * @param Sugar_StorageDriver $driver Driver object to register.
      *
      * @return bool true on success
      */
-    public function addStorage($name, ISugarStorage $driver)
+    public function addStorage($name, Sugar_StorageDriver $driver)
     {
         $this->storage [$name]= $driver;
         return true;

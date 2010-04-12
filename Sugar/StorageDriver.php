@@ -1,8 +1,10 @@
 <?php
 /**
- * File-based storage driver.
+ * Sugar storage interface.
  *
- * This provides the default filesystem storage driver for Sugar cache files.
+ * This is an interface used for defining custom storage drivers.  Storage
+ * drivers are responsible for loading template files.  An application might
+ * want a custom driver for loadng templates from a database, for example.
  *
  * PHP version 5
  *
@@ -37,12 +39,10 @@
  */
 
 /**
- * File-based storage driver.
+ * Storage driver interface.
  *
- * Uses {@link Sugar::$templateDir} to find templates.
- *
- * This class is a namespace containing static function relevant to 
- * executing Sugar bytecode.
+ * Interface for storage drivers.  These are used to load template from
+ * different resources, such as the file system or a database.
  *
  * @category   Template
  * @package    Sugar
@@ -53,25 +53,8 @@
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-class SugarStorageFile implements ISugarStorage
+interface Sugar_StorageDriver
 {
-    /**
-     * Sugar instances.
-     *
-     * @var Sugar $sugar
-     */
-    private $_sugar;
-
-    /**
-     * Constructor.
-     *
-     * @param Sugar $sugar Sugar instance.
-     */
-    public function __construct($sugar)
-    {
-        $this->_sugar = $sugar;
-    }
-
     /**
      * Returns the timestamp of the reference, or 0 if the reference does
      * not exist.
@@ -80,15 +63,7 @@ class SugarStorageFile implements ISugarStorage
      *
      * @return int Timestamp if it exists, or zero if it cannot be found.
      */
-    public function stamp(SugarRef $ref)
-    {
-        $path = $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
-        if (is_file($path) && is_readable($path)) {
-            return filemtime($path);
-        } else {
-            return false;
-        }
-    }
+    function stamp(SugarRef $ref);
 
     /**
      * Returns the source for the requested reference.
@@ -97,15 +72,7 @@ class SugarStorageFile implements ISugarStorage
      *
      * @return string Source of reference.
      */
-    public function load(SugarRef $ref)
-    {
-        $path = $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
-        if (is_file($path) && is_readable($path)) {
-            return file_get_contents($path);
-        } else {
-            return false;
-        }
-    }
+    function load(SugarRef $ref);
 
     /**
      * Returns a path name for the reference, mapped as appropriate for
@@ -118,10 +85,7 @@ class SugarStorageFile implements ISugarStorage
      *
      * @return string User-friendly path to reference.
      */
-    public function path(SugarRef $ref)
-    {
-        return $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
-    }
+    function path(SugarRef $ref);
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>

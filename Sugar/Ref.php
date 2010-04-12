@@ -72,7 +72,7 @@ class SugarRef
     /**
      * Storage driver for this reference.
      *
-     * @var ISugarStorage $storage
+     * @var Sugar_StorageDriver $storage
      */
     public $storage;
 
@@ -158,12 +158,12 @@ class SugarRef
      * @param string        $full        User-given path.
      * @param string        $storageName Name of the storage driver in the
      *                                   path.
-     * @param ISugarStorage $storage     Storage driver.
+     * @param Sugar_StorageDriver $storage     Storage driver.
      * @param string        $name        The file name of the path.
      * @param string        $cacheId     The cache ID for the reference.
      * @param string        $layout      Template used for layout wrapper.
      */
-    private function __construct($full, $storageName, ISugarStorage $storage,
+    private function __construct($full, $storageName, Sugar_StorageDriver $storage,
     $name, $cacheId, $layout) {
         $this->full = $full;
         $this->storageName = $storageName;
