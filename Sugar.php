@@ -292,7 +292,7 @@ class Sugar
      *
      * @var callback
      */
-    public $method_acl;
+    public $methodAcl;
 
     /**
      * Constructor

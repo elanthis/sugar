@@ -334,9 +334,9 @@ function Sugar_Runtime_Execute($sugar, $code, $sections)
             }
 
             // perform ACL checking on the method call
-            if (!is_null($sugar->method_acl)) {
+            if (!is_null($sugar->methodAcl)) {
                 $check = call_user_func(
-                    $sugar->method_acl,
+                    $sugar->methodAcl,
                     $sugar,
                     $obj,
                     $func,
