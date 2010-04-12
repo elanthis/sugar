@@ -108,7 +108,7 @@ class Sugar
     const ERROR_PRINT = 1;
 
     /**
-     * Errors will be thrown as {@link SugarException} objects.
+     * Errors will be thrown as {@link Sugar_Exception} objects.
      */
     const ERROR_THROW = 2;
 
@@ -208,7 +208,7 @@ class Sugar
      * This is the error handling method Sugar should use.  By default,
      * errors are echoed to the screen and no exceptions are thrown.  Set
      * this to one of the following:
-     * - {@link Sugar::ERROR_THROW}: throw SugarException objects
+     * - {@link Sugar::ERROR_THROW}: throw Sugar_Exception objects
      * - {@link Sugar::ERROR_PRINT}: print an error message (default)
      * - {@link Sugar::ERROR_DIE}: terminate the script
      * - {@link Sugar::ERROR_IGNORE}: do nothing
@@ -586,13 +586,13 @@ class Sugar
      * @param SugarRef $ref    The template to load.
      *
      * @return mixed Compiled bytecode information.
-     * @throws SugarApiException when the template cannot be found.
+     * @throws Sugar_Exception_Usage when the template cannot be found.
      */
     private function _loadCompile(SugarRef $ref) {
         // check template exists, and remember stamp
         $sstamp = $ref->storage->stamp($ref);
         if ($sstamp === false) {
-            throw new SugarApiException('template not found: '.$ref->full);
+            throw new Sugar_Exception_Usage('template not found: '.$ref->full);
         }
 
         // cache file ref
@@ -618,7 +618,7 @@ class Sugar
         // compile
         $source = $ref->storage->load($ref);
         if ($source === false) {
-            throw new SugarApiException('template not found: '.$ref->full);
+            throw new Sugar_Exception_Usage('template not found: '.$ref->full);
         }
         $parser = new SugarGrammar($this);
         $data = $parser->compile($source, $ref->storage->path($ref));
@@ -639,7 +639,7 @@ class Sugar
      * @param string   $layout Template to use as a layout wrapper.
      *
      * @return mixed Return value of bytecode.
-     * @throws SugarApiException when the template cannot be found.
+     * @throws Sugar_Exception_Usage when the template cannot be found.
      */
     private function _loadExecute(SugarRef $ref, $vars, $layout)
     {
@@ -739,7 +739,7 @@ class Sugar
      * @Param string $layout Template to use for layout wrapper.
      *
      * @return bool true on success.
-     * @throws SugarApiException when the template name is invalid or
+     * @throws Sugar_Exception_Usage when the template name is invalid or
      * the template cannot be found.
      */
     public function display($file, $vars = null, $layout = null)
@@ -747,19 +747,19 @@ class Sugar
         // validate name
         $ref = SugarRef::create($file, $this, null, $layout);
         if ($ref === false) {
-            throw new SugarApiException('illegal template name: '.$file);
+            throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
 
         // ensure template exists
         if ($ref->storage->stamp($ref) === false) {
-            throw new SugarApiException('template not found: '.$ref->full);
+            throw new Sugar_Exception_Usage('template not found: '.$ref->full);
         }
 
         // load and run
         try {
             $this->_loadExecute($ref, $vars, $layout);
             return true;
-        } catch (SugarException $e) {
+        } catch (Sugar_Exception $e) {
             $this->handleError($e);
             return false;
         }
@@ -797,7 +797,7 @@ class Sugar
      * @param string $layout  Template to use for layout wrapper.
      *
      * @return bool True if a valid HTML cache exists for the file.
-     * @throws SugarApiException when the template name is invalid.
+     * @throws Sugar_Exception_Usage when the template name is invalid.
      */
     function isCached($file, $cacheId = null, $vars = null, $layout = null)
     {
@@ -809,7 +809,7 @@ class Sugar
         // validate name
         $ref = SugarRef::create($file, $this, $cacheId, $layout);
         if ($ref === false) {
-            throw new SugarApiException('illegal template name: '.$file);
+            throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
 
         // if the cache can be loaded, it is valid
@@ -823,14 +823,14 @@ class Sugar
      * @param string $cacheId Optional cache identifier.
      * @param string $layout  Optional layout template.
      *
-     * @throws SugarApiException when the template name is invalid.
+     * @throws Sugar_Exception_Usage when the template name is invalid.
      */
     function uncache($file, $cacheId = null, $layout = null)
     {
         // validate name
         $ref = SugarRef::create($file, $this, $cacheId, $layout);
         if ($ref === false) {
-            throw new SugarApiException('illegal template name: '.$file);
+            throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
 
         // erase the cache entry
@@ -854,14 +854,14 @@ class Sugar
      * @param string $layout  Template to use for layout wrapper.
      *
      * @return bool true on success.
-     * @throws SugarApiException when the template name is invalid.
+     * @throws Sugar_Exception_Usage when the template name is invalid.
      */
     function displayCache($file, $cacheId = null, $vars = null, $layout = null)
     {
         // validate name
         $ref = SugarRef::create($file, $this, $cacheId, $layout);
         if ($ref === false) {
-            throw new SugarApiException('illegal template name: '.$file);
+            throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
 
         try {
@@ -896,7 +896,7 @@ class Sugar
             // display cache
             $this->_execute($cache, $vars);
             return true;
-        } catch (SugarException $e) {
+        } catch (Sugar_Exception $e) {
             $this->handleError($e);
             return false;
         }
@@ -951,7 +951,7 @@ class Sugar
             $this->_execute($data, $vars);
             
             return true;
-        } catch (SugarException $e) {
+        } catch (Sugar_Exception $e) {
             $this->handleError($e);
             return false;
         }
@@ -984,14 +984,14 @@ class Sugar
      * @param string $file Template to lookup.
      *
      * @return string Template's source code.
-     * @throws SugarApiException when the template name is invalid.
+     * @throws Sugar_Exception_Usage when the template name is invalid.
      */
     function getSource($file)
     {
         // validate name
         $ref = SugarRef::create($file, $this);
         if ($ref === false) {
-            throw new SugarApiException('illegal template name: '.$file);
+            throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
 
         // fetch source

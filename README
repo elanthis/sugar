@@ -503,7 +503,7 @@ false on error, unless stated otherwise.
 
 + `ISugarCache::store(SugarRef $name, $type, array $data)`
 
-  Stores the specified cache, or throw  a SugarException on failure.
+  Stores the specified cache, or throw  a Sugar_Exception on failure.
 
 + `ISugarCache::erase(SugarRef $name, $type)`
 
