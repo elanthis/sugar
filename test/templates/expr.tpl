@@ -1,17 +1,17 @@
-{% section title %}Expression Tests{% /section %}
+{{ section title }}Expression Tests{{ /section }}
 
-{% $a = 4 %}
-{% $b = 15 %}
-{% $c = 7 %}
+{{ $a = 4 }}
+{{ $b = 15 }}
+{{ $c = 7 }}
 
 <p>Expect: 17<br>
-Result: {% 1+2*6+4 %}
+Result: {{ 1+2*6+4 }}
 
 <p>Expect: 1<br>
-Result: {% 2*$a+-$c %}
+Result: {{ 2*$a+-$c }}
 
 <p>Expect: true<br>
-Result: {% 0||0+1 %}
+Result: {{ 0||0+1 }}
 
 <p>Expect: 9<br>
-Result: {% 3*(-8+$a/2)/-2 %}
+Result: {{ 3*(-8+$a/2)/-2 }}

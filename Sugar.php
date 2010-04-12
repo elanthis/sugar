@@ -278,14 +278,14 @@ class Sugar
      *
      * @var string
      */
-    public $delimStart = '{%';
+    public $delimStart = '{{';
 
     /**
      * Closing delimiter character.
      *
      * @var string
      */
-    public $delimEnd = '%}';
+    public $delimEnd = '}}';
 
     /**
      * Callback for checking method access.

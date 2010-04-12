@@ -1,17 +1,17 @@
-{% section title %}String Tests{% /section %}
+{{ section title }}String Tests{{ /section }}
 
 <p>Test: ''<br>
 Expect: <br>
-Result: {% '' %}
+Result: {{ '' }}
 
 <p>Test: '\'\"\\'<br>
 Expect: '"\<br>
-Result: {% '\'\"\\' %}
+Result: {{ '\'\"\\' }}
 
 <p>Test: "\'\"\\"<br>
 Expect: '"\<br>
-Result: {% "\'\"\\" %}
+Result: {{ "\'\"\\" }}
 
 <p>Test: printf format='%04d' params=[42]<br>
 Expect: 0042<br>
-Result: {% printf format='%04d' params=[42] %}
+Result: {{ printf format='%04d' params=[42] }}
