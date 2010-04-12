@@ -151,7 +151,7 @@ class SugarCacheFile implements ISugarCache
      * @param array    $data Bytecode.
      *
      * @return bool True on success.
-     * @throws SugarApiException when the cache directory is missing or
+     * @throws Sugar_Exception_Usage when the cache directory is missing or
      * otherwise unusable.
      */
     public function store(SugarRef $ref, $type, $data)
@@ -160,17 +160,17 @@ class SugarCacheFile implements ISugarCache
 
         // ensure we can save the cache file
         if (!file_exists($this->_sugar->cacheDir)) {
-            throw new SugarException(
+            throw new Sugar_Exception(
                 'cache directory does not exist: '.$this->_sugar->cacheDir
             );
         }
         if (!is_dir($this->_sugar->cacheDir)) {
-            throw new SugarException(
+            throw new Sugar_Exception(
                 'cache directory is not a directory: '.$this->_sugar->cacheDir
             );
         }
         if (!is_writeable($this->_sugar->cacheDir)) {
-            throw new SugarException(
+            throw new Sugar_Exception(
                 'cache directory is not writable: '.$this->_sugar->cacheDir
             );
         }

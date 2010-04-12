@@ -618,7 +618,7 @@ class SugarGrammar
 
                 // do not allow nested sections
                 if (!$toplevel) {
-                    throw new SugarParseException(
+                    throw new Sugar_Exception_Parse(
                         $this->_tokens->getFile(),
                         $this->_tokens->getLine(),
                         'sections cannot be defined inside any other block'
@@ -627,7 +627,7 @@ class SugarGrammar
 
                 // do not allow duplicate sections
                 if (isset($this->_sections[$name])) {
-                    throw new SugarParseException(
+                    throw new Sugar_Exception_Parse(
                         $this->_tokens->getFile(),
                         $this->_tokens->getLine(),
                         'section `' . $name . '` already defined'

@@ -219,7 +219,7 @@ class SugarLexer
      * Retrieves the next token in the input stream.
      *
      * @return array Next token.
-     * @throws SugarParseException on invalid template input.
+     * @throws Sugar_Exception_Parse on invalid template input.
      */
     private function _next()
     {
@@ -269,7 +269,7 @@ class SugarLexer
         // get next token
         $this->_tokline = $this->_line;
         if (($token = $this->_getRegex('/(?:'.preg_quote($this->_delimEnd).'|\$(\w+)|(\d+(?:[.]\d+)?)|\/([A-Za-z_]\w+)|(\w+)|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA')) === false) {
-            throw new SugarParseException(
+            throw new Sugar_Exception_Parse(
                 $this->_file,
                 $this->_line,
                 'garbage at: '.substr($this->_src, $this->_pos, 12)
@@ -284,7 +284,7 @@ class SugarLexer
         // string
         if ($token[0] === '"') {
             if (($string = $this->_getRegex('/((?:[^"\\\\]*\\\\.)*[^"]*)"/msA')) === false) {
-                throw new SugarParseException(
+                throw new Sugar_Exception_Parse(
                     $this->_file,
                     $this->_line,
                     'unterminated string constant at: '.
@@ -294,7 +294,7 @@ class SugarLexer
             return array('data', self::decodeSlashes($string[1]));
         } elseif ($token[0] === '\'') {
             if (($string = $this->_getRegex('/((?:[^\'\\\\]*\\\\.)*[^\']*)\'/msA')) === false) {
-                throw new SugarParseException(
+                throw new Sugar_Exception_Parse(
                     $this->_file,
                     $this->_line,
                     'unterminated string constant at: '.
@@ -388,20 +388,20 @@ class SugarLexer
      * Checks to the see if the next token matches the requested token
      * type.  If it does, the token is consumed.  The token data is
      * stored in the second parameter.  If the token does not match,
-     * a {@link SugarParseException} is raised.
+     * a {@link Sugar_Exception_Parse} is raised.
      *
      * @param mixed $expect Which token type to accept, or a list of tokens.
      * @param mixed &$data  Token token.
      *
      * @return bool True on success.
-     * @throws SugarParseException when the next token does not match $accept.
+     * @throws Sugar_Exception_Parse when the next token does not match $accept.
      */
     public function expect($expect, &$data = null)
     {
         // throw an error if it's the wrong token
         if (is_array($expect)) {
             if (!in_array($this->_token[0], $expect)) {
-                throw new SugarParseException(
+                throw new Sugar_Exception_Parse(
                     $this->_file,
                     $this->_tokline,
                     'expected '.implode(' or ', $expect).  '; found '.
@@ -410,7 +410,7 @@ class SugarLexer
             }
         } else {
             if ($this->_token[0] != $expect) {
-                throw new SugarParseException(
+                throw new Sugar_Exception_Parse(
                     $this->_file,
                     $this->_tokline,
                     'expected '.$expect.  '; found '.
@@ -433,14 +433,14 @@ class SugarLexer
      * @param string $name Block name to expect.
      *
      * @return bool True on success.
-     * @throws SugarParseException
+     * @throws Sugar_Exception_Parse
      */
     public function expectEndBlock($name)
     {
         if ($this->_token[0] != 'end'
             && ($this->_token[0] != 'end-block' || $this->_token[1] != $name)
         ) {
-            throw new SugarParseException(
+            throw new Sugar_Exception_Parse(
                 $this->_file,
                 $this->_tokline,
                 'expected /'.$name.'; found '.self::tokenName($this->_token));

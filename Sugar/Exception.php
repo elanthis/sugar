@@ -51,7 +51,7 @@
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-class SugarException extends Exception
+class Sugar_Exception extends Exception
 {
     /**
      * Constructor.
@@ -80,7 +80,7 @@ class SugarException extends Exception
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-class SugarParseException extends SugarException
+class Sugar_Exception_Parse extends Sugar_Exception
 {
     /**
      * File error occured in.
@@ -126,7 +126,7 @@ class SugarParseException extends SugarException
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-class SugarRuntimeException extends SugarException
+class Sugar_Exception_Runtime extends Sugar_Exception
 {
     /**
      * File error occured in.
@@ -171,7 +171,7 @@ class SugarRuntimeException extends SugarException
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-class SugarApiException extends SugarException
+class Sugar_Exception_Usage extends Sugar_Exception
 {
     /**
      * Constructor.

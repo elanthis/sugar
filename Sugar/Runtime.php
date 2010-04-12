@@ -133,7 +133,7 @@ class SugarRuntime
      * @param array $sections Section bytecodes.
      *
      * @return mixed Last value on stack.
-     * @throws SugarRuntimeException when the user has provided code that
+     * @throws Sugar_Exception_Runtime when the user has provided code that
      * cannot be executed, such as attempting to call a function that does
      * not exist.
      */
@@ -173,7 +173,7 @@ class SugarRuntime
                 if (isset($sections[$name])) {
                     self::execute($sugar, $sections[$name], $sections);
                 } else {
-                    throw new SugarRuntimeException(
+                    throw new Sugar_Exception_Runtime(
                         $debug_file,
                         $debug_line,
                         'unknown section `'.$name.'`'
@@ -287,7 +287,7 @@ class SugarRuntime
                 // lookup function
                 $callable = $sugar->getFunction($func);
                 if (!$callable) {
-                    throw new SugarRuntimeException(
+                    throw new Sugar_Exception_Runtime(
                         $debug_file,
                         $debug_line,
                         'unknown function `'.$func.'`'
@@ -330,7 +330,7 @@ class SugarRuntime
 
                 // ensure the object is an object and that the method is a method
                 if (!is_object($obj)) {
-                    throw new SugarRuntimeException(
+                    throw new Sugar_Exception_Runtime(
                         $debug_file,
                         $debug_line,
                         'method call on non-object type `'.gettype($obj).'`'
@@ -338,7 +338,7 @@ class SugarRuntime
                 }
 
                 if (!method_exists($obj, $func)) {
-                    throw new SugarRuntimeException(
+                    throw new Sugar_Exception_Runtime(
                         $debug_file,
                         $debug_line,
                         'unknown method `'.$func.'` on type `'.gettype($obj).'`'
@@ -362,7 +362,7 @@ class SugarRuntime
                     );
 
                     if (!$check) {
-                        throw new SugarRuntimeException(
+                        throw new Sugar_Exception_Runtime(
                             $debug_file,
                             $debug_line,
                             'method call to `'.$func.'` on type `'.
@@ -388,7 +388,7 @@ class SugarRuntime
                 // lookup function
                 $callable = $sugar->getModifier($name);
                 if (!$callable) {
-                    throw new SugarRuntimeException(
+                    throw new Sugar_Exception_Runtime(
                         'FIXME',
                         1,
                         'unknown modifier `'.$name.'`'
@@ -431,7 +431,7 @@ class SugarRuntime
 
                 // if step is 0, fail
                 if ($step === 0) {
-                    throw new SugarException ('step of 0 in range loop');
+                    throw new Sugar_Exception ('step of 0 in range loop');
                 }
 
                 // iterate
@@ -494,7 +494,7 @@ class SugarRuntime
                 $stack []= $array;
                 break;
             default:
-                throw new SugarException(
+                throw new Sugar_Exception(
                     'internal error: unknown opcode `'.$opcode.'`'
                 );
             }
