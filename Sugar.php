@@ -271,7 +271,7 @@ class Sugar
      *
      * @var string
      */
-    public $charset = 'ISO-8859-1';
+    public $charset = 'UTF-8';
 
     /**
      * Opening delimiter character.
