@@ -122,8 +122,8 @@ function Sugar_Util_Json($value)
         return 'null';
     default:
         $escaped = addslashes($value);
-        $escaped = str_replace(array("\n", "\r", "\r\b"), '\\n', $escaped);
-        return "'".$escaped."'";
+        $escaped = str_replace(array("\n", "\r", "\r\n"), '\\n', $escaped);
+        return '"'.$escaped.'"';
     }
 }
 
