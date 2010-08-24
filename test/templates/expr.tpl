@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Expression Tests{{ /section }}
 
 {{ $a = 4 }}

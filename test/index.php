@@ -88,13 +88,13 @@ $end_config = microtime(true);
 
 // get some fetches
 $begin_fetch = microtime(true);
-$sugar->set('fetch_string', $sugar->fetchString('1+{% $i %}={% 1 + $i %}'));
-$sugar->set('fetch_file', $sugar->fetch('fetch.file'));
-$sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
+//$sugar->set('fetch_string', $sugar->fetchString('1+{% $i %}={% 1 + $i %}'));
+//$sugar->set('fetch_file', $sugar->fetch('fetch.file'));
+//$sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
 $end_fetch = microtime(true);
 
 $begin_display = microtime(true);
-$sugar->displayCache('file:'.$file.'.tpl', null, null, 'file:layout.tpl');
+$sugar->displayCache('file:'.$file.'.tpl', null, null);
 $end_display = microtime(true);
 
 $end = microtime(true);

@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}stdlib tests{{ /section }}
 
 <p>Test: date 'Y-m-d'<br/>

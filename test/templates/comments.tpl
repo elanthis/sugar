@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Comment Tests{{ /section }}
 
 <p>Expect: dancing mice<br>

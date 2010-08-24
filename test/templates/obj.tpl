@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Object Tests{{ /section }}
 
 <p>cause exception (will see <i>[[ Exception: fail() called ]]</i> at the top of the page)</p>

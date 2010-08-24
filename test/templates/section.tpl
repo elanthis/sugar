@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Section Tests{{ /section }}
 
 <p>Expect: <br/>

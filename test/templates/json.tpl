@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}json Tests{{ /section }}
 
 <p>Test: json value=$test<br>

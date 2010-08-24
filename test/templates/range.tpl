@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Range Loop Tests{{ /section }}
 
 <p>Test: loop $i in 1,3 ; $i ; /loop<br/>

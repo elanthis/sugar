@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Escape Modifier{{ /section }}
 
 <p>Test: '&lt;test&gt;'<br/>

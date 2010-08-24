@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Function Tests{{ /section }}
 
 <p>Test: showHtml html='&lt;b&gt;bold&lt;/b&gt;'<br>

@@ -32,6 +32,7 @@
  * @package    Sugar
  * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
+ * @author     Shawn Pearce
  * @copyright  2008-2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    SVN: $Id$
@@ -108,6 +109,13 @@ class Sugar_Grammar
      * @var array
      */
     private $_sections = array();
+
+    /**
+     * Inherited template.
+     *
+     * @var string
+     */
+    private $_inherit = null;
 
     /**
      * Operator precedence map.
@@ -646,6 +654,32 @@ class Sugar_Grammar
                     $block []= array('insert', $name);
                 }
 
+            // inherited layout templates
+            } elseif ($this->_tokens->accept('inherit')) {
+                // layout template name
+                $this->_tokens->expect('data', $name);
+
+                // do not allow nested inherited templates
+                if (!$toplevel) {
+                    throw new Sugar_Exception_Parse(
+                        $this->_tokens->getFile(),
+                        $this->_tokens->getLine(),
+                        'inherited template cannot be defined inside any other block'
+                    );
+                }
+
+                // do not more than one inherited template
+                if (!empty($this->_inherit)) {
+                    throw new Sugar_Exception_Parse(
+                        $this->_tokens->getFile(),
+                        $this->_tokens->getLine(),
+                        'inherited template can only be defined once'
+                    );
+                }
+
+                // store inherited template
+                $this->_inherit = $name;
+
             // insert section
             } elseif ($this->_tokens->accept('insert')) {
                 // name of section to include
@@ -730,7 +764,8 @@ class Sugar_Grammar
             'type' => 'ctpl',
             'version' => Sugar::VERSION,
             'bytecode' => $bytecode,
-            'sections' => $this->_sections
+            'inherit' => $this->_inherit,
+            'sections' => $this->_sections,
         );
 
         // free tokenizer

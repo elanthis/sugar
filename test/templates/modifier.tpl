@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Modifier Tests{{ /section }}
 
 <p>Test: one str='test'|upper<br/>

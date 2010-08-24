@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Cache Tests{{ /section }}
 
 <p>Reload the page.  The cache value should not change, but the nocache value should.</p>

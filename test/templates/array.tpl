@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Array Tests{{ /section }}
 
 <p>Test: [1,2,3]<br/>

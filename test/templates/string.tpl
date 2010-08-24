@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}String Tests{{ /section }}
 
 <p>Test: ''<br>

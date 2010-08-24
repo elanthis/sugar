@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Variable Tests{{ /section }}
 
 <p>Expect: dancing mice<br>

@@ -8,6 +8,7 @@
 + Renamed most classes to follow the Sugar_Foo naming convention.
 + Added experimental Memcached-based cache driver.
 + Changed the SugarUtil methods to functions.
++ Removed layouts in favor of inherited templates.
 
 ==================
 ** Version 0.82 **

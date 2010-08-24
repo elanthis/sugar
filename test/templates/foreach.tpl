@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Foreach Tests{{ /section }}
 
 <p>Test: foreach $i in $list; $i..','; /foreach<br/>

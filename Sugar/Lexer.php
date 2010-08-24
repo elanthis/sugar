@@ -41,7 +41,8 @@
  * @package    Sugar
  * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
- * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @author     Shawn Pearce
+ * @copyright  2008-2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    SVN: $Id$
  * @link       http://php-sugar.net
@@ -312,7 +313,7 @@ class Sugar_Lexer
             return array('term', $token[0]);
         } elseif (isset($token[4]) && in_array($token[4], array(
             'if', 'elif', 'else', 'end', 'foreach', 'in', 'loop',
-            'while', 'nocache', 'section', 'insert'))
+            'while', 'nocache', 'section', 'inherit', 'insert'))
         ) {
             // keyword or special symbol
             return array($token[4], null);

@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Fetch Tests{{ /section }}
 
 <p>Expect: 1+10=11<br>

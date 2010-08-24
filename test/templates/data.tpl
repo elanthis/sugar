@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}Plain Data Tests{{ /section }}
 
 <p>Expect: &lt;foo&gt;<br/>

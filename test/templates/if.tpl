@@ -1,3 +1,5 @@
+{{ inherit 'layout' }}
+
 {{ section title }}If Tests{{ /section }}
 
 {{ $test = 24 }}

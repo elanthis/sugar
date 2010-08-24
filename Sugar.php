@@ -30,7 +30,8 @@
  * @category  Template
  * @package   Sugar
  * @author    Sean Middleditch <sean@mojodo.com>
- * @copyright 2008-2009 Mojodo, Inc. and contributors
+ * @author    Shawn Pearce
+ * @copyright 2008-2010 Mojodo, Inc. and contributors
  * @license   http://opensource.org/licenses/mit-license.php MIT
  * @version   SVN: $Id$
  * @link      http://php-sugar.net
@@ -636,23 +637,22 @@ class Sugar
      *
      * @param Sugar_Ref $ref    The template to load.
      * @param array    $vars   Additional vars to set during execution.
-     * @param string   $layout Template to use as a layout wrapper.
      *
      * @return mixed Return value of bytecode.
      * @throws Sugar_Exception_Usage when the template cannot be found.
      */
-    private function _loadExecute(Sugar_Ref $ref, $vars, $layout)
+    private function _loadExecute(Sugar_Ref $ref, $vars)
     {
         // load compiled template
         $data = $this->_loadCompile($ref);
 
-        // if we have no layout, execute the template as-is
-        if (!$layout) {
+        // if we have no inherited template, execute the template as-is
+        if (empty($data['inherit'])) {
             return $this->_execute($data, $vars);
         }
 
         // load compiled layout
-        $layoutRef = Sugar_Ref::Create($layout, $this, $ref->cacheId, null);
+        $layoutRef = Sugar_Ref::Create($data['inherit'], $this, $ref->cacheId, null);
         $layoutData = $this->_loadCompile($layoutRef);
 
         // merge layout with page template
@@ -736,16 +736,15 @@ class Sugar
      *
      * @param string $file   Template to display.
      * @param array  $vars   Additional vars to set during execution.
-     * @Param string $layout Template to use for layout wrapper.
      *
      * @return bool true on success.
      * @throws Sugar_Exception_Usage when the template name is invalid or
      * the template cannot be found.
      */
-    public function display($file, $vars = null, $layout = null)
+    public function display($file, $vars = null)
     {
         // validate name
-        $ref = Sugar_Ref::create($file, $this, null, $layout);
+        $ref = Sugar_Ref::create($file, $this, null);
         if ($ref === false) {
             throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
@@ -757,7 +756,7 @@ class Sugar
 
         // load and run
         try {
-            $this->_loadExecute($ref, $vars, $layout);
+            $this->_loadExecute($ref, $vars);
             return true;
         } catch (Sugar_Exception $e) {
             $this->handleError($e);
@@ -773,14 +772,13 @@ class Sugar
      *
      * @param string $file   Template to process.
      * @param array  $vars   Additional vars to set during execution.
-     * @param string $layout Template to use for layout wrapper.
      *
      * @return string Template output.
      */
-    public function fetch($file, $vars = null, $layout = null)
+    public function fetch($file, $vars = null)
     {
         ob_start();
-        $this->display($file, $vars, $layout);
+        $this->display($file, $vars);
         $result = ob_get_contents();
         ob_end_clean();
         return $result;
@@ -794,12 +792,11 @@ class Sugar
      * @param string $file    File to check.
      * @param string $cacheId Optional cache identifier.
      * @param array  $vars    Additional vars to set during execution.
-     * @param string $layout  Template to use for layout wrapper.
      *
      * @return bool True if a valid HTML cache exists for the file.
      * @throws Sugar_Exception_Usage when the template name is invalid.
      */
-    function isCached($file, $cacheId = null, $vars = null, $layout = null)
+    function isCached($file, $cacheId = null, $vars = null)
     {
         // debug always disabled caching
         if ($this->debug) {
@@ -807,7 +804,7 @@ class Sugar
         }
 
         // validate name
-        $ref = Sugar_Ref::create($file, $this, $cacheId, $layout);
+        $ref = Sugar_Ref::create($file, $this, $cacheId);
         if ($ref === false) {
             throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
@@ -821,14 +818,13 @@ class Sugar
      *
      * @param string $file    File to check.
      * @param string $cacheId Optional cache identifier.
-     * @param string $layout  Optional layout template.
      *
      * @throws Sugar_Exception_Usage when the template name is invalid.
      */
-    function uncache($file, $cacheId = null, $layout = null)
+    function uncache($file, $cacheId = null)
     {
         // validate name
-        $ref = Sugar_Ref::create($file, $this, $cacheId, $layout);
+        $ref = Sugar_Ref::create($file, $this, $cacheId);
         if ($ref === false) {
             throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
@@ -851,15 +847,14 @@ class Sugar
      * @param string $file    Template to display.
      * @param string $cacheId Optinal cache identifier.
      * @param array  $vars    Additional vars to set during execution.
-     * @param string $layout  Template to use for layout wrapper.
      *
      * @return bool true on success.
      * @throws Sugar_Exception_Usage when the template name is invalid.
      */
-    function displayCache($file, $cacheId = null, $vars = null, $layout = null)
+    function displayCache($file, $cacheId = null, $vars = null)
     {
         // validate name
-        $ref = Sugar_Ref::create($file, $this, $cacheId, $layout);
+        $ref = Sugar_Ref::create($file, $this, $cacheId);
         if ($ref === false) {
             throw new Sugar_Exception_Usage('illegal template name: '.$file);
         }
@@ -875,7 +870,7 @@ class Sugar
             // if we are running inside an existing cache handler,
             // execute and add to current cache
             if ($this->cacheHandler) {
-                $this->_loadExecute($ref, $vars, $layout);
+                $this->_loadExecute($ref, $vars);
                 return true;
             }
 
@@ -886,7 +881,7 @@ class Sugar
 
             // create cache
             $this->cacheHandler = new Sugar_CacheHandler($this);
-            $this->_loadExecute($ref, $vars, $layout);
+            $this->_loadExecute($ref, $vars);
             $cache = $this->cacheHandler->getOutput();
             $this->cacheHandler = null;
 
@@ -909,15 +904,13 @@ class Sugar
      * @param string $file    Template to process.
      * @param string $cacheId Optional cache identifier.
      * @param array  $vars    Additional vars to set during execution.
-     * @param string $layout  Template to use for layout wrapper.
      *
      * @return string Template output.
      */
-    public function fetchCache($file, $cacheId = null, $vars = null,
-    $layout = null)
+    public function fetchCache($file, $cacheId = null, $vars = null)
     {
         ob_start();
-        $this->displayCache($file, $cacheId, $vars, $layout);
+        $this->displayCache($file, $cacheId, $vars);
         $result = ob_get_contents();
         ob_end_clean();
         return $result;
