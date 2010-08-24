@@ -8,6 +8,8 @@
 + Renamed most classes to follow the Sugar_Foo naming convention.
 + Added experimental Memcached-based cache driver.
 + Changed the SugarUtil methods to functions.
++ Renamed the method_acl member to methodAcl for consistency.
++ Added getOption() and setOption() methods.
 + Removed layouts in favor of inherited templates.
 
 ==================

@@ -106,35 +106,35 @@ class Sugar
      * No indication of the error is returned to the calling script.  This is
      * the default behavior.
      */
-    const ERROR_PRINT = 1;
+    const ERROR_PRINT = 100;
 
     /**
      * Errors will be thrown as {@link Sugar_Exception} objects.
      */
-    const ERROR_THROW = 2;
+    const ERROR_THROW = 101;
 
     /**
      * The error will be printed to the user, and then die() will be called to
      * terminate the script.
      */
-    const ERROR_DIE = 3;
+    const ERROR_DIE = 102;
 
     /**
      * The error will be silently ignored.
      */
-    const ERROR_IGNORE = 4;
+    const ERROR_IGNORE = 103;
 
     /**
      * All output will be escaped using htmlentities() with the
      * ENT_QUOTES flag set, using the {@link Sugar::$charset} setting.  This
      * is the default behavior.
      */
-    const OUTPUT_HTML = 1;
+    const OUTPUT_HTML = 200;
 
     /**
      * Identical to {@link Sugar::OUTPUT_HTML}.
      */
-    const OUTPUT_XHTML = 2;
+    const OUTPUT_XHTML = 201;
 
     /**
      * All output will be escaped using htmlspecialchars() with the
@@ -142,12 +142,55 @@ class Sugar
      * differs from {@link Sugar::OUTPUT_HTML} as only <, >, ", ', and & will
      * escaped.
      */
-    const OUTPUT_XML = 3;
+    const OUTPUT_XML = 202;
 
     /**
      * Disables all output escaping.
      */
-    const OUTPUT_TEXT = 4;
+    const OUTPUT_TEXT = 203;
+
+    /**
+     * Option code for setting or retrieving the charset used during encoding.
+     *
+     * The character set default is UTF-8.  Another popular value that some
+     * applications may need is ISO-8859-1.
+     */
+    const CHARSET = 1;
+
+    /**
+     * Option code for setting or retrieving the output mode used during
+     * escaping.
+     *
+     * The default output mode is {@link Sugar::OUTPUT_HTML}.  Other possible
+     * values are {@link Sugar::OUTPUT_XHTML}, {@link Sugar::OUTPUT_XML}, and
+     * {@link Sugar::OUTPUT_TEXT}.
+     */
+    const OUTPUT = 2;
+
+    /**
+     * Option code to for toggling debug mode.
+     *
+     * Debug mode is either true (enabled) or false (disabled).  It is
+     * disabled by default.
+     */
+    const DEBUG = 3;
+
+    /**
+     * Option code to set or get the error handling mode used during script
+     * execution.
+     *
+     * The default error handling mode is {@link Sugar::ERROR_PRINT}.  Other
+     * possible values are {@link Sugar::ERROR_THROW},
+     * {@link Sugar::ERROR_DIE}, and {@link Sugar::ERROR_IGNORE}.
+     */
+    const ERRORS = 4;
+
+    /**
+     * Cache expiration time in seconds.
+     *
+     * The default cache expiration time is 3600 seconds, or one hour.
+     */
+    const CACHE_LIMIT = 5;
 
     /**
      * Stack of variable sets.  Each template invocation creates a new
@@ -307,6 +350,60 @@ class Sugar
     }
 
     /**
+     * Get the value of an option
+     *
+     * @param int   $option The option code to lookup.
+     *
+     * @return mixed The value to assign to the option.
+     * @throws Sugar_Exception_Usage when an invalid option code is given
+     * or an invalid value for the specific option is given.
+     */
+    public function getOption($code)
+    {
+        switch ($code) {
+        case self::CHARSET:
+            return $this->charset;
+        case self::OUTPUT:
+            return $this->output;
+        case self::DEBUG:
+            return $this->debug;
+        case self::ERRORS:
+            return $this->errors;
+        case self::CACHE_LIMIT:
+            return $this->cacheLimit;
+        default:
+            throw new Sugar_Exception_Usage("invalid option code: {$code}");
+        }
+    }
+
+    /**
+     * Set the value of an option
+     *
+     * @param int   $option The option code to lookup.
+     * @param mixed $value  The value to assign to the option.
+     *
+     * @throws Sugar_Exception_Usage when an invalid option code is given
+     * or an invalid value for the specific option is given.
+     */
+    public function setOption($code, $value)
+    {
+        switch ($code) {
+        case self::CHARSET:
+            return $this->charset = (string)$value;
+        case self::OUTPUT:
+            return $this->output = $value;
+        case self::DEBUG:
+            return $this->debug = (bool)$value;
+        case self::ERRORS:
+            return $this->errors = $value;
+        case self::CACHE_LIMIT:
+            return $this->cacheLimit = $value;
+        default:
+            throw new Sugar_Exception_Usage("invalid option code: {$code}");
+        }
+    }
+
+    /**
      * Set a new variable to be available within templates.
      *
      * @param string $name  The variable's name.
@@ -327,8 +424,8 @@ class Sugar
      * @param string   $name   The name to register the function under.
      * @param callback $invoke Optional PHP callback; if null, the $name
      *                         parameter is used as the callback.
-     * @param boo      $cache  Whether the function is cacheable.
-     * @param boo      $escape Whether the function output should be escaped.
+     * @param bool     $cache  Whether the function is cacheable.
+     * @param bool     $escape Whether the function output should be escaped.
      *
      * @return bool true on success
      */
