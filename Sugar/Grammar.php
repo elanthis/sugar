@@ -470,19 +470,27 @@ class Sugar_Grammar
         $block = array();
 
         // build byte-code
-        while (!$this->_tokens->peekAny(
-            array('eof', 'else', 'elif', 'end', 'end-block')
-        )) {
+        while (true) {
+            // terminators
+            if ($this->_tokens->accept('eof')
+                || $this->_tokens->acceptKeyword('else')
+                || $this->_tokens->acceptKeyword('elif')
+                || $this->_tokens->accept('end')
+                || $this->_tokens->accept('end-block')
+            ) {
+                $this->_tokens->pushBack();
+                break;
+            }
             // raw string
-            if ($this->_tokens->accept('literal', $literal)) {
+            elseif ($this->_tokens->accept('literal', $literal)) {
                 $block []= array('echo', $literal);
-
+            }
             // if the command is empty, ignore
-            } elseif ($this->_tokens->accept('term')) {
+            elseif ($this->_tokens->accept('term')) {
                 // do nothing
-
+            }
             // print raw value
-            } elseif ($this->_tokens->acceptKeyword('if')) {
+            elseif ($this->_tokens->acceptKeyword('if')) {
                 // get first clause expr and body
                 $ops = $this->_compileExpr();
                 $this->_tokens->expect('term');
@@ -508,9 +516,9 @@ class Sugar_Grammar
 
                 // push block
                 $block []= array('if', $clauses);
-
+            }
             // while loop
-            } elseif ($this->_tokens->acceptKeyword('while')) {
+            elseif ($this->_tokens->acceptKeyword('while')) {
                 // get expression
                 $test = $this->_compileExpr();
                 $this->_tokens->expect('term');
@@ -522,9 +530,9 @@ class Sugar_Grammar
 
                 // push block
                 $block []= array('while', $test, $body);
-
+            }
             // range loop
-            } elseif ($this->_tokens->acceptKeyword('loop')) {
+            elseif ($this->_tokens->acceptKeyword('loop')) {
                 // name in lower,upper
                 $this->_tokens->expect('var', $name);
                 $this->_tokens->expectKeyword('in');
@@ -551,9 +559,9 @@ class Sugar_Grammar
                 $block []= $upper;
                 $block []= $step;
                 $block []= array('range', $name, $body);
-
+            }
             // loop over an array
-            } elseif ($this->_tokens->acceptKeyword('foreach')) {
+            elseif ($this->_tokens->acceptKeyword('foreach')) {
                 $key = null;
                 $name = null;
 
@@ -579,18 +587,18 @@ class Sugar_Grammar
                 // store foreach block
                 $block []= $ops;
                 $block []= array('foreach', $key, $name, $body);
-
+            }
             // inhibit caching
-            } elseif ($this->_tokens->acceptKeyword('nocache')) {
+            elseif ($this->_tokens->acceptKeyword('nocache')) {
                 // get block
                 $body = $this->compileBlock();
                 $this->_tokens->expectEndBlock('nocache');
                 $this->_tokens->expect('term');
 
                 $block []= array('nocache', $body);
-
+            }
             // if we have a var, we might have an assignment... or just an expression
-            } elseif ($this->_tokens->accept('var', $name)) {
+            elseif ($this->_tokens->accept('var', $name)) {
                 // if it's followed by a =, it's an assignment
                 if ($this->_tokens->accept('=')) {
                     $ops = $this->_compileExpr();
@@ -598,9 +606,9 @@ class Sugar_Grammar
 
                     $block []= $ops;
                     $block []= array('assign', strtolower($name));
-
+                }
                 // otherwise, it's an expression
-                } else {
+                else {
                     // push the variable request, compile expr skipping first term
                     // DIRTY HACK
                     $this->_output []= array('lookup', $name);
@@ -611,9 +619,9 @@ class Sugar_Grammar
                     $block []= $ops;
                     $block []= array($escape_flag ? 'print' : 'rawprint');
                 }
-
+            }
             // new section?
-            } elseif ($this->_tokens->acceptKeyword('section')) {
+            elseif ($this->_tokens->acceptKeyword('section')) {
                 // check if insertion is requested
                 $add_insert = false;
                 if ($this->_tokens->accept('|')) {
@@ -653,9 +661,9 @@ class Sugar_Grammar
                 if ($add_insert) {
                     $block []= array('insert', $name);
                 }
-
+            }
             // inherited layout templates
-            } elseif ($this->_tokens->acceptKeyword('inherit')) {
+            elseif ($this->_tokens->acceptKeyword('inherit')) {
                 // layout template name
                 $this->_tokens->expect('data', $name);
 
@@ -679,17 +687,17 @@ class Sugar_Grammar
 
                 // store inherited template
                 $this->_inherit = $name;
-
+            }
             // insert section
-            } elseif ($this->_tokens->acceptKeyword('insert')) {
+            elseif ($this->_tokens->acceptKeyword('insert')) {
                 // name of section to include
                 $this->_tokens->expect('id', $name);
 
                 // push opcode
                 $block []= array('insert', $name);
-
+            }
             // function call?
-            } elseif ($this->_tokens->accept('id', $func)) {
+            elseif ($this->_tokens->accept('id', $func)) {
                 // get modifier, if present
                 $modifiers = null;
                 $escape_flag = true;
@@ -708,9 +716,9 @@ class Sugar_Grammar
                 if ($modifiers) {
                     $block []= $modifiers;
                 }
-
+            }
             // we have a statement
-            } else {
+            else {
                 $escape_flag = true;
                 $ops = $this->_compileExpr(false, true, $escape_flag);
                 $this->_tokens->expect('term');
@@ -754,6 +762,9 @@ class Sugar_Grammar
         $this->_tokens = new Sugar_Lexer(
             $src, $file, $this->_sugar->delimStart, $this->_sugar->delimEnd
         );
+
+        // tokenize input
+        $this->_tokens->tokenize();
 
         // build byte-code for content section
         $bytecode = $this->compileBlock(true);

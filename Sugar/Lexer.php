@@ -50,6 +50,11 @@
  */
 
 /**
+ * Source token class.
+ */
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Token.php';
+
+/**
  * Sugar language tokenizer.
  *
  * Tokenizes a source file for use by {@link Sugar_Grammar}.
@@ -74,26 +79,18 @@ class Sugar_Lexer
     private $_src;
 
     /**
-     * Next token.
+     * List of tokens for the input source
      *
      * @var array
      */
-    private $_token = null;
+    private $_tokens = array();
 
     /**
-     * Index into the source code.
+     * Next token index for the accept/expect methods.
      *
-     * @var int $_pos
+     * @var int
      */
-    private $_pos = 0;
-
-    /**
-     * Flag indicating whether the tokenizer is currently working
-     * within a pair of delimiters.
-     *
-     * @var bool
-     */
-    private $_inCmd = false;
+    private $_next = 0;
 
     /**
      * The name of the source file being tokenized.
@@ -103,32 +100,18 @@ class Sugar_Lexer
     private $_file;
 
     /**
-     * Current line number of the source being tokenized.
-     *
-     * @var int
-     */
-    private $_line = 1;
-
-    /**
-     * Line number of the next token.
-     *
-     * @var int
-     */
-    private $_tokline;
-
-    /**
      * Starting delimiter.
      *
      * @var string
      */
-    private $_delimStart = '<%';
+    private $_delimStart = '{{';
 
     /**
      * Ending delimiter.
      *
      * @var string
      */
-    private $_delimEnd = '%>';
+    private $_delimEnd = '}}';
 
     /**
      * Constructor.
@@ -144,39 +127,6 @@ class Sugar_Lexer
         $this->_file = $file;
         $this->_delimStart = $delimStart;
         $this->_delimEnd = $delimEnd;
-
-        $this->_token = $this->_next();
-    }
-
-    /**
-     * Returns a user-friendly name for a token, used for error messages.
-     *
-     * @param array $token Token to name.
-     *
-     * @return string Nice name for the token.
-     */
-    public static function tokenName($token)
-    {
-        switch($token[0]) {
-        case 'eof': return '<eof>';
-        case 'id': return 'identifier '.$token[1];
-        case 'var': return 'variable $'.$token[1];
-        case 'data':
-            if (is_string($token[1])) {
-                return 'string "'.addslashes($token[1]).'"';
-            } elseif (is_float($token[1])) {
-                return 'float '.$token[1];
-            } elseif (is_int($token[1])) {
-                return 'integer '.$token[1];
-            } elseif (is_object($token[1])) {
-                return 'object '.get_class($token[1]);
-            } else {
-                return gettype($token[1]);
-            }
-        case 'term': return $token[1];
-        case 'end-block': return '/'.$token[1];
-        default: return $token[0];
-        }
     }
 
     /**
@@ -195,150 +145,175 @@ class Sugar_Lexer
     }
 
     /**
-     * Checks to see if the requested regular expression matches at the
-     * current position of the source file, and returns the matched
-     * expressions if it does.  Additionally, this moves the source
-     * position forward by the length of the matched expression and updates
-     * the line count as appropriate.
+     * Parses the entire source into a list of tokens.
      *
-     * @param string $regex Regular expression to check for.
-     *
-     * @return mixed Array of subexpression matches on successful, or false
-     *               if no match.
-     */
-    private function _getRegex($regex)
-    {
-        if (!preg_match($regex, $this->_src, $ar, 0, $this->_pos)) {
-            return false;
-        }
-        $this->_pos += strlen($ar[0]);
-        $this->_line += substr_count($ar[0], "\n");
-        return $ar;
-    }
-
-    /**
-     * Retrieves the next token in the input stream.
-     *
-     * @return array Next token.
      * @throws Sugar_Exception_Parse on invalid template input.
      */
-    private function _next()
+    public function tokenize()
     {
-        // EOF
-        if ($this->_pos >= strlen($this->_src)) {
-            return array('eof', null);
-        }
+        $inCmd  = false;       // true if we have encountered an opening delimitero
+        $source = $this->_src; // the source code being lexed
+        $pos    = 0;           // position in source code
+        $line   = 1;           // line index into source code
 
-        // outside of a command?
-        if (!$this->_inCmd) {
-            // find next opening delimiter
-            $next = strpos($this->_src, $this->_delimStart, $this->_pos);
+        // loop until we hit the end of the string
+        $srclen = strlen($source);
+        $i = 0;
+        while ($pos < $srclen) {
+            // outside of a command?
+            if (!$inCmd) {
+                // find next opening delimiter
+                $next = strpos($source, $this->_delimStart, $pos);
 
-            // set $next to last byte
-            if ($next === false) {
-                $next = strlen($this->_src);
+                // set $next to last byte
+                if ($next === false) {
+                    $next = strlen($source);
+                }
+
+                // just a literal?
+                if ($next > $pos) {
+                    // add text token
+                    $text = substr($source, $pos, $next - $pos);
+                    $this->_tokens[] = new Sugar_Token('literal', $line, $text);
+
+                    // update position and line
+                    $line += substr_count(
+                        $source,
+                        "\n",
+                        $pos,
+                        $next - $pos
+                    );
+                    $pos = $next;
+
+                    // return to top of main loop
+                    continue;
+                }
+
+                // setup inside command
+                $inCmd = true;
+                $pos = $next + 2;
             }
 
-            // just a literal?
-            if ($next > $this->_pos) {
-                $text = substr($this->_src, $this->_pos, $next - $this->_pos);
-                $this->_tokline = $this->_line;
-                $this->_line += substr_count(
-                    $this->_src,
-                    "\n",
-                    $this->_pos,
-                    $next - $this->_pos
-                );
-                $this->_pos = $next;
-                return array('literal', $text);
+            // skip spaces and comments
+            while (preg_match('/(?:\s+|(?:\/\*.*?\*\/|\/\/.*?($|'.preg_quote($this->_delimEnd).')))/msA', $source, $ar, 0, $pos)) {
+                // increment position and line
+                $pos += strlen($ar[0]);
+                $line += substr_count($ar[0], "\n");
+
+                // line comment ended with an end delimiter
+                if (isset($ar[1]) && $ar[1] === $this->_delimEnd) {
+                    $inCmd = false;
+                    break;
+                }
             }
 
-            // setup inside command
-            $this->_inCmd = true;
-            $this->_pos = $next + 2;
-        }
-
-        // skip spaces and comments
-        while (($ar = $this->_getRegex('/(?:\s+|(?:\/\*.*?\*\/|\/\/.*?($|'.preg_quote($this->_delimEnd).')))/msA')) !== false) {
-            // line comment ended with an end delimiter
-            if (isset($ar[1]) && $ar[1] === $this->_delimEnd) {
-                $this->_inCmd = false;
-                return array('term', $this->_delimEnd);
+            // line comment ended with an end delimiter, part deux;
+            // add token and go back to top of main loop
+            if (!$inCmd) {
+                $this->_tokens[] = new Sugar_Token('term', $line, $this->_delimEnd);
+                continue;
             }
-        }
 
-        // get next token
-        $this->_tokline = $this->_line;
-        if (($token = $this->_getRegex('/(?:'.preg_quote($this->_delimEnd).'|\$(\w+)|(\d+(?:[.]\d+)?)|\/([A-Za-z_]\w+)|(\w+)|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA')) === false) {
-            throw new Sugar_Exception_Parse(
-                $this->_file,
-                $this->_line,
-                'garbage at: '.substr($this->_src, $this->_pos, 12)
-            );
-        }
-
-        // if at end, mark that
-        if ($token[0] === $this->_delimEnd) {
-            $this->_inCmd = false;
-        }
-
-        // string
-        if ($token[0] === '"') {
-            if (($string = $this->_getRegex('/((?:[^"\\\\]*\\\\.)*[^"]*)"/msA')) === false) {
+            // get next token
+            if (!preg_match('/(?:'.preg_quote($this->_delimEnd).'|\$(\w+)|(\d+(?:[.]\d+)?)|\/([A-Za-z_]\w+)|(\w+)|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA', $source, $token, 0, $pos)) {
                 throw new Sugar_Exception_Parse(
                     $this->_file,
-                    $this->_line,
-                    'unterminated string constant at: '.
-                        substr($this->_src, $this->_pos, 12)
+                    $line,
+                    'garbage at: '.substr($source, $pos, 12)
                 );
             }
-            return array('data', self::decodeSlashes($string[1]));
-        } elseif ($token[0] === '\'') {
-            if (($string = $this->_getRegex('/((?:[^\'\\\\]*\\\\.)*[^\']*)\'/msA')) === false) {
-                throw new Sugar_Exception_Parse(
-                    $this->_file,
-                    $this->_line,
-                    'unterminated string constant at: '.
-                        substr($this->_src, $this->_pos, 12)
-                );
-            }
-            return array('data', self::decodeSlashes($string[1]));
-        }
 
-        // variable
-        if (isset($token[1]) && $token[1] !== '') {
-            return array('var', $token[1]);
-        } elseif ($token[0] === $this->_delimEnd || $token[0] === ';') {
+            // increment position by size of token
+            $pos += strlen($token[0]);
+
+            // double-quoted string
+            if ($token[0] === '"') {
+                if (!preg_match('/((?:[^"\\\\]*\\\\.)*[^"]*)"/msA', $source, $string, 0, $pos)) {
+                    throw new Sugar_Exception_Parse(
+                        $this->_file,
+                        $line,
+                        'unterminated string constant at: '.
+                            substr($source, $pos, 12)
+                    );
+                }
+
+                // add token
+                $this->_tokens[] = new Sugar_Token('data', $line, self::decodeSlashes($string[1]));
+
+                // increment position and line
+                $pos += strlen($string[0]);
+                $line += substr_count($string[0], "\n");
+            }
+            // single-quoted string
+            elseif ($token[0] === '\'') {
+                if (!preg_match('/((?:[^\'\\\\]*\\\\.)*[^\']*)\'/msA', $source, $string, 0, $pos)) {
+                    throw new Sugar_Exception_Parse(
+                        $this->_file,
+                        $line,
+                        'unterminated string constant at: '.
+                            substr($source, $pos, 12)
+                    );
+                }
+
+                // add token
+                $this->_tokens[] = new Sugar_Token('data', $line, self::decodeSlashes($string[1]));
+
+                // increment position and line
+                $pos += strlen($string[0]);
+                $line += substr_count($string[0], "\n");
+            }
+            // variable
+            elseif (isset($token[1]) && $token[1] !== '') {
+                $this->_tokens[] = new Sugar_Token('var', $line, $token[1]);
+            }
+            // end delimiter
+            // if at end, mark that
+            elseif ($token[0] === $this->_delimEnd) {
+                $inCmd = false;
+                $this->_tokens[] = new Sugar_Token('term', $line, $token[0]);
+            }
             // statement terminator
-            return array('term', $token[0]);
-        } elseif (isset($token[3]) && $token[3] !== '') {
+            elseif ($token[0] === ';') {
+                $this->_tokens[] = new Sugar_Token('term', $line, $token[0]);
+            }
             // block terminator
-            return array('end-block', $token[3]);
-        } elseif (isset($token[2]) && $token[2] !== ''
-            && strpos($token[2], '.') !== false
-        ) {
+            elseif (isset($token[3]) && $token[3] !== '') {
+                $this->_tokens[] = new Sugar_Token('end-block', $line, $token[3]);
+            }
             // floating point number
-            return array('data', floatval($token[2]));
-        } elseif (isset($token[2]) && $token[2] !== '') {
+            elseif (isset($token[2]) && $token[2] !== ''
+                && strpos($token[2], '.') !== false
+            ) {
+                $this->_tokens[] = new Sugar_Token('data', $line, floatval($token[2]));
+            }
             // integer
-            return array('data', intval($token[2]));
-        } elseif ($token[0] === 'and') {
+            elseif (isset($token[2]) && $token[2] !== '') {
+                $this->_tokens[] = new Sugar_Token('data', $line, intval($token[2]));
+            }
             // and and or
-            return array('&&', null);
-        } elseif ($token[0] === 'or') {
-            return array('||', null);
-        } elseif ($token[0] === 'true') {
+            elseif ($token[0] === 'and') {
+                $this->_tokens[] = new Sugar_Token('&&', $line, null);
+            } elseif ($token[0] === 'or') {
+                $this->_tokens[] = new Sugar_Token('||', $line, null);
+            }
             // true and false
-            return array('data', true);
-        } elseif ($token[0] === 'false') {
-            return array('data', false);
-        } elseif (isset($token[4]) && $token[4] !== '') {
+            elseif ($token[0] === 'true') {
+                $this->_tokens[] = new Sugar_Token('data', $line, true);
+            } elseif ($token[0] === 'false') {
+                $this->_tokens[] = new Sugar_Token('data', $line, false);
+            }
             // identifier
-            return array('id', $token[4]);
-        } else {
+            elseif (isset($token[4]) && $token[4] !== '') {
+                $this->_tokens[] = new Sugar_Token('id', $line, $token[4]);
+            }
             // generic operator
-            return array($token[0], null);
+            else {
+                $this->_tokens[] = new Sugar_Token($token[0], $line, null);
+            }
         }
+
+        // append EOF token
+        $this->_tokens[] = new Sugar_Token('eof', $line, null);
     }
 
     /**
@@ -354,16 +329,18 @@ class Sugar_Lexer
      */
     public function accept($accept, &$data = null)
     {
+        $token = $this->_tokens[$this->_next];
+
         // return false if it's the wrong token
-        if ($this->_token[0] != $accept) {
+        if ($token->type != $accept) {
             return false;
         }
 
         // store data
-        $data = $this->_token[1];
+        $data = $token->extra;
 
-        // get next token
-        $this->_token = $this->_next();
+        // increment for next call
+        ++$this->_next;
         return true;
     }
 
@@ -379,16 +356,15 @@ class Sugar_Lexer
      */
     public function acceptKeyword($accept)
     {
+        $token = $this->_tokens[$this->_next];
+
         // return false if it's the wrong token
-        if ($this->_token[0] != 'id' || $this->_token[1] != $accept) {
+        if ($token->type != 'id' || $token->extra != $accept) {
             return false;
         }
 
-        // store data
-        $data = $this->_token[1];
-
-        // get next token
-        $this->_token = $this->_next();
+        // increment for next call
+        ++$this->_next;
         return true;
     }
 
@@ -401,7 +377,29 @@ class Sugar_Lexer
      */
     public function peekAny(array $accept)
     {
-        return in_array($this->_token[0], $accept);
+        $token = $this->_tokens[$this->_next];
+        return in_array($token->type, $accept);
+    }
+    
+    /**
+     * Throws an expected-token exception
+     *
+     * @param string $expected The type of token expected
+     *
+     * @throws Sugar_Exception_Parse always
+     */
+    private function throwExpect($expected)
+    {
+        $token = $this->_tokens[$this->_next];
+
+        // build message
+        $msg = 'expected '.$expected;
+        if ($this->_next != 0) {
+            $msg .= ' after '.$this->_tokens[$this->_next - 1]->getPrettyName();
+        }
+        $msg .= '; found '.$token->getPrettyName();
+
+        throw new Sugar_Exception_Parse($this->_file, $token->line, $msg);
     }
 
     /**
@@ -418,32 +416,24 @@ class Sugar_Lexer
      */
     public function expect($expect, &$data = null)
     {
+        $token = $this->_tokens[$this->_next];
+
         // throw an error if it's the wrong token
         if (is_array($expect)) {
-            if (!in_array($this->_token[0], $expect)) {
-                throw new Sugar_Exception_Parse(
-                    $this->_file,
-                    $this->_tokline,
-                    'expected '.implode(' or ', $expect).  '; found '.
-                        self::tokenName($this->_token)
-                );
+            if (!in_array($token->type, $expect)) {
+                $this->throwExpect(implode(' or ', $expect));
             }
         } else {
-            if ($this->_token[0] != $expect) {
-                throw new Sugar_Exception_Parse(
-                    $this->_file,
-                    $this->_tokline,
-                    'expected '.$expect.  '; found '.
-                        self::tokenName($this->_token)
-                );
+            if ($token->type != $expect) {
+                $this->throwExpect($expect);
             }
         }
 
         // store value
-        $data = $this->_token[1];
+        $data = $token->extra;
 
-        // get next token
-        $this->_token = $this->_next();
+        // increment for next call
+        ++$this->_next;
         return true;
     }
 
@@ -460,18 +450,15 @@ class Sugar_Lexer
      */
     public function expectKeyword($expect)
     {
+        $token = $this->_tokens[$this->_next];
+
         // every keyword is an identifier
-        if ($this->_token[0] != 'id' || $this->_token[1] != $expect) {
-            throw new Sugar_Exception_Parse(
-                $this->_file,
-                $this->_tokline,
-                'expected '.$expect.  '; found '.
-                    self::tokenName($this->_token)
-            );
+        if ($token->type != 'id' || $token->extra != $expect) {
+            $this->throwExpect($expect);
         }
 
-        // get next token
-        $this->_token = $this->_next();
+        // increment for next call
+        ++$this->_next;
         return true;
     }
 
@@ -485,18 +472,25 @@ class Sugar_Lexer
      */
     public function expectEndBlock($name)
     {
-        if ($this->_token[0] != 'end'
-            && ($this->_token[0] != 'end-block' || $this->_token[1] != $name)
+        $token = $this->_tokens[$this->_next];
+
+        if ($token->type != 'end'
+            && ($token->type != 'end-block' || $token->extra != $name)
         ) {
-            throw new Sugar_Exception_Parse(
-                $this->_file,
-                $this->_tokline,
-                'expected /'.$name.'; found '.self::tokenName($this->_token));
+            $this->throwExpect('/'.$name);
         }
 
-        // get next token
-        $this->_token = $this->_next();
+        // increment for next call
+        ++$this->_next;
         return true;
+    }
+
+    /**
+     * Push the last accepted/expected token back into the queue.
+     */
+    public function pushBack()
+    {
+        --$this->_next;
     }
 
     /**
@@ -508,7 +502,8 @@ class Sugar_Lexer
      */
     public function getOp()
     {
-        $op = $this->_token[0];
+        $token = $this->_tokens[$this->_next];
+        $op = $token->type;
 
         // convert = to == for operators
         if ($op == '=') {
@@ -517,13 +512,13 @@ class Sugar_Lexer
 
         // identifiers can be operators too
         if ($op == 'id') {
-            $op = $this->_token[1];
+            $op = $token->extra;
         }
 
         // if it's a valid operator, return it
         if (isset(Sugar_Grammar::$precedence[$op])) {
-            // get next token
-            $this->_token = $this->_next();
+            // increment for next call
+            ++$this->_next;
 
             return $op;
         } else {
@@ -538,7 +533,7 @@ class Sugar_Lexer
      */
     public function getLine()
     {
-        return $this->_line;
+        return $this->_tokens[$this->_next]->line;
     }
 
     /**
