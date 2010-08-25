@@ -11,6 +11,7 @@
 + Renamed the method_acl member to methodAcl for consistency.
 + Added getOption() and setOption() methods.
 + Removed layouts in favor of inherited templates.
++ pluginDir and templateDir may be arrays of paths.
 
 ==================
 ** Version 0.82 **

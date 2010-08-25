@@ -291,9 +291,9 @@ class Sugar
 
     /**
      * Directory in which templates can be found when using the file storage
-     * driver.
+     * driver.  This can either be a single string or an array.
      *
-     * @var string
+     * @var mixed
      */
     public $templateDir = './templates';
 
@@ -306,7 +306,9 @@ class Sugar
     public $cacheDir = './templates/cache';
 
     /**
-     * Directory to search for plugins. 
+     * Directory to search for plugins.  This can either be a single string or an array.
+     *
+     * @var mixed
      */
     public $pluginDir = './plugins';
 
@@ -504,9 +506,9 @@ class Sugar
         }
 
         // attempt plugin loading
-        $file = "{$this->pluginDir}/$invoke.php";
-        if (file_exists($file)) {
-            @include_once $file;
+        $path = Sugar_Util_SearchForFile($this->pluginDir, $invoke.'.php');
+        if ($path !== false) {
+            require_once $path;
             if (function_exists($invoke)) {
                 $this->_functions[$name] = array('name'=>$name,
                         'invoke'=>$invoke, 'cache'=>true, 'escape'=>true);
@@ -543,9 +545,9 @@ class Sugar
         }
 
         // attempt plugin loading
-        $file = "{$this->pluginDir}/$invoke.php";
-        if (file_exists($file)) {
-            @include_once $file;
+        $path = Sugar_Util_SearchForFile($this->pluginDir, $invoke.'.php');
+        if ($path !== false) {
+            require_once $path;
             if (function_exists($invoke)) {
                 return $this->_modifiers[$name] = $invoke;
             }
@@ -719,7 +721,7 @@ class Sugar
             throw new Sugar_Exception_Usage('template not found: '.$ref->full);
         }
         $parser = new Sugar_Grammar($this);
-        $data = $parser->compile($source, $ref->storage->path($ref));
+        $data = $parser->compile($source, $ref->full);
         $parser = null;
 
         // store
@@ -1076,7 +1078,7 @@ class Sugar
      * @return string Template's source code.
      * @throws Sugar_Exception_Usage when the template name is invalid.
      */
-    function getSource($file)
+    public function getSource($file)
     {
         // validate name
         $ref = Sugar_Ref::create($file, $this);

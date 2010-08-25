@@ -73,19 +73,6 @@ interface Sugar_StorageDriver
      * @return string Source of reference.
      */
     function load(Sugar_Ref $ref);
-
-    /**
-     * Returns a path name for the reference, mapped as appropriate for
-     * the driver.  This is used for error messages.  The result should
-     * make it easier for the template writer to identify which template
-     * is being refrenced.  Returning {@link Sugar_Ref::$full} may be
-     * adequate for many drivers.
-     *
-     * @param Sugar_Ref $ref Reference to lookup.
-     *
-     * @return string User-friendly path to reference.
-     */
-    function path(Sugar_Ref $ref);
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>

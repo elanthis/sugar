@@ -82,8 +82,8 @@ class Sugar_Storage_File implements Sugar_StorageDriver
      */
     public function stamp(Sugar_Ref $ref)
     {
-        $path = $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
-        if (is_file($path) && is_readable($path)) {
+        $path = Sugar_Util_SearchForFile($this->_sugar->templateDir, $ref->name.'.tpl');
+        if ($path !== false) {
             return filemtime($path);
         } else {
             return false;
@@ -99,28 +99,12 @@ class Sugar_Storage_File implements Sugar_StorageDriver
      */
     public function load(Sugar_Ref $ref)
     {
-        $path = $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
-        if (is_file($path) && is_readable($path)) {
+        $path = Sugar_Util_SearchForFile($this->_sugar->templateDir, $ref->name.'.tpl');
+        if ($path !== false) {
             return file_get_contents($path);
         } else {
             return false;
         }
-    }
-
-    /**
-     * Returns a path name for the reference, mapped as appropriate for
-     * the driver.  This is used for error messages.  The result should
-     * make it easier for the template writer to identify which template
-     * is being refrenced.  Returning {@link Sugar_Ref::$full} may be
-     * adequate for many drivers.
-     *
-     * @param Sugar_Ref $ref Reference to lookup.
-     *
-     * @return string User-friendly path to reference.
-     */
-    public function path(Sugar_Ref $ref)
-    {
-        return $this->_sugar->templateDir.'/'.$ref->name.'.tpl';
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

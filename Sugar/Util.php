@@ -150,5 +150,36 @@ function Sugar_Util_ValueToTime($value)
         return time();
     }
 }
+
+/**
+ * Attempt to locate a file in one or more source directories.
+ *
+ * @param mixed  $haystack The directory/directories to search in.
+ * @param string $needle   The file being searched for.
+ *
+ * @return mixed The full path to the file if found, false otherwise.
+ */
+function Sugar_Util_SearchForFile($haystack, $needle)
+{
+    // search multiple directories if templateDir is an array,
+    // otherwise only search the given dir
+    if (is_array($haystack)) {
+        foreach ($haystack as $dir) {
+            $path = $dir.'/'.$needle;
+            if (is_file($path) && is_readable($path)) {
+                return $path;
+            }
+        }
+    } else {
+        $path = $haystack.'/'.$needle;
+        if (is_file($path) && is_readable($path)) {
+            return $path;
+        }
+    }
+    
+    // no matches found
+    return false;
+}
+
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>
