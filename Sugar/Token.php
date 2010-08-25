@@ -55,6 +55,41 @@
 class Sugar_Token
 {
     /**
+     * Token type: End-Of-File
+     */
+    const EOF = 1000;
+
+    /**
+     * Token type: Identifier
+     */
+    const IDENTIFIER = 1001;
+
+    /**
+     * Token type: Variable
+     */
+    const VARIABLE = 1002;
+
+    /**
+     * Token type: Document (source outside of delimiters)
+     */
+    const DOCUMENT = 1003;
+
+    /**
+     * Token type: Literal value
+     */
+    const LITERAL = 1004;
+
+    /**
+     * Token type: Terminator
+     */
+    const TERMINATOR = 1005;
+
+    /**
+     * Token type: End-Block
+     */
+    const END_BLOCK = 1006;
+
+    /**
      * Type of the token.
      *
      * @var string
@@ -96,10 +131,10 @@ class Sugar_Token
     public function getPrettyName()
     {
         switch($this->type) {
-        case 'eof': return '<eof>';
-        case 'id': return 'identifier '.$this->extra;
-        case 'var': return 'variable $'.$this->extra;
-        case 'data':
+        case self::EOF: return '<eof>';
+        case self::IDENTIFIER: return 'identifier '.$this->extra;
+        case self::VARIABLE: return 'variable $'.$this->extra;
+        case self::LITERAL:
             if (is_string($this->extra)) {
                 return 'string "'.addslashes($this->extra).'"';
             } elseif (is_float($this->extra)) {
@@ -111,9 +146,10 @@ class Sugar_Token
             } else {
                 return gettype($this->extra);
             }
-        case 'term': return $this->extra;
-        case 'end-block': return '/'.$this->extra;
-        default: return $this->type;
+        case self::DOCUMENT: return 'document text';
+        case self::TERMINATOR: return $this->extra;
+        case self::END_BLOCK: return '/'.$this->extra;
+        default: return $this->extra;
         }
     }
 }

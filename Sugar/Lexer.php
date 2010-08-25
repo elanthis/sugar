@@ -174,7 +174,7 @@ class Sugar_Lexer
                 if ($next > $pos) {
                     // add text token
                     $text = substr($source, $pos, $next - $pos);
-                    $this->_tokens[] = new Sugar_Token('literal', $line, $text);
+                    $this->_tokens[] = new Sugar_Token(Sugar_Token::DOCUMENT, $line, $text);
 
                     // update position and line
                     $line += substr_count(
@@ -210,7 +210,7 @@ class Sugar_Lexer
             // line comment ended with an end delimiter, part deux;
             // add token and go back to top of main loop
             if (!$inCmd) {
-                $this->_tokens[] = new Sugar_Token('term', $line, $this->_delimEnd);
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::TERMINATOR, $line, $this->_delimEnd);
                 continue;
             }
 
@@ -238,7 +238,7 @@ class Sugar_Lexer
                 }
 
                 // add token
-                $this->_tokens[] = new Sugar_Token('data', $line, self::decodeSlashes($string[1]));
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::LITERAL, $line, self::decodeSlashes($string[1]));
 
                 // increment position and line
                 $pos += strlen($string[0]);
@@ -256,7 +256,7 @@ class Sugar_Lexer
                 }
 
                 // add token
-                $this->_tokens[] = new Sugar_Token('data', $line, self::decodeSlashes($string[1]));
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::LITERAL, $line, self::decodeSlashes($string[1]));
 
                 // increment position and line
                 $pos += strlen($string[0]);
@@ -264,56 +264,56 @@ class Sugar_Lexer
             }
             // variable
             elseif (isset($token[1]) && $token[1] !== '') {
-                $this->_tokens[] = new Sugar_Token('var', $line, $token[1]);
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::VARIABLE, $line, $token[1]);
             }
             // end delimiter
             // if at end, mark that
             elseif ($token[0] === $this->_delimEnd) {
                 $inCmd = false;
-                $this->_tokens[] = new Sugar_Token('term', $line, $token[0]);
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::TERMINATOR, $line, $token[0]);
             }
             // statement terminator
             elseif ($token[0] === ';') {
-                $this->_tokens[] = new Sugar_Token('term', $line, $token[0]);
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::TERMINATOR, $line, $token[0]);
             }
             // block terminator
             elseif (isset($token[3]) && $token[3] !== '') {
-                $this->_tokens[] = new Sugar_Token('end-block', $line, $token[3]);
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::END_BLOCK, $line, $token[3]);
             }
             // floating point number
             elseif (isset($token[2]) && $token[2] !== ''
                 && strpos($token[2], '.') !== false
             ) {
-                $this->_tokens[] = new Sugar_Token('data', $line, floatval($token[2]));
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::LITERAL, $line, floatval($token[2]));
             }
             // integer
             elseif (isset($token[2]) && $token[2] !== '') {
-                $this->_tokens[] = new Sugar_Token('data', $line, intval($token[2]));
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::LITERAL, $line, intval($token[2]));
             }
             // and and or
             elseif ($token[0] === 'and') {
-                $this->_tokens[] = new Sugar_Token('&&', $line, null);
+                $this->_tokens[] = new Sugar_Token('&&', $line, $token[0]);
             } elseif ($token[0] === 'or') {
-                $this->_tokens[] = new Sugar_Token('||', $line, null);
+                $this->_tokens[] = new Sugar_Token('||', $line, $token[0]);
             }
             // true and false
             elseif ($token[0] === 'true') {
-                $this->_tokens[] = new Sugar_Token('data', $line, true);
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::LITERAL, $line, true);
             } elseif ($token[0] === 'false') {
-                $this->_tokens[] = new Sugar_Token('data', $line, false);
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::LITERAL, $line, false);
             }
             // identifier
             elseif (isset($token[4]) && $token[4] !== '') {
-                $this->_tokens[] = new Sugar_Token('id', $line, $token[4]);
+                $this->_tokens[] = new Sugar_Token(Sugar_Token::IDENTIFIER, $line, $token[4]);
             }
             // generic operator
             else {
-                $this->_tokens[] = new Sugar_Token($token[0], $line, null);
+                $this->_tokens[] = new Sugar_Token($token[0], $line, $token[0]);
             }
         }
 
         // append EOF token
-        $this->_tokens[] = new Sugar_Token('eof', $line, null);
+        $this->_tokens[] = new Sugar_Token(Sugar_Token::EOF, $line, null);
     }
 
     /**
@@ -359,7 +359,7 @@ class Sugar_Lexer
         $token = $this->_tokens[$this->_next];
 
         // return false if it's the wrong token
-        if ($token->type != 'id' || $token->extra != $accept) {
+        if ($token->type != Sugar_Token::IDENTIFIER || $token->extra != $accept) {
             return false;
         }
 
@@ -453,7 +453,7 @@ class Sugar_Lexer
         $token = $this->_tokens[$this->_next];
 
         // every keyword is an identifier
-        if ($token->type != 'id' || $token->extra != $expect) {
+        if ($token->type != Sugar_Token::IDENTIFIER || $token->extra != $expect) {
             $this->throwExpect($expect);
         }
 
@@ -475,7 +475,7 @@ class Sugar_Lexer
         $token = $this->_tokens[$this->_next];
 
         if ($token->type != 'end'
-            && ($token->type != 'end-block' || $token->extra != $name)
+            && ($token->type != Sugar_Token::END_BLOCK || $token->extra != $name)
         ) {
             $this->throwExpect('/'.$name);
         }
@@ -484,11 +484,22 @@ class Sugar_Lexer
         ++$this->_next;
         return true;
     }
+    
+    /**
+     * Pull the next token from the front of the queue and increment
+     * the next-token pointer.
+     *
+     * @return Sugar_Token
+     */
+    public function shift()
+    {
+        return $this->_tokens[$this->_next++];
+    }
 
     /**
      * Push the last accepted/expected token back into the queue.
      */
-    public function pushBack()
+    public function unshift()
     {
         --$this->_next;
     }
@@ -511,7 +522,7 @@ class Sugar_Lexer
         }
 
         // identifiers can be operators too
-        if ($op == 'id') {
+        if ($op == Sugar_Token::IDENTIFIER) {
             $op = $token->extra;
         }
 
