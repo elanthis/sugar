@@ -311,12 +311,6 @@ class Sugar_Lexer
         } elseif ($token[0] === $this->_delimEnd || $token[0] === ';') {
             // statement terminator
             return array('term', $token[0]);
-        } elseif (isset($token[4]) && in_array($token[4], array(
-            'if', 'elif', 'else', 'end', 'foreach', 'in', 'loop',
-            'while', 'nocache', 'section', 'inherit', 'insert'))
-        ) {
-            // keyword or special symbol
-            return array($token[4], null);
         } elseif (isset($token[3]) && $token[3] !== '') {
             // block terminator
             return array('end-block', $token[3]);
@@ -339,7 +333,7 @@ class Sugar_Lexer
         } elseif ($token[0] === 'false') {
             return array('data', false);
         } elseif (isset($token[4]) && $token[4] !== '') {
-            // name
+            // identifier
             return array('id', $token[4]);
         } else {
             // generic operator
@@ -374,6 +368,31 @@ class Sugar_Lexer
     }
 
     /**
+     * Checks to the see if the next token matches the requested keyword.
+     * Unlike most languages, keywords in Sugar can be used as regular
+     * identifiers, so long as their placement does not conflict with the
+     * grammar.
+     *
+     * @param mixed $accept Which identifier to expect.
+     *
+     * @return bool True on success.
+     */
+    public function acceptKeyword($accept)
+    {
+        // return false if it's the wrong token
+        if ($this->_token[0] != 'id' || $this->_token[1] != $accept) {
+            return false;
+        }
+
+        // store data
+        $data = $this->_token[1];
+
+        // get next token
+        $this->_token = $this->_next();
+        return true;
+    }
+
+    /**
      * Checks to see if the next token is one of a list of given types.
      *
      * @param array $accept Tokens to accept.
@@ -395,7 +414,7 @@ class Sugar_Lexer
      * @param mixed &$data  Token token.
      *
      * @return bool True on success.
-     * @throws Sugar_Exception_Parse when the next token does not match $accept.
+     * @throws Sugar_Exception_Parse when the next token does not match $expect.
      */
     public function expect($expect, &$data = null)
     {
@@ -422,6 +441,34 @@ class Sugar_Lexer
 
         // store value
         $data = $this->_token[1];
+
+        // get next token
+        $this->_token = $this->_next();
+        return true;
+    }
+
+    /**
+     * Checks to the see if the next token matches the requested keyword.
+     * Unlike most languages, keywords in Sugar can be used as regular
+     * identifiers, so long as their placement does not conflict with the
+     * grammar.
+     *
+     * @param mixed $expect Which identifier to expect.
+     *
+     * @return bool True on success.
+     * @throws Sugar_Exception_Parse when the next token does not match $expect.
+     */
+    public function expectKeyword($expect)
+    {
+        // every keyword is an identifier
+        if ($this->_token[0] != 'id' || $this->_token[1] != $expect) {
+            throw new Sugar_Exception_Parse(
+                $this->_file,
+                $this->_tokline,
+                'expected '.$expect.  '; found '.
+                    self::tokenName($this->_token)
+            );
+        }
 
         // get next token
         $this->_token = $this->_next();
@@ -466,6 +513,11 @@ class Sugar_Lexer
         // convert = to == for operators
         if ($op == '=') {
             $op = '==';
+        }
+
+        // identifiers can be operators too
+        if ($op == 'id') {
+            $op = $this->_token[1];
         }
 
         // if it's a valid operator, return it
