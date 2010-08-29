@@ -164,6 +164,67 @@ class Sugar_Grammar
     }
 
     /**
+     * Parsed out a list of built-in function arguments.
+     *
+     * Arguments to built-in functions may, currently, only be strings.
+     *
+     * The list of argument provided is checked against the list of
+     * argumented entered by the user, and an error is thrown if
+     * they do not match.
+     *
+     * @param string $name    Name of the built-in function, for errors.
+     * @param array  $require List of required parameters, as name=>type
+     *
+     * @return array Arguments.
+     *
+     * @throws Sugar_Parse_Exception
+     */
+    private function _parseBuiltinFunctionArgs($name, array $require)
+    {
+        $params = array();
+        while (!$this->_tokens->peekAny(array(')', ']', '}', ',', Sugar_Token::TERMINATOR))) {
+            // check for name=value assignment
+            $this->_tokens->expect(Sugar_Token::IDENTIFIER, $id);
+            $this->_tokens->expect('=');
+            $this->_tokens->expect(Sugar_Token::LITERAL, $value);
+
+            // ensure this parameter is allowed
+            if (!isset($require[$id])) {
+                throw new Sugar_Exception_Parse(
+                    $this->_tokens->getFile(),
+                    $this->_tokens->getLine(),
+                    'unexpected parameter `'.$id.'` to built-in function '.$name
+                );
+            }
+
+            // check type
+            if ($require[$id] != gettype($value)) {
+                throw new Sugar_Exception_Parse(
+                    $this->_tokens->getFile(),
+                    $this->_tokens->getLine(),
+                    'wrong type for parameter `'.$id.'` to built-in function '.$name
+                );
+            }
+
+            // assign parameter
+            $params [$id]= $value;
+        }
+
+        // ensure all required parameters are set
+        foreach ($require as $id=>$type) {
+            if (!isset($params[$id])) {
+                throw new Sugar_Exception_Parse(
+                    $this->_tokens->getFile(),
+                    $this->_tokens->getLine(),
+                    'missing parameter `'.$id.'` to built-in function '.$name
+                );
+            }
+        }
+        
+        return $params;
+    }
+
+    /**
      * Parsed out a list of method arguments.
      *
      * @return array Arguments.
@@ -663,8 +724,9 @@ class Sugar_Grammar
             }
             // inherited layout templates
             elseif ($this->_tokens->acceptKeyword('inherit')) {
-                // layout template name
-                $this->_tokens->expect(Sugar_Token::LITERAL, $name);
+                // parse arguments; expect a single argument, 'file'
+                $params = $this->_parseBuiltinFunctionArgs('inherit',
+                        array('file'=>'string'));
 
                 // do not allow nested inherited templates
                 if ($blockType != 'document') {
@@ -685,7 +747,7 @@ class Sugar_Grammar
                 }
 
                 // store inherited template
-                $this->_inherit = $name;
+                $this->_inherit = $params['file'];
             }
             // insert section
             elseif ($this->_tokens->acceptKeyword('insert')) {

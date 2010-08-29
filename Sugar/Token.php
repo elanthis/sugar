@@ -124,6 +124,27 @@ class Sugar_Token
     }
 
     /**
+     * Returns a user-friendly name for a token type, used for error messages.
+     *
+     * @param mixed $type Type of token to get the name for.
+     *
+     * @return string Nice name for the token.
+     */
+    public static function getTypeName($type)
+    {
+        switch($type) {
+        case self::EOF: return '<eof>';
+        case self::IDENTIFIER: return 'identifier';
+        case self::VARIABLE: return 'variable';
+        case self::LITERAL: return 'literal';
+        case self::DOCUMENT: return 'document text';
+        case self::TERMINATOR: return 'end delimiter';
+        case self::END_BLOCK: return 'end of block';
+        default: return '`'.$type.'`';
+        }
+    }
+
+    /**
      * Returns a user-friendly name for a token, used for error messages.
      *
      * @return string Nice name for the token.
@@ -132,24 +153,24 @@ class Sugar_Token
     {
         switch($this->type) {
         case self::EOF: return '<eof>';
-        case self::IDENTIFIER: return 'identifier '.$this->extra;
-        case self::VARIABLE: return 'variable $'.$this->extra;
+        case self::IDENTIFIER: return '`'.$this->extra.'`';
+        case self::VARIABLE: return 'variable `$'.$this->extra.'`';
         case self::LITERAL:
             if (is_string($this->extra)) {
-                return 'string "'.addslashes($this->extra).'"';
+                return '"'.addslashes($this->extra).'"';
             } elseif (is_float($this->extra)) {
-                return 'float '.$this->extra;
+                return $this->extra;
             } elseif (is_int($this->extra)) {
-                return 'integer '.$this->extra;
+                return $this->extra;
             } elseif (is_object($this->extra)) {
-                return 'object '.get_class($this->extra);
+                return 'object `'.get_class($this->extra).'`';
             } else {
                 return gettype($this->extra);
             }
         case self::DOCUMENT: return 'document text';
-        case self::TERMINATOR: return $this->extra;
-        case self::END_BLOCK: return '/'.$this->extra;
-        default: return $this->extra;
+        case self::TERMINATOR: return '`'.$this->extra.'`';
+        case self::END_BLOCK: return '`/'.$this->extra.'`';
+        default: return '`'.$this->extra.'`';
         }
     }
 }

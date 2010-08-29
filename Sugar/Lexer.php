@@ -393,7 +393,7 @@ class Sugar_Lexer
         $token = $this->_tokens[$this->_next];
 
         // build message
-        $msg = 'expected '.$expected;
+        $msg = 'expected '.Sugar_Token::getTypeName($expected);
         if ($this->_next != 0) {
             $msg .= ' after '.$this->_tokens[$this->_next - 1]->getPrettyName();
         }
@@ -474,7 +474,7 @@ class Sugar_Lexer
     {
         $token = $this->_tokens[$this->_next];
 
-        if ($token->type != 'end'
+        if ($token->type != 'end' // back-compat
             && ($token->type != Sugar_Token::END_BLOCK || $token->extra != $name)
         ) {
             $this->throwExpect('/'.$name);

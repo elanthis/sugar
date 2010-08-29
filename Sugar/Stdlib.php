@@ -55,14 +55,22 @@
 
 /*++
  *+ @name include
- *+ @param string $tpl The template path to include.
+ *+ @param string $file The template path to include.
  *+
  *+ This function loads up a template file and displays it.
  */
 function sugar_function_include($sugar, $params)
 {
-    $tpl = Sugar_Util_GetArg($params, 'tpl');
-    unset($params['tpl']);
+    // get the template name from the parameter list.
+    // the name is unset, and the rest of the parameter list is
+    // passed to the included template.
+    if (isset($params['tpl'])) { // back-compat
+        $name = $params['tpl'];
+        unset($params['tpl']);
+    } else {
+        $name = Sugar_Util_GetArg($params, 'file');
+        unset($params['file']);
+    }
 
     $sugar->display($tpl, $params);
 }
