@@ -1,4 +1,4 @@
-{{ inherit 'layout' }}
+{{ inherit 'layout.tpl' }}
 
 {{ section title }}Comparison Tests{{ /section }}
 

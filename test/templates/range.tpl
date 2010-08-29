@@ -1,4 +1,4 @@
-{{ inherit 'layout' }}
+{{ inherit 'layout.tpl' }}
 
 {{ section title }}Range Loop Tests{{ /section }}
 

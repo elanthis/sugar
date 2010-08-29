@@ -9,17 +9,19 @@ require '../Sugar.php';
 $end_load = microtime(true);
 
 // determine file to load
-$file = 'index';
+$file = 'index.tpl';
 if (isset($_GET['t']))
 	$file = $_GET['t'];
 
 // scan available templates
 $templates = array();
-foreach (glob('templates/*.tpl') as $tpl) {
-	if ($tpl != 'templates/layout.tpl' && $tpl != 'templates/fetch.file.tpl') {
-		$templates []= preg_replace(';(^templates/|[.]tpl$);', '', $tpl);
+$dir = opendir('templates');
+while ($tpl = readdir($dir)) {
+	if (substr($tpl, 0, 1) != '.' && $tpl != 'layout.tpl' && $tpl != 'fetch.file.tpl') {
+		$templates []= $tpl;
 	}
 }
+closedir($dir);
 
 // create parser
 $begin_create = microtime(true);
@@ -27,11 +29,11 @@ $sugar = new Sugar();
 $end_create = microtime(true);
 
 // various test functions
-function sugar_function_showhtml(&$sugar, $args) {
+function sugar_function_showhtml($sugar, $args) {
 	return $args['html'];
 }
 
-function sugar_function_showtext(&$sugar, $args) {
+function sugar_function_showtext($sugar, $args) {
 	return $args['text'];
 }
 
@@ -76,7 +78,7 @@ $sugar->set('list', array('one','two','three','foo'=>'bar'));
 $sugar->set('obj', new Test());
 $sugar->set('random', rand()%1000);
 $sugar->set('newlines', "This\nhas\nnewlines!");
-$sugar->set('source', $sugar->getSource($file));
+//$sugar->set('source', $sugar->getSource($file));
 $sugar->set('t', $file);
 $sugar->set('templates', $templates);
 $sugar->addFunction('showHtml');
@@ -88,13 +90,13 @@ $end_config = microtime(true);
 
 // get some fetches
 $begin_fetch = microtime(true);
-//$sugar->set('fetch_string', $sugar->fetchString('1+{% $i %}={% 1 + $i %}'));
-//$sugar->set('fetch_file', $sugar->fetch('fetch.file'));
-//$sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file'));
+$sugar->set('fetch_string', $sugar->fetchString('1+{{ $i }}={{ 1 + $i }}'));
+$sugar->set('fetch_file', $sugar->fetch('fetch.file.tpl'));
+$sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file.tpl'));
 $end_fetch = microtime(true);
 
 $begin_display = microtime(true);
-$sugar->displayCache('file:'.$file.'.tpl', null, null);
+$sugar->displayCache('file:'.$file, null, null);
 $end_display = microtime(true);
 
 $end = microtime(true);
