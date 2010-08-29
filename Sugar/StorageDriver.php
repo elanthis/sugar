@@ -56,23 +56,75 @@
 interface Sugar_StorageDriver
 {
     /**
-     * Returns the timestamp of the reference, or 0 if the reference does
-     * not exist.
+     * Search for the template and return a driver-specific handle.
      *
-     * @param Sugar_Ref $ref Reference to lookup.
+     * Given a reference to a template, look up the template and return
+     * a drive specific handle.  This handle may be anything, including
+     * an object, a string, an array, or an integer.  The value FALSE
+     * is returned to indicate that the template does not exist or
+     * cannot be found.
+     *
+     * The File storage driver, as an example, simply returns the full
+     * path to the template, or FALSE if the template cannot be found.
+     *
+     * The handle will be passed to the other storage driver methods
+     * for loading data or checking timestamps. 
+     *
+     * Note that, depending on the driver, it may be possible for a
+     * template to be found when getHandle() is called, and thus have
+     * a valid handle, but then be deleted or removed before an other 
+     * methods are called.  Fault-tolerant drivers should be prepared.
+     *
+     * @param string $name Name of the template to look up.
+     *
+     * @return mixed Driver-specific handle, or FALSE if the template
+     *               cannot be found.
+     */
+    public function getHandle($name);
+
+    /**
+     * Returns the timestamp of the handle.
+     *
+     * @param mixed $handle Handle returned by getHandle().
      *
      * @return int Timestamp if it exists, or zero if it cannot be found.
      */
-    function stamp(Sugar_Ref $ref);
+    public function getLastModified($handle);
 
     /**
-     * Returns the source for the requested reference.
+     * Returns the source for the handle.
      *
-     * @param Sugar_Ref $ref Reference to lookup.
+     * @param mixed $handle Handle to lookup.
      *
-     * @return string Source of reference.
+     * @return string Source of handle.
      */
-    function load(Sugar_Ref $ref);
+    public function getSource($handle);
+
+    /**
+     * Returns a user-friendly name for the handle.
+     *
+     * The purpose of this function is to provide the most
+     * user-friendly name for a handle that is possible.  If
+     * in doubt, simply return the $name parameter.
+     *
+     * For an example, the File driver returns the $handle
+     * parameter, as this is the full path of the template.
+     * The full path is the most user-friendly name, as it
+     * identifies where the specific template is.  The name
+     * alone may be ambiguous if there are multiple template
+     * directories.
+     *
+     * The returned value should help the user get to the
+     * template easily and quickly.  It may be useful for
+     * some drivers in CMS systems to return a URL to the
+     * edit page for the requested template, for instance.
+     *
+     * @param mixed  $handle Handle returned by getHandle().
+     * @param string $name   Name of the template requested.
+     *
+     * @return string User-friendly name for the handle.
+     */
+    public function getName($handle, $name);
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>

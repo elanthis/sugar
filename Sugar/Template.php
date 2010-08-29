@@ -1,9 +1,6 @@
 <?php
 /**
- * File references.
- *
- * Defines a helper class for Sugar which encodes a reference to a template
- * or cache file.
+ * Template instance class.
  *
  * PHP version 5
  *
@@ -29,7 +26,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Drivers
+ * @subpackage Template
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -38,36 +35,27 @@
  */
 
 /**
- * Sugar file references.
+ * Template instance object.
  *
- * Encapsulates a complete reference to a template or cache file within
- * Sugar.  This is used in order to more easily identify individual files,
- * as well as centralize the path generation for files.
+ * Encapsulates all operations to be performed for a particular template.
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Drivers
+ * @subpackage Template
  * @author     Sean Middleditch <sean@mojodo.com>
- * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @copyright  2008-2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-class Sugar_Ref
+class Sugar_Template
 {
     /**
-     * Full user-given file reference.
+     * Name of the template as given by the user.
      *
-     * @var string $full
+     * @var string $name
      */
-    public $full;
-
-    /**
-     * Storage driver name.
-     *
-     * @var string $storageName
-     */
-    public $storageName;
+    public $name;
 
     /**
      * Storage driver for this reference.
@@ -77,11 +65,11 @@ class Sugar_Ref
     public $storage;
 
     /**
-     * File name.
+     * Storage driver handle.
      *
-     * @var string $name
+     * @var mixed $handle 
      */
-    public $name;
+    public $handle;
 
     /**
      * Cache identifier.
@@ -91,87 +79,89 @@ class Sugar_Ref
     public $cacheId;
 
     /**
-     * Layout wrapper.
-     *
-     * @var string $layout
-     */
-    public $layout;
-
-    /**
-     * Unique identifier.
-     *
-     * @var string $uid
-     */
-    public $uid;
-
-    /**
      * Public constructor.  Parses the user-provided template path
      * and returns a SugarReg object.  This is used internally by
      * Sugar.
      *
-     * @param string $path    Path.
      * @param Sugar  $sugar   Sugar instance.
+     * @param string $path    Path.
      * @param string $cacheId Optional cache ID.
      *
-     * @return Sugar_Ref
+     * @return Sugar_Template
      */
-    static function create($path, Sugar $sugar, $cacheId = null,
-    $layout = null)
+    public static function create(Sugar $sugar, $name, $cacheId = null)
     {
-        $storage = $sugar->defaultStorage;
-        $name = $path;
+        // parse out storage driver name
+        if (($pos = strpos($name, ':')) !== FALSE) {
+            $storageName = substr($name, 0, $pos);
+            $baseName = substr($name, $pos + 1);
 
-        // clean cacheId
-        if ($cacheId !== null) {
-            $cacheId = preg_replace('/[^A-Za-z0-9_.-]+/', '', $cacheId);
-        }
-
-        // parse out storage
-        if (preg_match('/^(\w+):(.*)$/', $path, $ar)) {
-            $storage = $ar[1];
-            $name = $ar[2];
-
-            // invalid storage type
-            if (!isset($sugar->storage[$storage])) {
+            // check for invalid storage type
+            if (!isset($sugar->storage[$storageName])) {
                 return false;
             }
         } else {
-            $name = $path;
+            $storageName = $sugar->defaultStorage;
+            $baseName = $name;
         }
 
-        // strip optional .tpl trailing bit
-        $name = preg_replace('/[.]tpl$/', '', $name);
-
-        // validate name
-        if (!preg_match(';/?[A-Za-z0-9_.-]+(/+[A-Za-z0-9_.-]+)*;', $name)) {
+        // load driver, and check for handler
+        $storage = $sugar->storage[$storageName];
+        $handle = $storage->getHandle($baseName);
+        if ($handle === false) {
             return false;
         }
 
-        // return new reg
-        $drv = $sugar->storage[$storage];
-        return new Sugar_Ref($path, $storage, $drv, $name, $cacheId, $layout);
+        // return new template object
+        return new self($sugar, $storage, $handle, $name, $cacheId);
     }
 
     /**
      * Constructor.
      *
-     * @param string        $full        User-given path.
-     * @param string        $storageName Name of the storage driver in the
-     *                                   path.
+     * @param Sugar               $sugar       Sugar object.
      * @param Sugar_StorageDriver $storage     Storage driver.
-     * @param string        $name        The file name of the path.
-     * @param string        $cacheId     The cache ID for the reference.
-     * @param string        $layout      Template used for layout wrapper.
+     * @param mixed               $handle      Storage driver handle.
+     * @param string              $name        Name of template requested by user.
+     * @param string              $cacheId     The cache ID for the reference.
      */
-    private function __construct($full, $storageName, Sugar_StorageDriver $storage,
-    $name, $cacheId, $layout) {
-        $this->full = $full;
-        $this->storageName = $storageName;
+    private function __construct(Sugar $sugar, Sugar_StorageDriver $storage,
+    $handle, $name, $cacheId) {
+        $this->sugar = $sugar;
         $this->storage = $storage;
+        $this->handle = $handle;
         $this->name = $name;
         $this->cacheId = $cacheId;
-        $this->layout = $layout;
-        $this->uid = $full.';'.$layout.';'.$cacheId;
+    }
+
+    /**
+     * Get the last-modified timestamp of the template.
+     *
+     * @return int Last-modified timestamp.
+     */
+    public function getLastModified()
+    {
+        return $this->storage->getLastModified($this->handle);
+    }
+
+    /**
+     * Get the source code of the template.
+     *
+     * @return string Source code of the template.
+     */
+    public function getSource()
+    {
+        return $this->storage->getSource($this->handle);
+    }
+
+    /**
+     * Get a user-friendly name for the template
+     *
+     * @return string User-friendly template name.
+     */
+    public function getName()
+    {
+        return $this->storage->getName($this->handle, $this->name);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

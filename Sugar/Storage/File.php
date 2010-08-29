@@ -41,9 +41,6 @@
  *
  * Uses {@link Sugar::$templateDir} to find templates.
  *
- * This class is a namespace containing static function relevant to 
- * executing Sugar bytecode.
- *
  * @category   Template
  * @package    Sugar
  * @subpackage Drivers
@@ -73,38 +70,53 @@ class Sugar_Storage_File implements Sugar_StorageDriver
     }
 
     /**
-     * Returns the timestamp of the reference, or 0 if the reference does
-     * not exist.
+     * Searches for the template in the template directories
      *
-     * @param Sugar_Ref $ref Reference to lookup.
+     * @param string $name Name of the template to load.
      *
-     * @return int Timestamp if it exists, or zero if it cannot be found.
+     * @return mixed The path to the template, or FALSE if not found.
      */
-    public function stamp(Sugar_Ref $ref)
+    public function getHandle($name)
     {
-        $path = Sugar_Util_SearchForFile($this->_sugar->templateDir, $ref->name.'.tpl');
-        if ($path !== false) {
-            return filemtime($path);
-        } else {
-            return false;
-        }
+        $path = Sugar_Util_SearchForFile($this->_sugar->templateDir, $name);
+        return $path;
     }
 
     /**
-     * Returns the source for the requested reference.
+     * Returns the modified timestamp of the template.
      *
-     * @param Sugar_Ref $ref Reference to lookup.
+     * @param string $handle Path to the template.
      *
-     * @return string Source of reference.
+     * @return int Modified timestamp of the template.
      */
-    public function load(Sugar_Ref $ref)
+    public function getLastModified($handle)
     {
-        $path = Sugar_Util_SearchForFile($this->_sugar->templateDir, $ref->name.'.tpl');
-        if ($path !== false) {
-            return file_get_contents($path);
-        } else {
-            return false;
-        }
+        return filemtime($handle);
+    }
+
+    /**
+     * Returns the source of the template.
+     *
+     * @param string $handle Path to the template.
+     *
+     * @return string Source of the template.
+     */
+    public function getSource($handle)
+    {
+        return file_get_contents($handle);
+    }
+
+    /**
+     * Returns the path to the template for error messages
+     *
+     * @param string $handle Path to the template.
+     * @param string $name   Name of the template.
+     *
+     * @return string Path to the template.
+     */
+    public function getName($handle, $name)
+    {
+        return $handle;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

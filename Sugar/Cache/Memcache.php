@@ -81,30 +81,33 @@ class Sugar_Cache_Memcache implements Sugar_CacheDriver
     /**
      * Makes a key for the given reference.
      *
-     * @param Sugar_Ref $ref  File reference.
-     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param Sugar_Template $template  File reference.
+     * @param string         $type Either 'ctpl' or 'chtml'.
      *
      * @return string Key.
      */
-    private function _makeKey(Sugar_Ref $ref, $type)
+    private function _makeKey(Sugar_Template $template, $type)
     {
-        $cid = $type == Sugar::CACHE_HTML ? $ref->cacheId : null;
-        $key = $ref->storageName . ':' . $ref->name . ':' . $cid . ':' . $type;
+        $key = $template->name;
+        if ($type == Sugar::CACHE_HTML && !is_null($template->cacheId)) {
+            $key .= '^'.$template->cacheId;
+        }
+        $key .= '^'.$type;
         return $key;
     }
 
     /**
      * Returns the timestamp.
      *
-     * @param Sugar_Ref $ref  File reference.
-     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param Sugar_Template $template  File reference.
+     * @param string         $type Either 'ctpl' or 'chtml'.
      *
      * @return int Timestamp
      */
-    public function stamp(Sugar_Ref $ref, $type)
+    public function stamp(Sugar_Template $template, $type)
     {
         // fetch the item from the cache
-        $key = $this->_makeKey($ref, $type);
+        $key = $this->_makeKey($template, $type);
         $item = $this->memcached->get($key);
 
         if ($item !== FALSE) {
@@ -117,15 +120,15 @@ class Sugar_Cache_Memcache implements Sugar_CacheDriver
     /**
      * Returns the bytecode for the requested reference.
      *
-     * @param Sugar_Ref $ref  File reference to lookup.
-     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param Sugar_Template $template  File reference to lookup.
+     * @param string         $type Either 'ctpl' or 'chtml'.
      *
      * @return array Bytecode, or false if not in the cache.
      */
-    public function load(Sugar_Ref $ref, $type)
+    public function load(Sugar_Template $template, $type)
     {
         // fetch the item from the cache
-        $key = $this->_makeKey($ref, $type);
+        $key = $this->_makeKey($template, $type);
         $item = $this->memcached->get($key);
 
         if ($item !== FALSE) {
@@ -138,17 +141,17 @@ class Sugar_Cache_Memcache implements Sugar_CacheDriver
     /**
      * Adds the bytecode to the cache.
      *
-     * @param Sugar_Ref $ref  File reference to lookup.
-     * @param string   $type Either 'ctpl' or 'chtml'.
-     * @param array    $data Bytecode.
+     * @param Sugar_Template $template  File reference to lookup.
+     * @param string         $type Either 'ctpl' or 'chtml'.
+     * @param array          $data Bytecode.
      *
      * @return bool True on success.
      * @throws Sugar_Exception_Usage when the cache directory is missing or
      * otherwise unusable.
      */
-    public function store(Sugar_Ref $ref, $type, $data)
+    public function store(Sugar_Template $template, $type, $data)
     {
-        $key = $this->_makeKey($ref, $type);
+        $key = $this->_makeKey($template, $type);
         $this->_memcached->set($key, array('stamp' => time(), 'data' => $data), $this->_sugar->cacheTime);
         return true;
     }
@@ -156,14 +159,14 @@ class Sugar_Cache_Memcache implements Sugar_CacheDriver
     /**
      * Erases the bytecode for the requested reference.
      *
-     * @param Sugar_Ref $ref  File reference for the bytecode to erase.
-     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param Sugar_Template $template  File reference for the bytecode to erase.
+     * @param string         $type Either 'ctpl' or 'chtml'.
      *
      * @return bool True on success.
      */
-    public function erase(Sugar_Ref $ref, $type)
+    public function erase(Sugar_Template $template, $type)
     {
-        $key = $this->_makeKey($ref, $type);
+        $key = $this->_makeKey($template, $type);
         $this->_memcached->delete($key);
     }
 

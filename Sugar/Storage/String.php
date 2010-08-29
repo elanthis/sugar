@@ -1,11 +1,8 @@
 <?php
 /**
- * Cache driver interface.
+ * String-based storage driver.
  *
- * Defines the interface to be used by cache drivers.  Different cache
- * drivers can store and load cache files in different manners.  For example,
- * an application may wish to use a database storage engine for its cache
- * files instead of the filesystem.
+ * Allows loading a template from a user string.
  *
  * PHP version 5
  *
@@ -35,13 +32,12 @@
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
- * @version    SVN: $Id$
+ * @version    SVN: $Id: String.php 319 2010-08-25 07:56:29Z Sean.Middleditch $
  * @link       http://php-sugar.net
  */
 
 /**
- * Interface for Sugar cache drivers.  These are used for storing and
- * retrieving bytecode and HTML caches.
+ * String-based storage driver.
  *
  * @category   Template
  * @package    Sugar
@@ -52,64 +48,73 @@
  * @version    Release: 0.83
  * @link       http://php-sugar.net
  */
-interface Sugar_CacheDriver
+class Sugar_Storage_String implements Sugar_StorageDriver
 {
     /**
-     * Returns the timestamp for the given reference, or zero if the file
-     * is not in the cache.
+     * Sugar instances.
      *
-     * @param string $key  File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
-     *
-     * @return int Timestamp, or 0 if the file does not exist.
-     * @abstract
+     * @var Sugar $sugar
      */
-    function stamp($key, $type);
+    private $_sugar;
 
     /**
-     * Returns the bytecode for the requested reference.
+     * Constructor.
      *
-     * @param string $key  File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
-     *
-     * @return array Bytecode, or false if not in the cache.
-     * @abstract
+     * @param Sugar $sugar Sugar instance.
      */
-    function load($key, $type);
+    public function __construct($sugar)
+    {
+        $this->_sugar = $sugar;
+    }
 
     /**
-     * Adds the bytecode to the cache.
+     * Returns the source code (the name) as the handle.
      *
-     * @param string $key  File reference to lookup.
-     * @param string $type Either 'ctpl' or 'chtml'.
-     * @param array  $data Bytecode.
+     * @param string $name Name (source) of the template to load.
      *
-     * @return bool True on success.
-     *
-     * @abstract
+     * @return string The value of $name.
      */
-    function store($key, $type, $data);
+    public function getHandle($name)
+    {
+        return $name;
+    }
 
     /**
-     * Erases the bytecode for the requested reference.
+     * Returns the current time.
      *
-     * @param string $key  File reference for the bytecode to erase.
-     * @param string $type Either 'ctpl' or 'chtml'.
+     * @param string $handle Handle for the template.
      *
-     * @return bool True on success.
-     *
-     * @abstract
+     * @return int current time.
      */
-    function erase($key, $type);
+    public function getLastModified($handle)
+    {
+        return time();
+    }
 
     /**
-     * Clears all caches the driver is responsible for.
+     * Returns the source of the template.
      *
-     * @return bool True on success.
+     * @param string $handle Template source.
      *
-     * @abstract
+     * @return string Source of the template.
      */
-    function clear();
+    public function getSource($handle)
+    {
+        return $handle;
+    }
+
+    /**
+     * Returns the text 'source template'.
+     *
+     * @param string $handle Path to the template.
+     * @param string $name   Name of the template.
+     *
+     * @return string 'source template'.
+     */
+    public function getName($handle, $name)
+    {
+        return 'source template'; 
+    }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>

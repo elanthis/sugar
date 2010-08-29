@@ -74,40 +74,36 @@ class Sugar_Cache_File implements Sugar_CacheDriver
     /**
      * Makes a path for the given reference.
      *
-     * @param Sugar_Ref $ref  File reference.
-     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param Sugar_Template $template  File reference.
+     * @param string         $type Either 'ctpl' or 'chtml'.
      *
      * @return string Path.
      */
-    private function _makePath(Sugar_Ref $ref, $type)
+    private function _makePath($template, $type)
     {
         $path = $this->_sugar->cacheDir.'/';
-        $cid = $type == Sugar::CACHE_HTML ? $ref->cacheId : null;
-        $path .= md5($ref->storageName . $ref->name . $cid);
-        $path .= ',' . $ref->storageName . ',' . str_replace('/', '%', $ref->name);
-        if ($cid !== null) {
-            $path .= ',' . preg_replace('/[^A-Za-z0-9._-]+/', '%', $cid);
+        $path .= urlencode($template->name);
+        if ($type == Sugar::CACHE_HTML && !is_null($template->cacheId)) {
+            $path .= '^'.urlencode($template->cacheId);
         }
-        $path .= ',' . $type;
+        $path .= '^'.$type;
         return $path;
     }
 
     /**
      * Returns the timestamp.
      *
-     * @param Sugar_Ref $ref  File reference.
-     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param Sugar_Template $template  File reference.
+     * @param string         $type Either 'ctpl' or 'chtml'.
      *
      * @return int Timestamp
      */
-    public function stamp(Sugar_Ref $ref, $type)
+    public function stamp($template, $type)
     {
-        $path = $this->_makePath($ref, $type);
+        $path = $this->_makePath($template, $type);
 
         // check exists, return stamp
-        if (file_exists($path)
-            && is_file($path)
-            && is_readable($path)
+        if (file_exists($path) && is_file($path) && is_readable($path)
             && time() - filemtime($path) <= $this->_sugar->cacheLimit
         ) {
             return filemtime($path);
@@ -119,19 +115,17 @@ class Sugar_Cache_File implements Sugar_CacheDriver
     /**
      * Returns the bytecode for the requested reference.
      *
-     * @param Sugar_Ref $ref  File reference to lookup.
-     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param Sugar_Template $template  File reference to lookup.
+     * @param string         $type Either 'ctpl' or 'chtml'.
      *
      * @return array Bytecode, or false if not in the cache.
      */
-    public function load(Sugar_Ref $ref, $type)
+    public function load($template, $type)
     {
-        $path = $this->_makePath($ref, $type);
+        $path = $this->_makePath($template, $type);
     
         // must exist, be readable, and not be older than $cacheLimit seconds
-        if (file_exists($path)
-            && is_file($path)
-            && is_readable($path)
+        if (file_exists($path) && is_file($path) && is_readable($path)
             && time() - filemtime($path) <= $this->_sugar->cacheLimit
         ) {
             // load, deserialize
@@ -146,17 +140,17 @@ class Sugar_Cache_File implements Sugar_CacheDriver
     /**
      * Adds the bytecode to the cache.
      *
-     * @param Sugar_Ref $ref  File reference to lookup.
-     * @param string   $type Either 'ctpl' or 'chtml'.
-     * @param array    $data Bytecode.
+     * @param Sugar_Template $template  File reference to lookup.
+     * @param string         $type Either 'ctpl' or 'chtml'.
+     * @param array          $data Bytecode.
      *
      * @return bool True on success.
      * @throws Sugar_Exception_Usage when the cache directory is missing or
      * otherwise unusable.
      */
-    public function store(Sugar_Ref $ref, $type, $data)
+    public function store($template, $type, $data)
     {
-        $path = $this->_makePath($ref, $type);
+        $path = $this->_makePath($template, $type);
 
         // ensure we can save the cache file
         if (!file_exists($this->_sugar->cacheDir)) {
@@ -184,14 +178,14 @@ class Sugar_Cache_File implements Sugar_CacheDriver
     /**
      * Erases the bytecode for the requested reference.
      *
-     * @param Sugar_Ref $ref  File reference for the bytecode to erase.
-     * @param string   $type Either 'ctpl' or 'chtml'.
+     * @param Sugar_Template $template  File reference for the bytecode to erase.
+     * @param string         $type Either 'ctpl' or 'chtml'.
      *
      * @return bool True on success.
      */
-    public function erase(Sugar_Ref $ref, $type)
+    public function erase($template, $type)
     {
-        $path = $this->_makePath($ref, $type);
+        $path = $this->_makePath($template, $type);
 
         // if the file exists and the directory is writeable, erase it
         if (file_exists($path)

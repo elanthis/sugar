@@ -49,7 +49,7 @@ $GLOBALS['__sugar_rootdir'] = dirname(__FILE__);
  * Core includes.
  */
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Exception.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Ref.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 /**#@-*/
@@ -58,6 +58,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
  * Drivers.
  */
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage/File.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage/String.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache/File.php';
 /**#@-*/
 
@@ -215,11 +216,6 @@ class Sugar
     private $_modifiers = array();
 
     /**
-     * Cache of files loaded into memory.
-     */
-    private $_files = array();
-
-    /**
      * A map of storage drivers.  The key is the storage driver name,
      * and the value is the storage driver object.
      */
@@ -346,6 +342,7 @@ class Sugar
     public function __construct()
     {
         $this->storage ['file']= new Sugar_Storage_File($this);
+        $this->storage ['string']= new Sugar_Storage_String($this);
         $this->cache = new Sugar_Cache_File($this);
         $this->errors = self::ERROR_PRINT;
         $this->output = self::OUTPUT_HTML;
@@ -683,27 +680,27 @@ class Sugar
     /**
      * Load the requested template and compile it if necessary.
      *
-     * @param Sugar_Ref $ref    The template to load.
+     * @param Sugar_Template $template    The template to load.
      *
      * @return mixed Compiled bytecode information.
      * @throws Sugar_Exception_Usage when the template cannot be found.
      */
-    private function _loadCompile(Sugar_Ref $ref) {
+    private function _loadCompile(Sugar_Template $template) {
         // check template exists, and remember stamp
-        $sstamp = $ref->storage->stamp($ref);
+        $sstamp = $template->getLastModified();
         if ($sstamp === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$ref->full);
+            throw new Sugar_Exception_Usage('template not found: '.$template->full);
         }
 
         // cache file ref
         if ($this->cacheHandler) {
-            $this->cacheHandler->addRef($ref);
+            $this->cacheHandler->addRef($template);
         }
 
         // if debug is off and the stamp is good, load compiled version
-        $cstamp = $this->cache->stamp($ref, self::CACHE_TPL);
+        $cstamp = $this->cache->stamp($template, self::CACHE_TPL);
         if (!$this->debug && $cstamp !== false && $cstamp > $sstamp) {
-            $data = $this->cache->load($ref, self::CACHE_TPL);
+            $data = $this->cache->load($template, self::CACHE_TPL);
             // if version checks out, run it
             if ($data !== false && $data['version'] === self::VERSION) {
                 return $data;
@@ -716,16 +713,16 @@ class Sugar
         include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
 
         // compile
-        $source = $ref->storage->load($ref);
+        $source = $template->getSource();
         if ($source === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$ref->full);
+            throw new Sugar_Exception_Usage('template not found: '.$template->full);
         }
         $parser = new Sugar_Grammar($this);
-        $data = $parser->compile($source, $ref->full);
+        $data = $parser->compile($source, $template->full);
         $parser = null;
 
         // store
-        $this->cache->store($ref, self::CACHE_TPL, $data);
+        $this->cache->store($template, self::CACHE_TPL, $data);
 
         return $data;
     }
@@ -734,29 +731,32 @@ class Sugar
      * Load the requested template, compile it if necessary, and then
      * execute the bytecode.
      *
-     * @param Sugar_Ref $ref    The template to load.
+     * @param Sugar_Template $template    The template to load.
      * @param array    $vars   Additional vars to set during execution.
      *
      * @return mixed Return value of bytecode.
      * @throws Sugar_Exception_Usage when the template cannot be found.
      */
-    private function _loadExecute(Sugar_Ref $ref, $vars)
+    private function _loadExecute(Sugar_Template $template, $vars)
     {
         // load compiled template
-        $data = $this->_loadCompile($ref);
+        $data = $this->_loadCompile($template);
 
         // if we have no inherited template, execute the template as-is
         if (empty($data['inherit'])) {
             return $this->_execute($data, $vars);
         }
 
-        // load compiled layout
-        $layoutRef = Sugar_Ref::Create($data['inherit'], $this, $ref->cacheId, null);
-        $layoutData = $this->_loadCompile($layoutRef);
+        // load compiled parent (inherited template)
+        $parentRef = Sugar_Template::create($this, $data['inherit'], $template->cacheId);
+        if ($parentRef === false) {
+            throw new Sugar_Exception_Usage('template not found: '.$data['inherit']);
+        }
+        $parentData = $this->_loadCompile($parentRef);
 
-        // merge layout with page template
-        $merged = $layoutData;
-        $merged['sections'] = array_merge($layoutData['sections'], $data['sections']);
+        // merge parent with page template
+        $merged = $parentData;
+        $merged['sections'] = array_merge($parentData['sections'], $data['sections']);
 
         // set page main bytecode as content section if and only if
         // the page template did not define its own explicit content
@@ -774,19 +774,14 @@ class Sugar
      * the cached file does not exist or if the cached file is out
      * of date.
      *
-     * @param Sugar_Ref $ref Cache reference.
+     * @param Sugar_Template $template Cache reference.
      *
      * @return false|array Cache data on success, false on error.
      */
-    private function _loadCache(Sugar_Ref $ref)
+    private function _loadCache(Sugar_Template $template)
     {
-        // if the file is already loaded, use that
-        if (isset($this->_files[$ref->uid])) {
-            return $this->_files[$ref->uid];
-        }
-
         // get the cache's stamp, and fail if it can't be found
-        $cstamp = $this->cache->stamp($ref, self::CACHE_HTML);
+        $cstamp = $this->cache->stamp($template, self::CACHE_HTML);
         if ($cstamp === false) {
             return false;
         }
@@ -798,7 +793,7 @@ class Sugar
 
         // load the cache data, fail if loading fails or the
         // version doesn't match
-        $data = $this->cache->load($ref, self::CACHE_HTML);
+        $data = $this->cache->load($template, self::CACHE_HTML);
         if ($data === false || $data['version'] !== self::VERSION) {
             return false;
         }
@@ -806,13 +801,13 @@ class Sugar
         // compare stamps with the included references
         foreach ($data['refs'] as $file) {
             // try to reference the file; ignore failures
-            $iref = Sugar_Ref::create($file, $this);
-            if (!$iref) {
+            $inc = Sugar_Template::create($this, $file);
+            if ($inc === false) {
                 continue;
             }
 
             // get the stamp of the reference; ignore failures
-            $stamp = $iref->storage->stamp($iref);
+            $stamp = $inc->storage->getLastModified();
             if ($stamp === false) {
                 continue;
             }
@@ -822,9 +817,6 @@ class Sugar
                 return false;
             }
         }
-
-        // cache this file
-        $this->_files[$ref->uid] = $data;
 
         // everything has checked out, the cache is valid
         return $data;
@@ -843,19 +835,14 @@ class Sugar
     public function display($file, $vars = null)
     {
         // validate name
-        $ref = Sugar_Ref::create($file, $this, null);
-        if ($ref === false) {
-            throw new Sugar_Exception_Usage('illegal template name: '.$file);
-        }
-
-        // ensure template exists
-        if ($ref->storage->stamp($ref) === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$ref->full);
+        $template = Sugar_Template::create($this, $file);
+        if ($template === false) {
+            throw new Sugar_Exception_Usage('template not found: '.$file);
         }
 
         // load and run
         try {
-            $this->_loadExecute($ref, $vars);
+            $this->_loadExecute($template, $vars);
             return true;
         } catch (Sugar_Exception $e) {
             $this->handleError($e);
@@ -889,13 +876,13 @@ class Sugar
      * and other operations necessary to fill in template data.
      *
      * @param string $file    File to check.
-     * @param string $cacheId Optional cache identifier.
+     * @param string $cacheId Cache identifier.
      * @param array  $vars    Additional vars to set during execution.
      *
      * @return bool True if a valid HTML cache exists for the file.
      * @throws Sugar_Exception_Usage when the template name is invalid.
      */
-    function isCached($file, $cacheId = null, $vars = null)
+    function isCached($file, $cacheId, $vars = null)
     {
         // debug always disabled caching
         if ($this->debug) {
@@ -903,33 +890,33 @@ class Sugar
         }
 
         // validate name
-        $ref = Sugar_Ref::create($file, $this, $cacheId);
-        if ($ref === false) {
-            throw new Sugar_Exception_Usage('illegal template name: '.$file);
+        $template = Sugar_Template::create($this, $file, $cacheId);
+        if ($template === false) {
+            throw new Sugar_Exception_Usage('template not found: '.$file);
         }
 
         // if the cache can be loaded, it is valid
-        return $this->_loadCache($ref) !== false;
+        return $this->_loadCache($template) !== false;
     }
 
     /**
      * Erases the HTML cache for a template if it exists.
      *
      * @param string $file    File to check.
-     * @param string $cacheId Optional cache identifier.
+     * @param string $cacheId Cache identifier.
      *
      * @throws Sugar_Exception_Usage when the template name is invalid.
      */
-    function uncache($file, $cacheId = null)
+    function uncache($file, $cacheId)
     {
         // validate name
-        $ref = Sugar_Ref::create($file, $this, $cacheId);
-        if ($ref === false) {
-            throw new Sugar_Exception_Usage('illegal template name: '.$file);
+        $template = Sugar_Template::create($this, $file, $cacheId);
+        if ($template === false) {
+            throw new Sugar_Exception_Usage('template not found: '.$file);
         }
 
         // erase the cache entry
-        $this->cache->erase($ref, self::CACHE_HTML);
+        $this->cache->erase($template, self::CACHE_HTML);
     }
 
     /**
@@ -944,23 +931,23 @@ class Sugar
      * Load, compile, and display a template, caching the result.
      *
      * @param string $file    Template to display.
-     * @param string $cacheId Optinal cache identifier.
+     * @param string $cacheId Cache identifier.
      * @param array  $vars    Additional vars to set during execution.
      *
      * @return bool true on success.
      * @throws Sugar_Exception_Usage when the template name is invalid.
      */
-    function displayCache($file, $cacheId = null, $vars = null)
+    function displayCache($file, $cacheId, $vars = null)
     {
         // validate name
-        $ref = Sugar_Ref::create($file, $this, $cacheId);
-        if ($ref === false) {
-            throw new Sugar_Exception_Usage('illegal template name: '.$file);
+        $template = Sugar_Template::create($this, $file, $cacheId);
+        if ($template === false) {
+            throw new Sugar_Exception_Usage('template not found: '.$file);
         }
 
         try {
             // if cache exists and is up-to-date and debug is off, load cache
-            $data = $this->_loadCache($ref);
+            $data = $this->_loadCache($template);
             if (!$this->debug && $data !== false) {
                 $this->_execute($data, $vars);
                 return true;
@@ -969,7 +956,7 @@ class Sugar
             // if we are running inside an existing cache handler,
             // execute and add to current cache
             if ($this->cacheHandler) {
-                $this->_loadExecute($ref, $vars);
+                $this->_loadExecute($template, $vars);
                 return true;
             }
 
@@ -980,12 +967,12 @@ class Sugar
 
             // create cache
             $this->cacheHandler = new Sugar_CacheHandler($this);
-            $this->_loadExecute($ref, $vars);
+            $this->_loadExecute($template, $vars);
             $cache = $this->cacheHandler->getOutput();
             $this->cacheHandler = null;
 
             // attempt to save cache
-            $this->cache->store($ref, self::CACHE_HTML, $cache);
+            $this->cache->store($template, self::CACHE_HTML, $cache);
 
             // display cache
             $this->_execute($cache, $vars);
@@ -1001,12 +988,12 @@ class Sugar
      * returns the result as a string instead of displaying it to the user.
      *
      * @param string $file    Template to process.
-     * @param string $cacheId Optional cache identifier.
+     * @param string $cacheId Cache identifier.
      * @param array  $vars    Additional vars to set during execution.
      *
      * @return string Template output.
      */
-    public function fetchCache($file, $cacheId = null, $vars = null)
+    public function fetchCache($file, $cacheId, $vars = null)
     {
         ob_start();
         $this->displayCache($file, $cacheId, $vars);
@@ -1028,25 +1015,7 @@ class Sugar
      */
     function displayString($source, $vars = null)
     {
-        try {
-            /**
-             * Compiler.
-             */
-            include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
-
-            // compile
-            $parser = new Sugar_Grammar($this);
-            $data = $parser->compile($source);
-            $parser = null;
-
-            // run
-            $this->_execute($data, $vars);
-            
-            return true;
-        } catch (Sugar_Exception $e) {
-            $this->handleError($e);
-            return false;
-        }
+        return $this->display('string:'.$source, $vars);
     }
 
     /**
@@ -1063,11 +1032,7 @@ class Sugar
      */
     public function fetchString($source, $vars = null)
     {
-        ob_start();
-        $this->displayString($source, $vars);
-        $result = ob_get_contents();
-        ob_end_clean();
-        return $result;
+        return $this->fetch('string:'.$source, $vars);
     }
 
     /**
@@ -1081,13 +1046,13 @@ class Sugar
     public function getSource($file)
     {
         // validate name
-        $ref = Sugar_Ref::create($file, $this);
-        if ($ref === false) {
-            throw new Sugar_Exception_Usage('illegal template name: '.$file);
+        $template = Sugar_Template::create($this, $file);
+        if ($template === false) {
+            throw new Sugar_Exception_Usage('template not found: '.$file);
         }
 
         // fetch source
-        return $ref->storage->load($ref);
+        return $template->getSource();
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

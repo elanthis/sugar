@@ -126,13 +126,13 @@ class Sugar_CacheHandler
      * Adds a new file reference to the list of files
      * used in the template.
      *
-     * @param Sugar_Ref $ref New reference.
+     * @param Sugar_Template $template New reference.
      *
      * @return bool True on success.
      */
-    public function addRef(Sugar_Ref $ref)
+    public function addRef(Sugar_Template $template)
     {
-        $this->_refs []= $ref->full;
+        $this->_refs []= $template->name;
         return true;
     }
 
