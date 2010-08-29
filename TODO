@@ -1,0 +1,45 @@
+Upcoming versions and their release criteria.
+
+0.90
+====
+
+- STABLE SYNTAX AND API!
+
+- Restore $layout parameter to display*()/fetch*() for back-compat
+- Move compile and execute logic from Sugar to Sugar_Template
+- Allow Sugar_Template to have its own list of variables
+- s/elif/elseif/ in syntax (keep elif for back-compat)
+- foreach should at least be like PHP (foreach $foo as $key=>$value)
+  instead of current syntax, or allow (optional?) Smarty-like syntax
+
+0.91
+====
+
+- FINAL API ADDITIONS (NO API BREAKS!)
+
+- Object-oriented API for plugin functions, modifiers
+
+0.92
+====
+
+- CLEANUP (NO API CHANGES!)
+
+- Make opcode integers instead of strings
+- Add Sugar_Chunk class instad of array for base execution unit
+- ???
+
+0.93
+====
+
+- DOCUMENTATION (NO API CHANGES!)
+
+- Thoroughly document syntax
+- Thoroughly document built-ins
+- Thoroughly document standard functions
+- Thoroughly document client API
+- Thoroughly document extension API
+
+1.0
+===
+
+- TESTING (CRITICAL FIXES ONLY)

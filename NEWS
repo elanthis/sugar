@@ -12,6 +12,7 @@
 + Added getOption() and setOption() methods.
 + Removed layouts in favor of inherited templates.
 + pluginDir and templateDir may be arrays of paths.
++ section, insert, inherit all look like built-in functions.
 
 ==================
 ** Version 0.82 **
