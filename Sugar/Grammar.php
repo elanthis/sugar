@@ -690,7 +690,9 @@ class Sugar_Grammar
                 }
  
                 // get section identifier
-                $this->_tokens->expect(Sugar_Token::IDENTIFIER, $name);
+                $params = $this->_parseBuiltinFunctionArgs('section',
+                        array('name'=>'string'));
+                $name = $params['name'];
 
                 // do not allow nested sections
                 if ($blockType != 'document') {
@@ -751,11 +753,12 @@ class Sugar_Grammar
             }
             // insert section
             elseif ($this->_tokens->acceptKeyword('insert')) {
-                // name of section to include
-                $this->_tokens->expect(Sugar_Token::IDENTIFIER, $name);
+                // parse arguments; expect a single argument, 'name'
+                $params = $this->_parseBuiltinFunctionArgs('insert',
+                        array('name'=>'string'));
 
                 // push opcode
-                $block []= array('insert', $name);
+                $block []= array('insert', $params['name']);
             }
             // function call?
             elseif ($this->_tokens->accept(Sugar_Token::IDENTIFIER, $func)) {

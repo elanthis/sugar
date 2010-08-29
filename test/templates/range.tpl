@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Range Loop Tests{{ /section }}
+{{ section name='title' }}Range Loop Tests{{ /section }}
 
 <p>Test: loop $i in 1,3 ; $i ; /loop<br/>
 Expect: 123<br/>

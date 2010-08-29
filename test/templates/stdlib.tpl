@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}stdlib tests{{ /section }}
+{{ section name='title' }}stdlib tests{{ /section }}
 
 <p>Test: date 'Y-m-d'<br/>
 Expect: <i>current date in YYYY-MM-DD format</i><br/>

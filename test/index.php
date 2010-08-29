@@ -78,7 +78,7 @@ $sugar->set('list', array('one','two','three','foo'=>'bar'));
 $sugar->set('obj', new Test());
 $sugar->set('random', rand()%1000);
 $sugar->set('newlines', "This\nhas\nnewlines!");
-//$sugar->set('source', $sugar->getSource($file));
+$sugar->set('source', $sugar->getSource($file));
 $sugar->set('t', $file);
 $sugar->set('templates', $templates);
 $sugar->addFunction('showHtml');

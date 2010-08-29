@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}String Tests{{ /section }}
+{{ section name='title' }}String Tests{{ /section }}
 
 <p>Test: ''<br>
 Expect: <br>

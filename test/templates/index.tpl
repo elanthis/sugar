@@ -1,4 +1,4 @@
-{{ section title }}Sugar Template Test Cases{{ /section }}
+{{ section name='title' }}Sugar Template Test Cases{{ /section }}
 
 <ul>
 {{ foreach $tpl in $templates}}

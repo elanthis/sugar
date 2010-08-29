@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Expression Tests{{ /section }}
+{{ section name='title' }}Expression Tests{{ /section }}
 
 {{ $a = 4 }}
 {{ $b = 15 }}

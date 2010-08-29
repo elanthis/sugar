@@ -1,14 +1,14 @@
 <?xml version="1.0"?>
 <html>
 	<head>
-		<title>{{ section|insert title }}NO TITLE{{ /section }}</title>
+		<title>{{ section|insert name='title' }}NO TITLE{{ /section }}</title>
 	</head>
 	<body style="font-family: monospace;">
-		<p style="font-size: large; font-weight: bold;">{{ insert title }}</p>
+		<p style="font-size: large; font-weight: bold;">{{ insert name='title' }}</p>
 		{{ if $t != 'index' }}<p><a href="index.php">[index]</a>{{ /if }}
 
 		<div id="content">
-			{{ insert content }}
+			{{ insert name='content' }}
 		</div>
 
 		<div id="hide_source">

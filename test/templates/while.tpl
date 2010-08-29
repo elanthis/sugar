@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}While Tests{{ /section }}
+{{ section name='title' }}While Tests{{ /section }}
 
 <p>Test: $i = 0; while $i &lt; 10; $i ; $i = $i + 1; /while<br/>
 Expect: 0123456789<br/>

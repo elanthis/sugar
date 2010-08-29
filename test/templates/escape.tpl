@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Escape Modifier{{ /section }}
+{{ section name='title' }}Escape Modifier{{ /section }}
 
 <p>Test: '&lt;test&gt;'<br/>
 Expect: &lt;test&gt;<br/>

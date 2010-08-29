@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Modifier Tests{{ /section }}
+{{ section name='title' }}Modifier Tests{{ /section }}
 
 <p>Test: one str='test'|upper<br/>
 Expect: UnoTEST<br/>

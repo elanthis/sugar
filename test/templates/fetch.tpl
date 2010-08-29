@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Fetch Tests{{ /section }}
+{{ section name='title' }}Fetch Tests{{ /section }}
 
 <p>Expect: 1+10=11<br>
 Result: {{ $fetch_string }}

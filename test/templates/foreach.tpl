@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Foreach Tests{{ /section }}
+{{ section name='title' }}Foreach Tests{{ /section }}
 
 <p>Test: foreach $i in $list; $i..','; /foreach<br/>
 Expect: one,two,three,bar,<br/>

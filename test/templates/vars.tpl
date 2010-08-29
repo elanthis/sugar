@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Variable Tests{{ /section }}
+{{ section name='title' }}Variable Tests{{ /section }}
 
 <p>Expect: dancing mice<br>
 Result: {{ $test }}

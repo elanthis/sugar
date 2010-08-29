@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}json Tests{{ /section }}
+{{ section name='title' }}json Tests{{ /section }}
 
 <p>Test: json value=$test<br>
 Expect: 'dancing mice'<br>

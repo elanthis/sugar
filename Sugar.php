@@ -689,7 +689,7 @@ class Sugar
         // check template exists, and remember stamp
         $sstamp = $template->getLastModified();
         if ($sstamp === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$template->full);
+            throw new Sugar_Exception_Usage('template not found: '.$template->getName());
         }
 
         // cache file ref
@@ -715,10 +715,10 @@ class Sugar
         // compile
         $source = $template->getSource();
         if ($source === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$template->full);
+            throw new Sugar_Exception_Usage('template not found: '.$template->getName());
         }
         $parser = new Sugar_Grammar($this);
-        $data = $parser->compile($source, $template->full);
+        $data = $parser->compile($source, $template->getName());
         $parser = null;
 
         // store

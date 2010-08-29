@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}If Tests{{ /section }}
+{{ section name='title' }}If Tests{{ /section }}
 
 {{ $test = 24 }}
 

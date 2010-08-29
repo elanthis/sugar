@@ -1,14 +1,14 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Section Tests{{ /section }}
+{{ section name='title' }}Section Tests{{ /section }}
 
 <p>Expect: <br/>
-Result: {{ section test }}
+Result: {{ section name='test' }}
 <b>FAILURE</b>
 {{ /section }}</p>
 
 <p>Expect: TEST2<br/>
-Result: {{ section|insert test2 }}TEST2{{ /section }}</p>
+Result: {{ section|insert name='test2' }}TEST2{{ /section }}</p>
 
 <p>Expect: TEST3<br/>
-Result:	{{ section test3 }}TEST3{{ /section }}{{ insert test3 }}</p>
+Result:	{{ section name='test3' }}TEST3{{ /section }}{{ insert name='test3' }}</p>

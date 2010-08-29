@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Method ACL Tests{{ /section }}
+{{ section name='title' }}Method ACL Tests{{ /section }}
 
 <p>Test: $obj-&gt;deny_acl()<br/>
 Expect: <br/>

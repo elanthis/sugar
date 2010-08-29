@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Comparison Tests{{ /section }}
+{{ section name='title' }}Comparison Tests{{ /section }}
 
 <p>Expect: true<br>
 Result: {{ 1+1=2 }}

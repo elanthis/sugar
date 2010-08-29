@@ -1,6 +1,6 @@
 {{ inherit file='layout.tpl' }}
 
-{{ section title }}Function Tests{{ /section }}
+{{ section name='title' }}Function Tests{{ /section }}
 
 <p>Test: showHtml html='&lt;b&gt;bold&lt;/b&gt;'<br>
 Expect: &lt;b&gt;bold&lt;b&gt;<br>
