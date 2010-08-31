@@ -17,7 +17,7 @@ if (isset($_GET['t']))
 $templates = array();
 $dir = opendir('templates');
 while ($tpl = readdir($dir)) {
-	if (substr($tpl, 0, 1) != '.' && $tpl != 'layout.tpl' && $tpl != 'fetch.file.tpl') {
+	if (is_file('templates/'.$tpl) && substr($tpl, 0, 1) != '.' && $tpl != 'layout.tpl' && $tpl != 'fetch.file.tpl') {
 		$templates []= $tpl;
 	}
 }
@@ -88,15 +88,9 @@ $sugar->addFunction('randomNoCache', 'random', false);
 $sugar->addFunction('showHtmlNoEscape', 'sugar_function_showhtml', true, false);
 $end_config = microtime(true);
 
-// get some fetches
-$begin_fetch = microtime(true);
-$sugar->set('fetch_string', $sugar->fetchString('1+{{ $i }}={{ 1 + $i }}'));
-$sugar->set('fetch_file', $sugar->fetch('fetch.file.tpl'));
-$sugar->set('fetch_cfile', $sugar->fetchCache('fetch.file.tpl'));
-$end_fetch = microtime(true);
-
 $begin_display = microtime(true);
-$sugar->displayCache('file:'.$file, null, null);
+$tpl = $sugar->getTemplate('file:'.$file, 'cached');
+$tpl->display();
 $end_display = microtime(true);
 
 $end = microtime(true);
@@ -105,16 +99,14 @@ $load_time = $end_load - $begin_load;
 $create_time = $end_create - $begin_create;
 $display_time = $end_display - $begin_display;
 $config_time = $end_config - $begin_config;
-$fetch_time = $end_fetch - $begin_fetch;
 $total_time = $end - $begin;
-$misc_time = $total_time - $load_time - $create_time - $display_time - $config_time - $fetch_time;
+$misc_time = $total_time - $load_time - $create_time - $display_time - $config_time;
 
 printf('<p style="font-size: small; color: #666; white-space: pre;">');
 printf('debug:       %s<br/>', $sugar->debug?'ON (no caching)':'OFF');
 printf('includes:    %0.6f seconds<br/>', $load_time);
 printf('constructor: %0.6f seconds<br/>', $create_time);
 printf('config:      %0.6f seconds<br/>', $config_time);
-printf('fetch:       %0.6f seconds<br/>', $fetch_time);
 printf('display:     %0.6f seconds<br/>', $display_time);
 printf('misc.:       %0.6f seconds<br/>', $misc_time);
 printf('TOTAL:       %0.6f seconds</p>', $total_time);

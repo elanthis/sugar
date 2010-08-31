@@ -1,3 +1,5 @@
+{{ inherit file='layout.tpl' }}
+
 {{ section name='title' }}Sugar Template Test Cases{{ /section }}
 
 <ul>

@@ -264,26 +264,12 @@ class Sugar_Grammar
             // if unary, pop right-hand operand
             if ($op == '!' || $op == 'negate') {
                 $right = array_pop($this->_output);
-
-                // optimize away if operand is data
-                if (self::_isData($right)) {
-                    $this->_output []= array('push', Sugar_Runtime_Execute($this->_sugar, array_merge($right, array($op)), array()));
-                } else {
-                    // can't optimize away - emit opcodes
-                    $this->_output []= array_merge($right, array($op));
-                }
+                $this->_output []= array_merge($right, array($op));
             } else {
                 // binary, pop both
                 $right = array_pop($this->_output);
                 $left = array_pop($this->_output);
-
-                // optimize away if both operands are constant data
-                if (self::_isData($left) && self::_isData($right)) {
-                    $this->_output []= array('push', Sugar_Runtime_Execute($this->_sugar, array_merge($left, $right, array($op)), array()));
-                } else {
-                    // can't optimize away - emit opcodes
-                    $this->_output []= array_merge($left, $right, array($op));
-                }
+                $this->_output []= array_merge($left, $right, array($op));
             }
         }
         return true;
@@ -787,20 +773,8 @@ class Sugar_Grammar
                 $ops = $this->_compileExpr(false, true, $escape_flag);
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
-                if (self::_isData($ops)) {
-                    if ($escape_flag) {
-                        $block []= array(
-                            'echo', $this->_sugar->escape(
-                                Sugar_Runtime_ShowValue($ops[1])
-                            )
-                        );
-                    } else {
-                        $block []= array('echo', Sugar_Runtime_ShowValue($ops[1]));
-                    }
-                } else {
-                    $block []= $ops;
-                    $block []= array($escape_flag ? 'print' : 'rawprint');
-                }
+                $block []= $ops;
+                $block []= array($escape_flag ? 'print' : 'rawprint');
             }
         }
 

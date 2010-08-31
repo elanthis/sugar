@@ -104,7 +104,7 @@ class Sugar_Cache_Memcache implements Sugar_CacheDriver
      *
      * @return int Timestamp
      */
-    public function stamp(Sugar_Template $template, $type)
+    public function getLastModified(Sugar_Template $template, $type)
     {
         // fetch the item from the cache
         $key = $this->_makeKey($template, $type);

@@ -98,7 +98,7 @@ class Sugar_Cache_File implements Sugar_CacheDriver
      *
      * @return int Timestamp
      */
-    public function stamp($template, $type)
+    public function getLastModified($template, $type)
     {
         $path = $this->_makePath($template, $type);
 

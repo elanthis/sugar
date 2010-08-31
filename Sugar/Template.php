@@ -51,6 +51,13 @@
 class Sugar_Template
 {
     /**
+     * Our Sugar instance
+     *
+     * @var Sugar $sugar
+     */
+    public $sugar;
+
+    /**
      * Name of the template as given by the user.
      *
      * @var string $name
@@ -58,25 +65,42 @@ class Sugar_Template
     public $name;
 
     /**
-     * Storage driver for this reference.
-     *
-     * @var Sugar_StorageDriver $storage
-     */
-    public $storage;
-
-    /**
-     * Storage driver handle.
-     *
-     * @var mixed $handle 
-     */
-    public $handle;
-
-    /**
      * Cache identifier.
      *
      * @var string $cacheId
      */
     public $cacheId;
+
+    /**
+     * Storage driver for this reference.
+     *
+     * @var Sugar_StorageDriver $storage
+     */
+    private $_storage;
+
+    /**
+     * Storage driver handle.
+     *
+     * @var mixed $_handle 
+     */
+    private $_handle;
+
+    /**
+     * Local variable context
+     *
+     * @var Sugar_Context $_context
+     */
+    private $_context;
+
+    /**
+     * HTML cache data.
+     *
+     * If an array(), it's a valid cache.  If null, we haven't checked.
+     * If false, it's known to be out of date.
+     *
+     * @var mixed $_htmlCache
+     */
+    private $_htmlCache = null;
 
     /**
      * Public constructor.  Parses the user-provided template path
@@ -95,18 +119,18 @@ class Sugar_Template
         if (($pos = strpos($name, ':')) !== FALSE) {
             $storageName = substr($name, 0, $pos);
             $baseName = substr($name, $pos + 1);
-
-            // check for invalid storage type
-            if (!isset($sugar->storage[$storageName])) {
-                return false;
-            }
         } else {
             $storageName = $sugar->defaultStorage;
             $baseName = $name;
         }
 
+        // check for invalid storage type
+        $storage = $sugar->getStorage($storageName);
+        if (!$storage) {
+            return false;
+        }
+
         // load driver, and check for handler
-        $storage = $sugar->storage[$storageName];
         $handle = $storage->getHandle($baseName);
         if ($handle === false) {
             return false;
@@ -128,10 +152,12 @@ class Sugar_Template
     private function __construct(Sugar $sugar, Sugar_StorageDriver $storage,
     $handle, $name, $cacheId) {
         $this->sugar = $sugar;
-        $this->storage = $storage;
-        $this->handle = $handle;
+        $this->_storage = $storage;
+        $this->_handle = $handle;
         $this->name = $name;
         $this->cacheId = $cacheId;
+
+        $this->_context = new Sugar_Context($sugar->getContext(), array());
     }
 
     /**
@@ -141,7 +167,7 @@ class Sugar_Template
      */
     public function getLastModified()
     {
-        return $this->storage->getLastModified($this->handle);
+        return $this->_storage->getLastModified($this->_handle);
     }
 
     /**
@@ -151,7 +177,7 @@ class Sugar_Template
      */
     public function getSource()
     {
-        return $this->storage->getSource($this->handle);
+        return $this->_storage->getSource($this->_handle);
     }
 
     /**
@@ -161,7 +187,249 @@ class Sugar_Template
      */
     public function getName()
     {
-        return $this->storage->getName($this->handle, $this->name);
+        return $this->_storage->getName($this->_handle, $this->name);
+    }
+
+    /**
+     * Get the template's local variable context
+     *
+     * @return Sugar_Context
+     */
+    public function getContext()
+    {
+        return $this->_context;
+    }
+    
+    /**
+     * Attempt to load an HTML cached file.  Will return false if
+     * the cached file does not exist or if the cached file is out
+     * of date.
+     *
+     * @return false|array Cache data on success, false on error.
+     */
+    private function _loadCache()
+    {
+        // if the cache is already loaded, just return it
+        if (!is_null($this->_htmlCache)) {
+            return $this->_htmlCache;
+        }
+
+        // get the cache's stamp, and fail if it can't be found
+        $cstamp = $this->sugar->cache->getLastModified($this, Sugar::CACHE_HTML);
+        if ($cstamp === false) {
+            return false;
+        }
+
+        // fail if the cache is too old
+        if ($cstamp < time() - $this->sugar->cacheLimit) {
+            return false;
+        }
+
+        // load the cache data, fail if loading fails or the
+        // version doesn't match
+        $data = $this->sugar->cache->load($this, Sugar::CACHE_HTML);
+        if ($data === false || $data['version'] !== Sugar::VERSION) {
+            return false;
+        }
+
+        // compare stamps with the included references; if any fail,
+        // unmark our _cached flag so we can report back to the user
+        // on a call to isCached()
+        foreach ($data['refs'] as $file) {
+            // try to reference the file; ignore failures
+            $inc = Sugar_Template::create($this->sugar, $file);
+            if ($inc === false) {
+                continue;
+            }
+
+            // get the stamp of the reference; ignore failures
+            $stamp = $inc->getLastModified();
+            if ($stamp === false) {
+                continue;
+            }
+
+            // if the stamp is newer than the cache stamp, fail
+            if ($cstamp < $stamp) {
+                return false;
+            }
+        }
+
+        // store the bytecode so we don't need to reload it
+        $this->_htmlCache = $data;
+        return $data;
+    }
+
+    /**
+     * Check if the template has a valid and completely up-to-date ache.
+     *
+     * This will check the cache status of included templates as well.
+     *
+     * @return bool True for a valid cache, false if missing or outdated.
+     */
+    public function isCached()
+    {
+        return $this->_loadCache() !== false;
+    }
+
+    /**
+     * Helper to set a variable in the template's local context
+     *
+     * @param string $name  Name of variable to set
+     * @param mixed  $value Value of variable
+     */
+    public function set($name, $value)
+    {
+        $this->_context->set($name, $value);
+    }
+
+    /**
+     * Load and compile (if necessary) the template code.
+     *
+     * @return mixed
+     */
+    private function _loadCompile()
+    {
+        // if debug is off and the stamp is good, load compiled version
+        if (!$this->sugar->debug) {
+            $sstamp = $this->getLastModified();
+            $cstamp = $this->sugar->cache->getLastModified($this, Sugar::CACHE_TPL);
+            if ($cstamp !== false && $cstamp > $sstamp) {
+                $data = $this->sugar->cache->load($this, Sugar::CACHE_TPL);
+                // if version checks out, run it
+                if ($data !== false && $data['version'] === Sugar::VERSION) {
+                    return $data;
+                }
+            }
+        }
+
+        /**
+         * Compiler.
+         */
+        include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
+
+        // compile
+        $source = $this->getSource();
+        if ($source === false) {
+            throw new Sugar_Exception_Usage('template not found: '.$this->getName());
+        }
+        $parser = new Sugar_Grammar($this->sugar);
+        $data = $parser->compile($source, $this->getName());
+        unset($parser);
+
+        // store compiled bytecode into cache
+        $this->sugar->cache->store($this, Sugar::CACHE_TPL, $data);
+
+        return $data;
+    }
+
+    /**
+     * Display the template
+     *
+     * @param Sugar_Context $context Optional context to use instead
+     *                               of the default local context
+     */
+    public function display($context = null)
+    {
+        try {
+            $runtime = $this->sugar->getRuntime();
+
+            // create context for the variables - FIXME: remove
+            $context = new Sugar_Context($this->getContext(), array());
+
+            // if we are to be cached, check for an existing cache and use that if
+            // it exists and is up to date
+            if (!$this->sugar->debug && !is_null($this->cacheId)) {
+                $data = $this->_loadCache();
+                if ($data !== false) {
+                    $runtime->execute($context, $data['bytecode'], $data['sections']);
+                    return true;
+                }
+            }
+
+            // if we are to be cached and aren't alrady running inside an existing
+            // cache handler instance, create a new one
+            $caching = false;
+            if (!is_null($this->cacheId) && !$this->sugar->cacheHandler) {
+                /**
+                 * Cache handler.
+                 */
+                include_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheHandler.php';
+
+                // create cache
+                $this->sugar->cacheHandler = new Sugar_CacheHandler($this->sugar);
+                $caching = true;
+            }
+
+            // add file to cache handlers file reference list
+            if (!is_null($this->cacheId)) {
+                $this->sugar->cacheHandler->addRef($this);
+            }
+
+            // load compiled template
+            $data = $this->_loadCompile();
+
+            // if we have an inherited template, load it and merge it with our data
+            if ($data['inherit']) {
+                // load compiled parent (inherited template)
+                $parent = Sugar_Template::create($this->sugar, $data['inherit'], $this->cacheId);
+                if ($parent === false) {
+                    throw new Sugar_Exception_Usage('template not found: '.$data['inherit']);
+                }
+                $pdata = $parent->_loadCompile();
+
+                // merge parent with page template
+                $pdata ['sections']= array_merge($pdata['sections'], $data['sections']);
+
+                // set page main bytecode as content section if and only if
+                // the page template did not define its own explicit content
+                // section.
+                if (!isset($data['sections']['content'])) {
+                    $pdata['sections']['content'] = $data['bytecode'];
+                }
+
+                $data = $pdata;
+            }
+
+            // execute our compiled template
+            $runtime->execute($context, $data['bytecode'], $data['sections']);
+
+            // clean up the cache handler and display the uncachable data if
+            // and only if we created the cache handler
+            if ($caching) {
+                $cache = $this->sugar->cacheHandler->getOutput();
+                $this->sugar->cacheHandler = null;
+
+                // attempt to save cache
+                $this->sugar->cache->store($this, Sugar::CACHE_HTML, $cache);
+
+                // display cache
+                $runtime->execute($context, $cache['bytecode'], $cache['sections']);
+            }
+
+            return true;
+        } catch (Sugar_Exception $e) {
+            $this->sugar->handleError($e);
+            return false;
+        }
+    }
+
+    /**
+     * Fetch template output as a string
+     *
+     * @return string
+     */
+    public function fetch()
+    {
+        ob_start();
+        try {
+            $this->display();
+            $output = ob_get_contents();
+        } catch (Exception $e) {
+            ob_end_clean();
+            throw $e;
+        }
+        ob_end_clean();
+        return $output;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

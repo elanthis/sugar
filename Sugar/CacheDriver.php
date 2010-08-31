@@ -33,7 +33,7 @@
  * @package    Sugar
  * @subpackage Drivers
  * @author     Sean Middleditch <sean@mojodo.com>
- * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @copyright  2008-2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    SVN: $Id$
  * @link       http://php-sugar.net
@@ -47,7 +47,7 @@
  * @package    Sugar
  * @subpackage Drivers
  * @author     Sean Middleditch <sean@mojodo.com>
- * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @copyright  2008-2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    Release: 0.83
  * @link       http://php-sugar.net
@@ -64,7 +64,7 @@ interface Sugar_CacheDriver
      * @return int Timestamp, or 0 if the file does not exist.
      * @abstract
      */
-    function stamp($key, $type);
+    function getLastModified($key, $type);
 
     /**
      * Returns the bytecode for the requested reference.

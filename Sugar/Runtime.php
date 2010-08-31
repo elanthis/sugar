@@ -45,444 +45,461 @@
  */
 
 /**
- * Converts a PHP value into something nice for a user to see.  Mainly
- * this is intended for arrays, objects, and boolean values, which are
- * not natively user-visible formats.
+ * Sugar runtime engine.
  *
- * @param mixed $value Value to convert.
- *
- * @return string User-visible rendition of the value.
+ * @category   Template
+ * @package    Sugar
+ * @subpackage Runtime
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2008-2009 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    SVN: $Id$
+ * @link       http://php-sugar.net
+ * @access     private
  */
-function Sugar_Runtime_ShowValue($value)
-{
-    if (is_bool($value)) {
-        return $value?'true':'false';
-    } elseif (is_array($value)) {
-        return Sugar_Util_Json($value);
-    } else {
-        return $value;
+class Sugar_Runtime {
+    /**
+     * Sugar handle
+     *
+     * @var public $sugar
+     */
+    public $sugar;
+
+    /**
+     * Constructor
+     *
+     * @param Sugar $sugar Sugar handle
+     * @param array $vars  Defined variables
+     */
+    public function __construct(Sugar $sugar)
+    {
+        $this->sugar = $sugar;
     }
-}
 
-/**
- * Attempts to add two PHP values together.  If both types are, this
- * performs a regular addition.  If both types are arrays, this
- * performs an array_merge() on the arrays.  Otherwise, both values
- * are concatenated with the dot operator.
- *
- * @param mixed $left  The left-hand operand to add.
- * @param mixed $right The right-hand operand to add.
- *
- * @return mixed The result of the addition.
- */
-function Sugar_Runtime_AddValues($left, $right)
-{
-    if (is_numeric($left) && is_numeric($right)) {
-        return $left + $right;
-    } elseif (is_array($left) && is_array($right)) {
-        return array_merge($left, $right);
-    } else {
-        return $left . $right;
-    }
-}
-
-/**
- * Display output, either to the cache handler or to the PHP
- * output stream.
- *
- * @param Sugar  $sugar  Sugar object.
- * @param string $output Output.
- *
- * @return bool True on success.
- */
-function Sugar_Runtime_Display(Sugar $sugar, $output)
-{
-    if ($sugar->cacheHandler) {
-        return $sugar->cacheHandler->addOutput($output);
-    } else {
-        echo $output;
-        return true;
-    }
-}
-
-/**
- * Executes the given bytecode.  The return value is the last item on
- * the stack, if any.  For complete templates, this should be nothing
- * (null).
- *
- * @param Sugar $sugar    Sugar instance.
- * @param array $code     Bytecode to execute.
- * @param array $sections Section bytecodes.
- *
- * @return mixed Last value on stack.
- * @throws Sugar_Exception_Runtime when the user has provided code that
- * cannot be executed, such as attempting to call a function that does
- * not exist.
- */
-function Sugar_Runtime_Execute($sugar, $code, $sections)
-{
-    $stack = array();
-
-    for ($i = 0; $i < count($code); ++$i) {
-        $opcode = $code[$i];
-        switch($opcode) {
-        case 'echo':
-            Sugar_Runtime_Display($sugar, $code[++$i]);
-            break;
-        case 'print':
-            $val = array_pop($stack);
-            Sugar_Runtime_Display($sugar, $sugar->escape(Sugar_Runtime_ShowValue($val)));
-            break;
-        case 'rawprint':
-            $val = array_pop($stack);
-            Sugar_Runtime_Display($sugar, Sugar_Runtime_ShowValue($val));
-            break;
-        case 'push':
-            $str = $code[++$i];
-            $stack []= $str;
-            break;
-        case 'lookup':
-            $var = strtolower($code[++$i]);
-            $stack []= $sugar->getVariable($var);
-            break;
-        case 'assign':
-            $name = $code[++$i];
-            $value = array_pop($stack);
-            $sugar->set($name, $value);
-            break;
-        case 'insert':
-            $name = $code[++$i];
-            if (isset($sections[$name])) {
-                Sugar_Runtime_Execute($sugar, $sections[$name], $sections);
-            } else {
-                throw new Sugar_Exception_Runtime(
-                    $debug_file,
-                    $debug_line,
-                    'unknown section `'.$name.'`'
-                );
-            }
-            break;
-        case 'negate':
-            $v = array_pop($stack);
-            $stack []= -$v;
-            break;
-        case '!':
-            $v = array_pop($stack);
-            $stack []= !$v;
-            break;
-        case '..':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= $v1 . $v2;
-            break;
-        case '+':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= Sugar_Runtime_AddValues($v1, $v2);
-            break;
-        case '*':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= $v1 * $v2;
-            break;
-        case '-':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= $v1 - $v2;
-            break;
-        case '/':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            if ($v2 == 0) {
-                $stack []= null;
-            } else {
-                $stack []= $v1 / $v2;
-            }
-            break;
-        case '%':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            if ($v2 == 0) {
-                $stack []= null;
-            } else {
-                $stack []= $v1 % $v2;
-            }
-            break;
-        case '==':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= ($v1 == $v2);
-            break;
-        case '!=':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= ($v1 != $v2);
-            break;
-        case '||':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= ($v1 || $v2);
-            break;
-        case '&&':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= ($v1 && $v2);
-            break;
-        case '<':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= ($v1 < $v2);
-            break;
-        case '<=':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= ($v1 <= $v2);
-            break;
-        case '>':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= ($v1 > $v2);
-            break;
-        case '>=':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= ($v1 >= $v2);
-            break;
-        case 'in':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= (is_array($v2) && in_array($v1, $v2));
-            break;
-        case '!in':
-            $v2 = array_pop($stack);
-            $v1 = array_pop($stack);
-            $stack []= (is_array($v2) && !in_array($v1, $v2));
-            break;
-        case 'call':
-        case 'call_top':
-            $func = $code[++$i];
-            $args = $code[++$i];
-            $escape_flag = $opcode == 'call_top' ? $code[++$i] : false;
-            $debug_file = $code[++$i];
-            $debug_line = $code[++$i];
-
-            // lookup function
-            $callable = $sugar->getFunction($func);
-            if (!$callable) {
-                throw new Sugar_Exception_Runtime(
-                    $debug_file,
-                    $debug_line,
-                    'unknown function `'.$func.'`'
-                );
-            }
-
-            // update escape flag based on function default
-            $escape_flag = $escape_flag && $callable['escape'];
-
-            // compile args
-            $params = array();
-            foreach ($args as $name=>$pcode) {
-                $params[$name] = Sugar_Runtime_Execute($sugar, $pcode, $sections);
-            }
-
-            // exception net
-            try {
-                // call function, using appropriate method
-                $ret = call_user_func($callable['invoke'], $sugar, $params);
-            } catch (Exception $e) {
-                $sugar->handleError($e);
-                $ret = null;
-            }
-
-            // process return value
-            if ($opcode == 'call_top' && $escape_flag) {
-                Sugar_Runtime_Display($sugar, $sugar->escape(Sugar_Runtime_ShowValue($ret)));
-            } elseif ($opcode == 'call_top') {
-                Sugar_Runtime_Display($sugar, Sugar_Runtime_ShowValue($ret));
-            } else {
-                $stack []= $ret;
-            }
-            break;
-        case 'method':
-            $obj = array_pop($stack);
-            $func = $code[++$i];
-            $args = $code[++$i];
-            $debug_file = $code[++$i];
-            $debug_line = $code[++$i];
-
-            // ensure the object is an object and that the method is a method
-            if (!is_object($obj)) {
-                throw new Sugar_Exception_Runtime(
-                    $debug_file,
-                    $debug_line,
-                    'method call on non-object type `'.gettype($obj).'`'
-                );
-            }
-
-            if (!method_exists($obj, $func)) {
-                throw new Sugar_Exception_Runtime(
-                    $debug_file,
-                    $debug_line,
-                    'unknown method `'.$func.'` on type `'.gettype($obj).'`'
-                );
-            }
-
-            // compile args
-            $params = array();
-            foreach ($args as $pcode) {
-                $params [] = Sugar_Runtime_Execute($sugar, $pcode, $sections);
-            }
-
-            // perform ACL checking on the method call
-            if (!is_null($sugar->methodAcl)) {
-                $check = call_user_func(
-                    $sugar->methodAcl,
-                    $sugar,
-                    $obj,
-                    $func,
-                    $params
-                );
-
-                if (!$check) {
-                    throw new Sugar_Exception_Runtime(
-                        $debug_file,
-                        $debug_line,
-                        'method call to `'.$func.'` on type `'.
-                            gettype($obj).'` blocked by ACL'
-                    );
-                }
-            }
-
-            // exception net
-            try {
-                // invoke method
-                $stack []= @call_user_func_array(array($obj, $func), $params);
-            } catch (Exception $e) {
-                $sugar->handleError($e);
-                $stack []= null;
-            }
-            break;
-        case 'modifier':
-            $name = $code[++$i];
-            $args = $code[++$i];
-            $value = array_pop($stack);
-
-            // lookup function
-            $callable = $sugar->getModifier($name);
-            if (!$callable) {
-                throw new Sugar_Exception_Runtime(
-                    'FIXME',
-                    1,
-                    'unknown modifier `'.$name.'`'
-                );
-            }
-
-            // compile args
-            $params = array();
-            foreach ($args as $pcode) {
-                $params []= Sugar_Runtime_Execute($sugar, $pcode, $sections);
-            }
-
-            // exception net
-            try {
-                // invoke the modifier
-                $ret = call_user_func($callable, $value, $sugar, $params);
-            } catch (Exception $e) {
-                $sugar->handleError($e);
-                $ret = null;
-            }
-
-            // store return value
-            $stack []= $ret;
-            break;
-        case 'if':
-            $clauses = $code[++$i];
-            foreach ($clauses as $clause) {
-                if ($clause[0] === false || Sugar_Runtime_Execute($sugar, $clause[0], $sections)) {
-                    Sugar_Runtime_Execute($sugar, $clause[1], $sections);
-                    break;
-                }
-            }
-            break;
-        case 'range':
-            $step = array_pop($stack);
-            $upper = array_pop($stack);
-            $lower = array_pop($stack);
-            $name = $code[++$i];
-            $block = $code[++$i];
-
-            // if step is 0, fail
-            if ($step === 0) {
-                throw new Sugar_Exception ('step of 0 in range loop');
-            }
-
-            // iterate
-            $index = $lower;
-            while (($step < 0 && $index >= $upper)
-                || ($step > 0 && $index <= $upper)
-            ) {
-                $sugar->set($name, $index);
-                Sugar_Runtime_Execute($sugar, $block, $sections);
-                $index += $step;
-            }
-            break;
-        case 'foreach':
-            $array = array_pop($stack);
-            $key = $code[++$i];
-            $name = $code[++$i];
-            $block = $code[++$i];
-            if (is_array($array) || is_object($array)) {
-                foreach ($array as $k=>$v) {
-                    if ($key) {
-                        $sugar->set($key, $k);
-                    }
-                    $sugar->set($name, $v);
-                    Sugar_Runtime_Execute($sugar, $block, $sections);
-                }
-            }
-            break;
-        case 'while':
-            $test = $code[++$i];
-            $block = $code[++$i];
-            while (Sugar_Runtime_Execute($sugar, $test, $sections)) {
-                Sugar_Runtime_Execute($sugar, $block, $sections);
-            }
-            break;
-        case 'nocache':
-            $block = $code[++$i];
-            if ($sugar->cacheHandler) {
-                $sugar->cacheHandler->addBlock($block);
-            } else {
-                Sugar_Runtime_Execute($sugar, $block, $sections);
-            }
-            break;
-        case '.':
-            $index = array_pop($stack);
-            $obj = array_pop($stack);
-            if (is_array($obj) && isset($obj[$index])) {
-                $stack []= $obj[$index];
-            } elseif (is_object($obj) && isset($obj->$index)) {
-                $stack []= $obj->$index;
-            } else {
-                $stack []= null;
-            }
-            break;
-        case 'array':
-            $elems = $code[++$i];
-            $array = array();
-            foreach ($elems as $elem) {
-                $array []= Sugar_Runtime_Execute($sugar, $elem, $sections);
-            }
-            $stack []= $array;
-            break;
-        default:
-            throw new Sugar_Exception(
-                'internal error: unknown opcode `'.$opcode.'`'
-            );
+    /**
+     * Converts a PHP value into something nice for a user to see.  Mainly
+     * this is intended for arrays, objects, and boolean values, which are
+     * not natively user-visible formats.
+     *
+     * @param mixed $value Value to convert.
+     *
+     * @return string User-visible rendition of the value.
+     */
+    private function _valueToString($value)
+    {
+        if (is_bool($value)) {
+            return $value?'true':'false';
+        } elseif (is_array($value)) {
+            return Sugar_Util_Json($value);
+        } else {
+            return (string)$value;
         }
     }
 
-    return end($stack);
+    /**
+     * Display output, either to the cache handler or to the PHP
+     * output stream.
+     *
+     * @param string $output Output.
+     *
+     * @return bool True on success.
+     */
+    private function _display($output)
+    {
+        if ($this->sugar->cacheHandler) {
+            return $this->sugar->cacheHandler->addOutput($output);
+        } else {
+            echo $output;
+            return true;
+        }
+    }
+
+    /**
+     * Executes the given bytecode.  The return value is the last item on
+     * the stack, if any.  For complete templates, this should be nothing
+     * (null).
+     *
+     * @param Sugar_Context $vars     Variable context
+     * @param array         $code     Bytecode to execute.
+     * @param array         $sections Section bytecodes.
+     *
+     * @return mixed Last value on stack.
+     * @throws Sugar_Exception_Runtime when the user has provided code that
+     * cannot be executed, such as attempting to call a function that does
+     * not exist.
+     */
+    public function execute(Sugar_Context $vars, $code, $sections)
+    {
+        $stack = array();
+
+        for ($i = 0; $i < count($code); ++$i) {
+            $opcode = $code[$i];
+            switch($opcode) {
+            case 'echo':
+                $this->_display($code[++$i]);
+                break;
+            case 'print':
+                $v1 = array_pop($stack);
+                $this->_display($this->sugar->escape($this->_valueToString($v1)));
+                break;
+            case 'rawprint':
+                $v1 = array_pop($stack);
+                $this->_display($this->_valueToString($v1));
+                break;
+            case 'push':
+                $v1 = $code[++$i];
+                $stack []= $v1;
+                break;
+            case 'lookup':
+                $name = strtolower($code[++$i]);
+                $stack []= $vars->get($name);
+                break;
+            case 'assign':
+                $name = $code[++$i];
+                $v1 = array_pop($stack);
+                $vars->set($name, $v1);
+                break;
+            case 'insert':
+                $name = $code[++$i];
+                if (isset($sections[$name])) {
+                    $this->execute($vars, $sections[$name], $sections);
+                } else {
+                    throw new Sugar_Exception_Runtime(
+                        $debug_file,
+                        $debug_line,
+                        'unknown section `'.$name.'`'
+                    );
+                }
+                break;
+            case 'negate':
+                $v1 = array_pop($stack);
+                $stack []= -$v1;
+                break;
+            case '!':
+                $v1 = array_pop($stack);
+                $stack []= !$v1;
+                break;
+            case '..':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= $v1 . $v2;
+                break;
+            case '+':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                if (is_numeric($v1) && is_numeric($v2)) {
+                    $stack []= $v1 + $v2;
+                } elseif (is_array($v1) && is_array($v2)) {
+                    $stack []= array_merge($v1, $v2);
+                } else {
+                    $stack []= $v1 . $v2;
+                }
+                break;
+            case '*':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= $v1 * $v2;
+                break;
+            case '-':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= $v1 - $v2;
+                break;
+            case '/':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                if ($v2 == 0) {
+                    $stack []= null;
+                } else {
+                    $stack []= $v1 / $v2;
+                }
+                break;
+            case '%':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                if ($v2 == 0) {
+                    $stack []= null;
+                } else {
+                    $stack []= $v1 % $v2;
+                }
+                break;
+            case '==':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= ($v1 == $v2);
+                break;
+            case '!=':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= ($v1 != $v2);
+                break;
+            case '||':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= ($v1 || $v2);
+                break;
+            case '&&':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= ($v1 && $v2);
+                break;
+            case '<':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= ($v1 < $v2);
+                break;
+            case '<=':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= ($v1 <= $v2);
+                break;
+            case '>':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= ($v1 > $v2);
+                break;
+            case '>=':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= ($v1 >= $v2);
+                break;
+            case 'in':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= (is_array($v2) && in_array($v1, $v2));
+                break;
+            case '!in':
+                $v2 = array_pop($stack);
+                $v1 = array_pop($stack);
+                $stack []= (is_array($v2) && !in_array($v1, $v2));
+                break;
+            case 'call':
+            case 'call_top':
+                $func = $code[++$i];
+                $args = $code[++$i];
+                $escape_flag = $opcode == 'call_top' ? $code[++$i] : false;
+                $debug_file = $code[++$i];
+                $debug_line = $code[++$i];
+
+                // lookup function
+                $callable = $this->sugar->getFunction($func);
+                if (!$callable) {
+                    throw new Sugar_Exception_Runtime(
+                        $debug_file,
+                        $debug_line,
+                        'unknown function `'.$func.'`'
+                    );
+                }
+
+                // update escape flag based on function default
+                $escape_flag = $escape_flag && $callable['escape'];
+
+                // compile args
+                $params = array();
+                foreach ($args as $name=>$pcode) {
+                    $params[$name] = $this->execute($vars, $pcode, $sections);
+                }
+
+                // exception net
+                try {
+                    // call function, using appropriate method
+                    $ret = call_user_func($callable['invoke'], $this->sugar, $params);
+                } catch (Exception $e) {
+                    $this->sugar->handleError($e);
+                    $ret = null;
+                }
+
+                // process return value
+                if ($opcode == 'call_top' && $escape_flag) {
+                    $this->_display($this->sugar->escape($this->_valueToString($ret)));
+                } elseif ($opcode == 'call_top') {
+                    $this->_display($this->_valueToString($ret));
+                } else {
+                    $stack []= $ret;
+                }
+                break;
+            case 'method':
+                $obj = array_pop($stack);
+                $func = $code[++$i];
+                $args = $code[++$i];
+                $debug_file = $code[++$i];
+                $debug_line = $code[++$i];
+
+                // ensure the object is an object and that the method is a method
+                if (!is_object($obj)) {
+                    throw new Sugar_Exception_Runtime(
+                        $debug_file,
+                        $debug_line,
+                        'method call on non-object type `'.gettype($obj).'`'
+                    );
+                }
+
+                if (!method_exists($obj, $func)) {
+                    throw new Sugar_Exception_Runtime(
+                        $debug_file,
+                        $debug_line,
+                        'unknown method `'.$func.'` on type `'.gettype($obj).'`'
+                    );
+                }
+
+                // compile args
+                $params = array();
+                foreach ($args as $pcode) {
+                    $params [] = $this->execute($vars, $pcode, $sections);
+                }
+
+                // perform ACL checking on the method call
+                if (!is_null($this->sugar->methodAcl)) {
+                    $check = call_user_func(
+                        $this->sugar->methodAcl,
+                        $this->sugar,
+                        $obj,
+                        $func,
+                        $params
+                    );
+
+                    if (!$check) {
+                        throw new Sugar_Exception_Runtime(
+                            $debug_file,
+                            $debug_line,
+                            'method call to `'.$func.'` on type `'.
+                                gettype($obj).'` blocked by ACL'
+                        );
+                    }
+                }
+
+                // exception net
+                try {
+                    // invoke method
+                    $stack []= @call_user_func_array(array($obj, $func), $params);
+                } catch (Exception $e) {
+                    $this->sugar->handleError($e);
+                    $stack []= null;
+                }
+                break;
+            case 'modifier':
+                $name = $code[++$i];
+                $args = $code[++$i];
+                $value = array_pop($stack);
+
+                // lookup function
+                $callable = $this->sugar->getModifier($name);
+                if (!$callable) {
+                    throw new Sugar_Exception_Runtime(
+                        'FIXME',
+                        1,
+                        'unknown modifier `'.$name.'`'
+                    );
+                }
+
+                // compile args
+                $params = array();
+                foreach ($args as $pcode) {
+                    $params []= $this->execute($vars, $pcode, $sections);
+                }
+
+                // exception net
+                try {
+                    // invoke the modifier
+                    $ret = call_user_func($callable, $value, $this->sugar, $params);
+                } catch (Exception $e) {
+                    $this->sugar->handleError($e);
+                    $ret = null;
+                }
+
+                // store return value
+                $stack []= $ret;
+                break;
+            case 'if':
+                $clauses = $code[++$i];
+                foreach ($clauses as $clause) {
+                    if ($clause[0] === false || $this->execute($vars, $clause[0], $sections)) {
+                        $this->execute($vars, $clause[1], $sections);
+                        break;
+                    }
+                }
+                break;
+            case 'range':
+                $step = array_pop($stack);
+                $upper = array_pop($stack);
+                $lower = array_pop($stack);
+                $name = $code[++$i];
+                $block = $code[++$i];
+
+                // if step is 0, fail
+                if ($step === 0) {
+                    throw new Sugar_Exception ('step of 0 in range loop');
+                }
+
+                // iterate
+                $index = $lower;
+                while (($step < 0 && $index >= $upper)
+                    || ($step > 0 && $index <= $upper)
+                ) {
+                    $vars->set($name, $index);
+                    $this->execute($vars, $block, $sections);
+                    $index += $step;
+                }
+                break;
+            case 'foreach':
+                $array = array_pop($stack);
+                $key = $code[++$i];
+                $name = $code[++$i];
+                $block = $code[++$i];
+                if (is_array($array) || is_object($array)) {
+                    foreach ($array as $k=>$v) {
+                        if ($key) {
+                            $vars->set($key, $k);
+                        }
+                        $vars->set($name, $v);
+                        $this->execute($vars, $block, $sections);
+                    }
+                }
+                break;
+            case 'while':
+                $test = $code[++$i];
+                $block = $code[++$i];
+                while ($this->execute($vars, $test, $sections)) {
+                    $this->execute($vars, $block, $sections);
+                }
+                break;
+            case 'nocache':
+                $block = $code[++$i];
+                if ($this->sugar->cacheHandler) {
+                    $this->sugar->cacheHandler->addBlock($block);
+                } else {
+                    $this->execute($vars, $block, $sections);
+                }
+                break;
+            case '.':
+                $index = array_pop($stack);
+                $obj = array_pop($stack);
+                if (is_array($obj) && isset($obj[$index])) {
+                    $stack []= $obj[$index];
+                } elseif (is_object($obj) && isset($obj->$index)) {
+                    $stack []= $obj->$index;
+                } else {
+                    $stack []= null;
+                }
+                break;
+            case 'array':
+                $elems = $code[++$i];
+                $array = array();
+                foreach ($elems as $elem) {
+                    $array []= $this->execute($vars, $elem, $sections);
+                }
+                $stack []= $array;
+                break;
+            default:
+                throw new Sugar_Exception(
+                    'internal error: unknown opcode `'.$opcode.'`'
+                );
+            }
+        }
+
+        return end($stack);
+    }
 }
+
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>
