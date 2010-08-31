@@ -734,7 +734,7 @@ class Sugar
     public function displayCache($file, $cacheId, $vars = null)
     {
         $template = $this->getTemplate($file, $cacheId);
-        return $template->display();
+        return $template->display(new Sugar_Context($template->getContext(), (array)$vars));
     }
 
     /**
@@ -751,8 +751,7 @@ class Sugar
      */
     public function display($file, $vars = null)
     {
-        $template = $this->getTemplate($file, null);
-        return $template->display();
+        return $this->displayCache($file, null, $vars);
     }
 
     /**
@@ -770,7 +769,7 @@ class Sugar
     public function fetchCache($file, $cacheId, $vars = null)
     {
         $template = $this->getTemplate($file, $cacheId);
-        return $template->fetch();
+        return $template->fetch(new Sugar_Context($template->getContext(), (array)$vars));
     }
 
     /**
@@ -786,8 +785,7 @@ class Sugar
      */
     public function fetch($file, $vars = null)
     {
-        $template = $this->getTemplate($file, null);
-        return $template->fetch();
+        return $this->fetchCache($file, null, $vars);
     }
 
     /**
@@ -849,12 +847,7 @@ class Sugar
         }
 
         // validate name
-        $template = Sugar_Template::create($this, $file, $cacheId);
-        if ($template === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$file);
-        }
-
-        // if the cache can be loaded, it is valid
+        $template = $this->getTemplate($file, $cacheId);
         return $template->isCached();
     }
 
@@ -870,13 +863,8 @@ class Sugar
      */
     function uncache($file, $cacheId)
     {
-        // validate name
-        $template = $this->getTemplate($file, $cacheId);
-        if ($template === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$file);
-        }
-
         // erase the cache entry
+        $template = $this->getTemplate($file, $cacheId);
         $this->cache->erase($template, self::CACHE_HTML);
     }
 }

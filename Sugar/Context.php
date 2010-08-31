@@ -72,7 +72,7 @@ class Sugar_Context
      * @param mixed $parent Optional parent
      * @param array $vars   Vars for context
      */
-    public function __construct($parent, $vars)
+    public function __construct($parent, array $vars = array())
     {
         $this->_parent = $parent;
         $this->_vars = $vars;
