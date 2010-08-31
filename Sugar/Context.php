@@ -95,7 +95,7 @@ class Sugar_Context
             if (isset($context->_vars[$name])) {
                 return $context->_vars[$name];
             } else {
-                $context = $this->_parent;
+                $context = $context->_parent;
             }
         } while ($context);
         return null;

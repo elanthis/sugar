@@ -333,8 +333,10 @@ class Sugar_Template
         try {
             $runtime = $this->sugar->getRuntime();
 
-            // create context for the variables - FIXME: remove
-            $context = new Sugar_Context($this->getContext(), array());
+            // use a default context if none provided
+            if (is_null($context)) {
+                $context = new Sugar_Context($this->getContext(), array());
+            }
 
             // if we are to be cached, check for an existing cache and use that if
             // it exists and is up to date
