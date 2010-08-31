@@ -678,19 +678,37 @@ class Sugar
     /**
      * Load a template object
      *
-     * @param string $file    Name of template to load
+     * @param string $name    Name of template to load
      * @param string $cacheId Optional cache ID for template
      *
      * @return Sugar_Template
      * @throws Sugar_Exception_Usage when the template cannot be found
      */
-    public function getTemplate($file, $cacheId = null)
+    public function getTemplate($name, $cacheId = null)
     {
-        $template = Sugar_Template::create($this, $file, $cacheId);
-        if ($template === false) {
+        // parse out storage driver name
+        if (($pos = strpos($name, ':')) !== FALSE) {
+            $storageName = substr($name, 0, $pos);
+            $baseName = substr($name, $pos + 1);
+        } else {
+            $storageName = $this->defaultStorage;
+            $baseName = $name;
+        }
+
+        // check for invalid storage type
+        $storage = $this->getStorage($storageName);
+        if (!$storage) {
+            throw new Sugar_Exception_Usage('storage driver not found: '.$storageName);
+        }
+
+        // load driver, and check for handler
+        $handle = $storage->getHandle($baseName);
+        if ($handle === false) {
             throw new Sugar_Exception_Usage('template not found: '.$file);
         }
-        return $template;
+
+        // return new template object
+        return new Sugar_Template($this, $storage, $handle, $name, $cacheId);
     }
 
     /**
@@ -853,35 +871,13 @@ class Sugar
     function uncache($file, $cacheId)
     {
         // validate name
-        $template = Sugar_Template::create($this, $file, $cacheId);
+        $template = $this->getTemplate($file, $cacheId);
         if ($template === false) {
             throw new Sugar_Exception_Usage('template not found: '.$file);
         }
 
         // erase the cache entry
         $this->cache->erase($template, self::CACHE_HTML);
-    }
-
-    /**
-     * Fetch the source code for a template from the storage driver.
-     *
-     * @param string $file Template to lookup.
-     *
-     * @return string Template's source code.
-     * @throws Sugar_Exception_Usage when the template name is invalid.
-     *
-     * @deprecated
-     */
-    public function getSource($file)
-    {
-        // validate name
-        $template = Sugar_Template::create($this, $file);
-        if ($template === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$file);
-        }
-
-        // fetch source
-        return $template->getSource();
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

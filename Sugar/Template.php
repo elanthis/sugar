@@ -95,7 +95,7 @@ class Sugar_Template
     /**
      * HTML cache data.
      *
-     * If an array(), it's a valid cache.  If null, we haven't checked.
+     * If an array, it's a valid cache.  If null, we haven't checked.
      * If false, it's known to be out of date.
      *
      * @var mixed $_htmlCache
@@ -103,42 +103,11 @@ class Sugar_Template
     private $_htmlCache = null;
 
     /**
-     * Public constructor.  Parses the user-provided template path
-     * and returns a SugarReg object.  This is used internally by
-     * Sugar.
+     * Compiled template cache.
      *
-     * @param Sugar  $sugar   Sugar instance.
-     * @param string $path    Path.
-     * @param string $cacheId Optional cache ID.
-     *
-     * @return Sugar_Template
+     * @var mixed $_compiled
      */
-    public static function create(Sugar $sugar, $name, $cacheId = null)
-    {
-        // parse out storage driver name
-        if (($pos = strpos($name, ':')) !== FALSE) {
-            $storageName = substr($name, 0, $pos);
-            $baseName = substr($name, $pos + 1);
-        } else {
-            $storageName = $sugar->defaultStorage;
-            $baseName = $name;
-        }
-
-        // check for invalid storage type
-        $storage = $sugar->getStorage($storageName);
-        if (!$storage) {
-            return false;
-        }
-
-        // load driver, and check for handler
-        $handle = $storage->getHandle($baseName);
-        if ($handle === false) {
-            return false;
-        }
-
-        // return new template object
-        return new self($sugar, $storage, $handle, $name, $cacheId);
-    }
+    private $_compiled = null;
 
     /**
      * Constructor.
@@ -149,7 +118,7 @@ class Sugar_Template
      * @param string              $name        Name of template requested by user.
      * @param string              $cacheId     The cache ID for the reference.
      */
-    private function __construct(Sugar $sugar, Sugar_StorageDriver $storage,
+    public function __construct(Sugar $sugar, Sugar_StorageDriver $storage,
     $handle, $name, $cacheId) {
         $this->sugar = $sugar;
         $this->_storage = $storage;
@@ -237,7 +206,7 @@ class Sugar_Template
         // on a call to isCached()
         foreach ($data['refs'] as $file) {
             // try to reference the file; ignore failures
-            $inc = Sugar_Template::create($this->sugar, $file);
+            $inc = $this->sugar->getTemplate($file, $this->cacheId);
             if ($inc === false) {
                 continue;
             }
@@ -289,6 +258,11 @@ class Sugar_Template
      */
     private function _loadCompile()
     {
+        // if we already have a compiled version, don't reload
+        if (!is_null($this->_compiled)) {
+            return $this->_compiled;
+        }
+
         // if debug is off and the stamp is good, load compiled version
         if (!$this->sugar->debug) {
             $sstamp = $this->getLastModified();
@@ -297,6 +271,7 @@ class Sugar_Template
                 $data = $this->sugar->cache->load($this, Sugar::CACHE_TPL);
                 // if version checks out, run it
                 if ($data !== false && $data['version'] === Sugar::VERSION) {
+                    $this->_compiled = $data;
                     return $data;
                 }
             }
@@ -319,6 +294,7 @@ class Sugar_Template
         // store compiled bytecode into cache
         $this->sugar->cache->store($this, Sugar::CACHE_TPL, $data);
 
+        $this->_compiled = $data;
         return $data;
     }
 
@@ -373,7 +349,7 @@ class Sugar_Template
             // if we have an inherited template, load it and merge it with our data
             if ($data['inherit']) {
                 // load compiled parent (inherited template)
-                $parent = Sugar_Template::create($this->sugar, $data['inherit'], $this->cacheId);
+                $parent = $this->sugar->getTemplate($data['inherit'], $this->cacheId);
                 if ($parent === false) {
                     throw new Sugar_Exception_Usage('template not found: '.$data['inherit']);
                 }
@@ -418,13 +394,16 @@ class Sugar_Template
     /**
      * Fetch template output as a string
      *
+     * @param Sugar_Context $context Optional context to use instead
+     *                               of the default local context
+     *
      * @return string
      */
-    public function fetch()
+    public function fetch($context = null)
     {
         ob_start();
         try {
-            $this->display();
+            $this->display($context);
             $output = ob_get_contents();
         } catch (Exception $e) {
             ob_end_clean();

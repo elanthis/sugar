@@ -4,9 +4,9 @@ date_default_timezone_set('UTC');
 
 $begin = microtime(true);
 
-$begin_load = microtime(true);
+$begin_include = microtime(true);
 require '../Sugar.php';
-$end_load = microtime(true);
+$end_include = microtime(true);
 
 // determine file to load
 $file = 'index.tpl';
@@ -67,46 +67,55 @@ function test_acl($smarty, $object, $method) {
 	return $method != 'deny_acl';
 }
 
-// configure the sugar object
+// load the template
+$begin_compile = microtime(true);
+$tpl = $sugar->getTemplate('file:'.$file, 'cached');
+$end_compile = microtime(true);
+
+// configure sugar and the template
 $begin_config = microtime(true);
 $sugar->method_acl = 'test_acl';
 $sugar->debug = isset($_GET['debug']) ? (bool)$_GET['debug'] : false;
-$sugar->set('i', 10);
-$sugar->set('test', 'dancing mice');
-$sugar->set('html', '<b>bold</b>');
-$sugar->set('list', array('one','two','three','foo'=>'bar'));
-$sugar->set('obj', new Test());
-$sugar->set('random', rand()%1000);
-$sugar->set('newlines', "This\nhas\nnewlines!");
-$sugar->set('source', $sugar->getSource($file));
-$sugar->set('t', $file);
-$sugar->set('templates', $templates);
 $sugar->addFunction('showHtml');
 $sugar->addFunction('showText');
 $sugar->addFunction('random', 'random');
 $sugar->addFunction('randomNoCache', 'random', false);
 $sugar->addFunction('showHtmlNoEscape', 'sugar_function_showhtml', true, false);
+
+$tpl->set('i', 10);
+$tpl->set('test', 'dancing mice');
+$tpl->set('html', '<b>bold</b>');
+$tpl->set('list', array('one','two','three','foo'=>'bar'));
+$tpl->set('obj', new Test());
+$tpl->set('random', rand()%1000);
+$tpl->set('newlines', "This\nhas\nnewlines!");
+
+$sugar->set('source', $tpl->getSource());
+$sugar->set('t', $file);
+$sugar->set('templates', $templates);
 $end_config = microtime(true);
 
+// display the template
 $begin_display = microtime(true);
-$tpl = $sugar->getTemplate('file:'.$file, 'cached');
 $tpl->display();
 $end_display = microtime(true);
 
 $end = microtime(true);
 
-$load_time = $end_load - $begin_load;
+$include_time = $end_include - $begin_include;
 $create_time = $end_create - $begin_create;
+$compile_time = $end_compile - $begin_compile;
 $display_time = $end_display - $begin_display;
 $config_time = $end_config - $begin_config;
 $total_time = $end - $begin;
-$misc_time = $total_time - $load_time - $create_time - $display_time - $config_time;
+$misc_time = $total_time - $include_time - $create_time - $display_time - $config_time - $compile_time;
 
 printf('<p style="font-size: small; color: #666; white-space: pre;">');
 printf('debug:       %s<br/>', $sugar->debug?'ON (no caching)':'OFF');
-printf('includes:    %0.6f seconds<br/>', $load_time);
+printf('includes:    %0.6f seconds<br/>', $include_time);
 printf('constructor: %0.6f seconds<br/>', $create_time);
 printf('config:      %0.6f seconds<br/>', $config_time);
+printf('compile:     %0.6f seconds<br/>', $compile_time);
 printf('display:     %0.6f seconds<br/>', $display_time);
 printf('misc.:       %0.6f seconds<br/>', $misc_time);
 printf('TOTAL:       %0.6f seconds</p>', $total_time);
