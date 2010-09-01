@@ -1,0 +1,39 @@
+#!/usr/bin/php -q
+<?php
+require_once dirname(__FILE__).'/Test.php';
+
+$runner = new Sugar_TestRunner;
+
+$opts = getopt('lat:');
+if (isset($opts['l'])) {
+	foreach ($runner->getList() as $test) {
+		echo "$test\n";
+	}
+	exit(0);
+} elseif (isset($opts['a'])) {
+	$ok = true;
+	foreach ($runner->getList() as $test) {
+		echo str_pad($test, 40);
+		$rs = $runner->run($test);
+		if ($rs->status) {
+			echo "ok\n";
+		} else {
+			echo "FAIL!  {$rs->error}\n";
+			$ok = false;
+		}
+	}
+	exit($ok ? 0 : 1);
+} elseif (isset($opts['t'])) {
+	$test = $opts['t'];
+	$rs = $runner->run($test);
+	if ($rs->status) {
+		echo "ok\n";
+		exit(0);
+	} else {
+		echo "FAIL!  {$rs->error}\n";
+		exit(1);
+	}
+} else {
+	echo "php Test.php [-l] [-a] [-t <test>]\n";
+	exit(1);
+}
