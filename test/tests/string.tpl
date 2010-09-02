@@ -1,19 +1,15 @@
-{{ inherit file='layout.tpl' }}
-
-{{ section name='title' }}String Tests{{ /section }}
-
-<p>Test: ''<br>
-Expect: <br>
+Test: ''
+Expect: 
 Result: {{ '' }}
 
-<p>Test: '\'\"\\'<br>
-Expect: '"\<br>
+Test: '\'\"\\'
+Expect: '"\
 Result: {{ '\'\"\\' }}
 
-<p>Test: "\'\"\\"<br>
-Expect: '"\<br>
+Test: "\'\"\\"
+Expect: '"\
 Result: {{ "\'\"\\" }}
 
-<p>Test: printf format='%04d' params=[42]<br>
-Expect: 0042<br>
+Test: printf format='%04d' params=[42]
+Expect: 0042
 Result: {{ printf format='%04d' params=[42] }}

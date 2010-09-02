@@ -1,0 +1,3 @@
+Expect: dancing mice
+Result: dancing mice
+

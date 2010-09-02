@@ -1,19 +1,15 @@
-{{ inherit file='layout.tpl' }}
-
-{{ section name='title' }}Expression Tests{{ /section }}
-
 {{ $a = 4 }}
 {{ $b = 15 }}
 {{ $c = 7 }}
 
-<p>Expect: 17<br>
+Expect: 17
 Result: {{ 1+2*6+4 }}
 
-<p>Expect: 1<br>
+Expect: 1
 Result: {{ 2*$a+-$c }}
 
-<p>Expect: true<br>
+Expect: true
 Result: {{ 0||0+1 }}
 
-<p>Expect: 9<br>
+Expect: 9
 Result: {{ 3*(-8+$a/2)/-2 }}

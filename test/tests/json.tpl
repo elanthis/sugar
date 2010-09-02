@@ -1,23 +1,19 @@
-{{ inherit file='layout.tpl' }}
-
-{{ section name='title' }}json Tests{{ /section }}
-
-<p>Test: json value=$test<br>
-Expect: 'dancing mice'<br>
+Test: json value=$test
+Expect: 'dancing mice'
 Result: {{ json value=$test }}
 
-<p>Test: json value=$list<br>
-Expect: {0:'one',1:'two',2:'three','foo':'bar'}<br>
+Test: json value=$list
+Expect: {0:'one',1:'two',2:'three','foo':'bar'}
 Result: {{ json value=$list }}
 
-<p>Test: json value=$i<br>
-Expect: 10<br>
+Test: json value=$i
+Expect: 10
 Result: {{ json value=$i }}
 
-<p>Test: json value=$obj<br>
-Expect: {'phpType':'Test','bar':'BAR'}<br>
+Test: json value=$obj
+Expect: {'phpType':'Test','bar':'BAR'}
 Result: {{ json value=$obj }}
 
-<p>Test: json value=$newlines<br>
-Expect: 'This\nhas\nnewlines!'<br>
+Test: json value=$newlines
+Expect: 'This\nhas\nnewlines!'
 Result: {{ json value=$newlines }}

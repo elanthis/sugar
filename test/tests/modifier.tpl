@@ -1,31 +1,27 @@
-{{ inherit file='layout.tpl' }}
+Test: one str='test'|upper
+Expect: UnoTEST
+Result: {{ one str='test'|upper }}
 
-{{ section name='title' }}Modifier Tests{{ /section }}
+Test: one|upper str='test'
+Expect: UNOTEST
+Result: {{ one|upper str='test' }}
 
-<p>Test: one str='test'|upper<br/>
-Expect: UnoTEST<br/>
-Result: {{ one str='test'|upper }}</p>
+Test: $test|upper
+Expect: DANCING MICE
+Result: {{ $test|upper }}
 
-<p>Test: one|upper str='test'<br/>
-Expect: UNOTEST<br/>
-Result: {{ one|upper str='test' }}</p>
+Test: $undefined|default:'Not Defined'
+Expect: Not Defined
+Result: {{ $undefined|default:'Not Defined' }}
 
-<p>Test: $test|upper<br/>
-Expect: DANCING MICE<br/>
-Result: {{ $test|upper }}</p>
+Test: $undefined|default:'Not Defined'|upper
+Expect: NOT DEFINED
+Result: {{ $undefined|default:'Not Defined'|upper }}
 
-<p>Test: $undefined|default:'Not Defined'<br/>
-Expect: Not Defined<br/>
-Result: {{ $undefined|default:'Not Defined' }}</p>
+Test: $undefined|default:(one)|upper
+Expect: UNO
+Result: {{ $undefined|default:(one)|upper }}
 
-<p>Test: $undefined|default:'Not Defined'|upper<br/>
-Expect: NOT DEFINED<br/>
-Result: {{ $undefined|default:'Not Defined'|upper }}</p>
-
-<p>Test: $undefined|default:(one)|upper<br/>
-Expect: UNO<br/>
-Result: {{ $undefined|default:(one)|upper }}</p>
-
-<p>Test: '&lt;b&gt;bold&lt;/b&gt;'|raw<br/>
-Expect: <b>bold</b><br/>
-Result: {{ '<b>bold</b>'|raw }}</p>
+Test: '&lt;b&gt;bold&lt;/b&gt;'|raw
+Expect: <b>bold</b>
+Result: {{ 'bold'|raw }}

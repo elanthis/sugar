@@ -1,12 +1,8 @@
-{{ inherit file='layout.tpl' }}
+Expect: &lt;foo&gt;
+Result: {{ '<foo>' }}
 
-{{ section name='title' }}Plain Data Tests{{ /section }}
+Expect:  checked=&amp;quot;checked&amp;quot;
+Result: {{ ' checked=&quot;checked&quot; ' }}
 
-<p>Expect: &lt;foo&gt;<br/>
-Result: {{ '<foo>' }}</p>
-
-<p>Expect: checked="checked"<br/>
-Result: {{ ' checked="checked" ' }}</p>
-
-<p>Expect: checked="checked"<br/>
-Result: {{ checked test=1 }}</p>
+Expect:  checked=&quot;checked&quot;
+Result: {{ checked test=1 }}

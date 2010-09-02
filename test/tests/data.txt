@@ -1,0 +1,8 @@
+Expect: &lt;foo&gt;
+Result: &lt;foo&gt;
+
+Expect:  checked=&amp;quot;checked&amp;quot;
+Result:  checked=&amp;quot;checked&amp;quot; 
+
+Expect:  checked=&quot;checked&quot;
+Result:  checked=&quot;checked&quot;

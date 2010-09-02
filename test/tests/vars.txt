@@ -1,0 +1,14 @@
+Expect: dancing mice
+Result: dancing mice
+
+Expect: 10
+Result: 10
+
+Expect: 50
+Result: 50
+
+Expect: 7
+Result: 7
+
+Expect: 35
+Result: 35

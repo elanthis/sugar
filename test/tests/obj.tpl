@@ -1,34 +1,30 @@
-{{ inherit file='layout.tpl' }}
-
-{{ section name='title' }}Object Tests{{ /section }}
-
-<p>cause exception (will see <i>[[ Exception: fail() called ]]</i> at the top of the page)</p>
+cause exception (will see [[ Exception: fail() called ]] at the top of the page)
 {{ $obj->fail() }}
 
-<p>Test: $obj->bar<br/>
-Expect: BAR<br/>
-Result: {{ $obj->bar }}</p>
+Test: $obj->bar
+Expect: BAR
+Result: {{ $obj->bar }}
 
-<p>Test: $obj.bar<br/>
-Expect: BAR<br/>
-Result: {{ $obj.bar }}</p>
+Test: $obj.bar
+Expect: BAR
+Result: {{ $obj.bar }}
 
-<p>Test: $obj['bar']<br/>
-Expect: BAR<br/>
-Result: {{ $obj['bar'] }}</p>
+Test: $obj['bar']
+Expect: BAR
+Result: {{ $obj['bar'] }}
 
-<p>Test: $obj->notdefined<br/>
-Expect: <br/>
-Result: {{ $obj->notdefined }}</p>
+Test: $obj->notdefined
+Expect: 
+Result: {{ $obj->notdefined }}
 
-<p>Test: $obj->doit(1,2,3)<br/>
-Expect: [[1,2,3]]<br/>
-Result: {{ $obj->doit(1,2,3) }}</p>
+Test: $obj->doit(1,2,3)
+Expect: [[1,2,3]]
+Result: {{ $obj->doit(1,2,3) }}
 
-<p>Test: $obj->foo()<br/>
-Expect: 3<br/>
-Result: {{ $obj->foo() }}</p>
+Test: $obj->foo()
+Expect: 3
+Result: {{ $obj->foo() }}
 
-<p>Test: 1+$obj->foo()*5<br/>
-Expect: 16<br/>
-Result: {{ 1+$obj->foo()*5 }}</p>
+Test: 1+$obj->foo()*5
+Expect: 16
+Result: {{ 1+$obj->foo()*5 }}

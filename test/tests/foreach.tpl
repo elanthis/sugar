@@ -1,15 +1,11 @@
-{{ inherit file='layout.tpl' }}
+Test: foreach $i in $list; $i..','; /foreach
+Expect: one,two,three,bar,
+Result: {{ foreach $i in $list; $i..','; /foreach }}
 
-{{ section name='title' }}Foreach Tests{{ /section }}
+Test: foreach $k,$i in $list; $k .. '=' .. $i .. ','; /foreach
+Expect: 0=one,1=two,2=three,foo=bar,
+Result: {{ foreach $k,$i in $list; $k .. '=' .. $i .. ','; /foreach }}
 
-<p>Test: foreach $i in $list; $i..','; /foreach<br/>
-Expect: one,two,three,bar,<br/>
-Result: {{ foreach $i in $list; $i..','; /foreach }}</p>
-
-<p>Test: foreach $k,$i in $list; $k .. '=' .. $i .. ','; /foreach<br/>
-Expect: 0=one,1=two,2=three,foo=bar,<br/>
-Result: {{ foreach $k,$i in $list; $k .. '=' .. $i .. ','; /foreach }}</p>
-
-<p>Test: foreach $i in [1, 'one', 'bar', 42]; $i..','; /foreach<br/>
-Expect: 1,one,bar,42,<br/>
-Result: {{ foreach $i in [1, 'one', 'bar', 42]; $i..','; /foreach }}</p>
+Test: foreach $i in [1, 'one', 'bar', 42]; $i..','; /foreach
+Expect: 1,one,bar,42,
+Result: {{ foreach $i in [1, 'one', 'bar', 42]; $i..','; /foreach }}

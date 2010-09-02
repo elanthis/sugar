@@ -61,8 +61,8 @@ class Sugar_TestRunner {
 		$sugar->cacheDir = dirname(__FILE__).'/cache';
 
 		try {
-			$expected = $object->getExpected();
-			$result = $object->getResult($sugar);
+			$expected = trim($object->getExpected());
+			$result = trim($object->getResult($sugar));
 
 			if ($expected === $result) {
 				return new Sugar_TestResult($test, true, null, $expected, $result);

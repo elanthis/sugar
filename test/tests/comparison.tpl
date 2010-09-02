@@ -1,22 +1,18 @@
-{{ inherit file='layout.tpl' }}
-
-{{ section name='title' }}Comparison Tests{{ /section }}
-
-<p>Expect: true<br>
+Expect: true
 Result: {{ 1+1=2 }}
 
-<p>Expect: true<br>
+Expect: true
 Result: {{ 2+5!=6 }}
 
-<p>Expect: true<br>
+Expect: true
 Result: {{ 1||0 }}
 
-<p>Expect: false<br>
+Expect: false
 Result: {{ 1&&0 }}
 
-<p>Expect: false<br>
+Expect: false
 Result: {{ 2>3 }}
 
-<p>Expect: true<br>
+Expect: true
 Result: {{ 3>1 }}
 

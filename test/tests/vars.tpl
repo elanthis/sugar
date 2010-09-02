@@ -1,18 +1,17 @@
-{{ inherit file='layout.tpl' }}
+{{ $test = 'dancing mice' }}
+{{ $i = 10 }}
 
-{{ section name='title' }}Variable Tests{{ /section }}
-
-<p>Expect: dancing mice<br>
+Expect: dancing mice
 Result: {{ $test }}
 
-<p>Expect: 10<br>
+Expect: 10
 Result: {{ $i }}
 
-<p>Expect: 50<br/>
-Result: {{ $i*5 }}</p>
+Expect: 50
+Result: {{ $i*5 }}
 
-<p>Expect: 7<br/>
-Result: {{ $i=7 ; $i }}</p>
+Expect: 7
+Result: {{ $i=7 ; $i }}
 
-<p>Expect: 35<br/>
-Result: {{ $i*5 }}</p>
+Expect: 35
+Result: {{ $i*5 }}

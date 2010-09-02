@@ -1,35 +1,31 @@
-{{ inherit file='layout.tpl' }}
+Test: '&lt;test&gt;'
+Expect: &lt;test&gt;
+Result: {{ '' }}
 
-{{ section name='title' }}Escape Modifier{{ /section }}
+Test: '&lt;test&gt;'|escape
+Expect: &lt;test&gt;
+Result: {{ ''|escape }}
 
-<p>Test: '&lt;test&gt;'<br/>
-Expect: &lt;test&gt;<br/>
-Result: {{ '<test>' }}</p>
+Test: &lt;test&gt;'|escape:'xml'
+Expect: &lt;test&gt;
+Result: {{ ''|escape:'xml' }}
 
-<p>Test: '&lt;test&gt;'|escape<br/>
-Expect: &lt;test&gt;<br/>
-Result: {{ '<test>'|escape }}</p>
+Test: '&lt;test&gt;'|escape:'url'
+Expect: %3Ctest%3E
+Result: {{ ''|escape:'url' }}
 
-<p>Test: &lt;test&gt;'|escape:'xml'<br/>
-Expect: &lt;test&gt;<br/>
-Result: {{ '<test>'|escape:'xml' }}</p>
+Test: '"test"'|escape
+Expect: &quot;test&quot;
+Result: {{ '"test"'|escape }}
 
-<p>Test: '&lt;test&gt;'|escape:'url'<br/>
-Expect: %3Ctest%3E<br/>
-Result: {{ '<test>'|escape:'url' }}</p>
+Test: '"test"'|escape|escape
+Expect: &amp;quot;test&amp;quot;
+Result: {{ '"test"'|escape|escape }}
 
-<p>Test: '"test"'|escape<br/>
-Expect: &quot;test&quot;<br/>
-Result: {{ '"test"'|escape }}</p>
+Test: '"test"'|escape:'js'|escape
+Expect: '\&quot;test\&quot;'
+Result: {{ '"test"'|escape:'js'|escape }}
 
-<p>Test: '"test"'|escape|escape<br/>
-Expect: &amp;quot;test&amp;quot;<br/>
-Result: {{ '"test"'|escape|escape }}</p>
-
-<p>Test: '"test"'|escape:'js'|escape<br/>
-Expect: '\&quot;test\&quot;'<br/>
-Result: {{ '"test"'|escape:'js'|escape }}</p>
-
-<p>Test: showHtmlNoEscape html='&lt;b&gt;hi&lt;/b&gt;'<br/>
-Expect: <b>hi</b><br/>
-Test: {{ showHtmlNoEscape html='<b>hi</b>' }}</p>
+Test: showHtmlNoEscape html='&lt;b&gt;hi&lt;/b&gt;'
+Expect: hi
+Test: {{ showHtmlNoEscape html='hi' }}

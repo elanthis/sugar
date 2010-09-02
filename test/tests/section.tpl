@@ -1,14 +1,10 @@
-{{ inherit file='layout.tpl' }}
-
-{{ section name='title' }}Section Tests{{ /section }}
-
-<p>Expect: <br/>
+Expect: 
 Result: {{ section name='test' }}
-<b>FAILURE</b>
-{{ /section }}</p>
+FAILURE
+{{ /section }}
 
-<p>Expect: TEST2<br/>
-Result: {{ section|insert name='test2' }}TEST2{{ /section }}</p>
+Expect: TEST2
+Result: {{ section|insert name='test2' }}TEST2{{ /section }}
 
-<p>Expect: TEST3<br/>
-Result:	{{ section name='test3' }}TEST3{{ /section }}{{ insert name='test3' }}</p>
+Expect: TEST3
+Result:	{{ section name='test3' }}TEST3{{ /section }}{{ insert name='test3' }}

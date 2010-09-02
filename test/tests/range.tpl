@@ -1,19 +1,15 @@
-{{ inherit file='layout.tpl' }}
+Test: loop $i in 1,3 ; $i ; /loop
+Expect: 123
+Result: {{ loop $i in 1,3 ; $i ; /loop }}
 
-{{ section name='title' }}Range Loop Tests{{ /section }}
+Test: loop $i in 3,1,-1 ; $i ; /loop
+Expect: 321
+Result: {{ loop $i in 3,1,-1 ; $i ; /loop }}
 
-<p>Test: loop $i in 1,3 ; $i ; /loop<br/>
-Expect: 123<br/>
-Result: {{ loop $i in 1,3 ; $i ; /loop }}</p>
+Test: loop $i in 3,4*6,7 ; $i ; /loop
+Expect: 3101724
+Result: {{ loop $i in 3,4*6,7 ; $i ; /loop }}
 
-<p>Test: loop $i in 3,1,-1 ; $i ; /loop<br/>
-Expect: 321<br/>
-Result: {{ loop $i in 3,1,-1 ; $i ; /loop }}</p>
-
-<p>Test: loop $i in 3,4*6,7 ; $i ; /loop<br/>
-Expect: 3101724<br/>
-Result: {{ loop $i in 3,4*6,7 ; $i ; /loop }}</p>
-
-<p>Test: loop $i in 2,1 ; $i ; /loop <br/>
-Expect: <br/>
-Result: {{ loop $i in 2,1 ; $i ; /loop }}</p>
+Test: loop $i in 2,1 ; $i ; /loop 
+Expect: 
+Result: {{ loop $i in 2,1 ; $i ; /loop }}
