@@ -30,6 +30,9 @@ if (isset($opts['l'])) {
 		echo "ok\n";
 		exit(0);
 	} else {
+		if ($rs->output) {
+			file_put_contents('output.txt', $rs->output);
+		}
 		echo "FAIL!  {$rs->error}\n";
 		exit(1);
 	}

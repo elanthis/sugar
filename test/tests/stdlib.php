@@ -6,7 +6,7 @@ class Sugar_Test_stdlib implements Sugar_Test {
 
 	public function getExpected()
 	{
-		return file_get_contents(dirname(__FILE__).'/../output/stdlib.txt');
+		return file_get_contents(dirname(__FILE__).'/stdlib.txt');
 	}
 	
 	public function getResult(Sugar $sugar)

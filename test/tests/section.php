@@ -6,7 +6,7 @@ class Sugar_Test_section implements Sugar_Test {
 
 	public function getExpected()
 	{
-		return file_get_contents(dirname(__FILE__).'/../output/section.txt');
+		return file_get_contents(dirname(__FILE__).'/section.txt');
 	}
 	
 	public function getResult(Sugar $sugar)

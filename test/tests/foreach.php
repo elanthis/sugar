@@ -6,7 +6,7 @@ class Sugar_Test_foreach implements Sugar_Test {
 
 	public function getExpected()
 	{
-		return file_get_contents(dirname(__FILE__).'/../output/foreach.txt');
+		return file_get_contents(dirname(__FILE__).'/foreach.txt');
 	}
 	
 	public function getResult(Sugar $sugar)

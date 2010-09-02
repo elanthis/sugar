@@ -6,7 +6,7 @@ class Sugar_Test_range implements Sugar_Test {
 
 	public function getExpected()
 	{
-		return file_get_contents(dirname(__FILE__).'/../output/range.txt');
+		return file_get_contents(dirname(__FILE__).'/range.txt');
 	}
 	
 	public function getResult(Sugar $sugar)

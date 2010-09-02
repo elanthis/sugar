@@ -6,7 +6,7 @@ class Sugar_Test_cache implements Sugar_Test {
 
 	public function getExpected()
 	{
-		return file_get_contents(dirname(__FILE__).'/../output/cache.txt');
+		return file_get_contents(dirname(__FILE__).'/cache.txt');
 	}
 	
 	public function getResult(Sugar $sugar)

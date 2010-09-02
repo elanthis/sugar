@@ -6,7 +6,7 @@ class Sugar_Test_acl implements Sugar_Test {
 
 	public function getExpected()
 	{
-		return file_get_contents(dirname(__FILE__).'/../output/acl.txt');
+		return file_get_contents(dirname(__FILE__).'/acl.txt');
 	}
 	
 	public function getResult(Sugar $sugar)

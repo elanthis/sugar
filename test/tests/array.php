@@ -6,7 +6,7 @@ class Sugar_Test_array implements Sugar_Test {
 
 	public function getExpected()
 	{
-		return file_get_contents(dirname(__FILE__).'/../output/array.txt');
+		return file_get_contents(dirname(__FILE__).'/array.txt');
 	}
 	
 	public function getResult(Sugar $sugar)

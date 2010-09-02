@@ -1,0 +1,63 @@
+Test: [1,2,3]
+Expect: [1,2,3]
+Result: [1,2,3]
+
+Test: ['foo','bar','baz']
+Expect: ['foo','bar','baz']
+Result: [&quot;foo&quot;,&quot;bar&quot;,&quot;baz&quot;]
+
+Test: explode ' ', 'one two three'
+Expect: ['one','two','three']
+Result: [&quot;one&quot;,&quot;two&quot;,&quot;three&quot;]
+
+Test: $list
+Expect: {0:'one',1:'two',2:'three','foo':'bar'}
+Result: 
+
+Test: $list.1
+Expect: two
+Result: 
+
+Test: $list[1]
+Expect: two
+Result: 
+
+Test: $list->1
+Expect: two
+Result: 
+
+Test: $list.notdefined
+Expect: 
+Result: 
+
+Test: $list.foo
+Expect: bar
+Result: 
+
+Test: $list['foo']
+Expect: bar
+Result: 
+
+Test: $list->foo
+Expect: bar
+Result: 
+
+Test: "one" in $list
+Expect: true
+Result: false
+
+Test: "nope" in $list
+Expect: false
+Result: false
+
+Test: "nope" !in $list
+Expect: true
+Result: false
+
+Test: $c=2 ; $list.$c
+Expect: three
+Result: 
+
+Test: $c=2 ; $list[$c]
+Expect: three
+Result: 

@@ -6,7 +6,7 @@ class Sugar_Test_comparison implements Sugar_Test {
 
 	public function getExpected()
 	{
-		return file_get_contents(dirname(__FILE__).'/../output/comparison.txt');
+		return file_get_contents(dirname(__FILE__).'/comparison.txt');
 	}
 	
 	public function getResult(Sugar $sugar)
