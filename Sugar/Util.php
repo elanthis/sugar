@@ -78,6 +78,22 @@ function Sugar_Util_IsVector($array)
 }
 
 /**
+ * Performs string-escaping for JavaScript values.
+ *
+ * This is the equivalent of running addslashes() and then replacing
+ * control characters with their escaped equivalents.
+ *
+ * @param mixed $string String to escape.
+ *
+ * @return string Formatted result.
+ */
+function Sugar_Util_EscapeJavascript($string) {
+    $escaped = addslashes($string);
+    $escaped = str_replace(array("\n", "\r", "\r\n"), '\\n', $escaped);
+    return $escaped;
+}
+
+/**
  * Formats a PHP value in JavaScript format.
  *
  * We can probably juse use json_encode() instead of this, except
@@ -89,6 +105,11 @@ function Sugar_Util_IsVector($array)
  */
 function Sugar_Util_Json($value)
 {
+    // use json_encode, if defined
+    if (function_exists('json_encode')) {
+        return json_encode($value);
+    }
+
     switch (gettype($value)) {
     case 'integer':
     case 'float':
@@ -121,8 +142,7 @@ function Sugar_Util_Json($value)
     case 'null':
         return 'null';
     default:
-        $escaped = addslashes($value);
-        $escaped = str_replace(array("\n", "\r", "\r\n"), '\\n', $escaped);
+        $escaped = Sugar_Util_EscapeJavascript($value);
         return '"'.$escaped.'"';
     }
 }

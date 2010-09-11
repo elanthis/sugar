@@ -116,6 +116,21 @@ function sugar_function_urlencode($sugar, $params)
 
 /*++
  *+ @name json
+ *+ @modifier
+ *+ @param mixed $value Value to encode.
+ *+ @return string Value encoded in JSON/JavaScript notation.
+ *+
+ *+ Convers the input value into the proper code necessary to
+ *+ recreate the value in JSON notation.  Useful for
+ *+ exporting template variables to JavaScript.
+ */
+function sugar_modifier_json($value, $sugar, $value)
+{
+    return Sugar_Util_Json($value);
+}
+
+/*++
+ *+ @name json
  *+ @param mixed $value Value to encode.
  *+ @return string Value encoded in JSON/JavaScript notation.
  *+
@@ -349,7 +364,7 @@ function sugar_modifier_escape($value, $sugar, $params)
     case 'javascript':
     case 'js':
     case 'json':
-        return Sugar_Util_Json($value);
+        return Sugar_Util_EscapeJavascript($value);
     case 'url':
         return urlencode($value);
     default:

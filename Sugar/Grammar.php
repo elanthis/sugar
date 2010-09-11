@@ -758,13 +758,19 @@ class Sugar_Grammar
                 // parameters
                 $params = $this->_parseFunctionArgs();
 
-                // build function call
-                $block []= array(
-                    'call_top', $func, $params, $escape_flag,
-                    $this->_tokens->getFile(), $this->_tokens->getLine()
-                );
+                // build function call; if we have no modifiers, use 'call_top'
+                // optimization; otherwise, use call, pass through modifiers,
+                // and then use print/rawprint
                 if ($modifiers) {
+                    $block []= array('call', $func, $params, $this->_tokens->getFile(),
+                        $this->_tokens->getLine());
                     $block []= $modifiers;
+                    $block []= array($escape_flag ? 'print' : 'rawprint');
+                } else {
+                    $block []= array(
+                        'call_top', $func, $params, $escape_flag,
+                        $this->_tokens->getFile(), $this->_tokens->getLine()
+                    );
                 }
             }
             // we have a statement

@@ -1,0 +1,27 @@
+Test: one str='test'|upper
+Expect: UnoTEST
+Result: UnoTEST
+
+Test: one|upper str='test'
+Expect: UNOTEST
+Result: UNOTEST
+
+Test: $test|upper
+Expect: DANCING MICE
+Result: DANCING MICE
+
+Test: $undefined|default:'Not Defined'
+Expect: Not Defined
+Result: Not Defined
+
+Test: $undefined|default:'Not Defined'|upper
+Expect: NOT DEFINED
+Result: NOT DEFINED
+
+Test: $undefined|default:(one)|upper
+Expect: UNO
+Result: UNO
+
+Test: '<b>bold</b>'|raw
+Expect: <b>bold</b>
+Result: <b>bold</b>
