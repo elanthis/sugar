@@ -1,19 +1,15 @@
-Test: json value=$test
-Expect: 'dancing mice'
-Result: {{ json value=$test }}
+Test: json value='dancing mice'
+Expect: "dancing mice"
+Result: {{ json|raw value='dancing mice' }}
 
-Test: json value=$list
-Expect: {0:'one',1:'two',2:'three','foo':'bar'}
-Result: {{ json value=$list }}
+Test: json value=['one','two','three','bar']
+Expect: ["one","two","three","bar"]
+Result: {{ json|raw value=['one','two','three','bar'] }}
 
-Test: json value=$i
+Test: json value=10
 Expect: 10
-Result: {{ json value=$i }}
+Result: {{ json value=10 }}
 
-Test: json value=$obj
-Expect: {'phpType':'Test','bar':'BAR'}
-Result: {{ json value=$obj }}
-
-Test: json value=$newlines
-Expect: 'This\nhas\nnewlines!'
-Result: {{ json value=$newlines }}
+Test: json value="This\nhas\nnewlines!"
+Expect: "This\nhas\nnewlines!"
+Result: {{ json|raw value="This\nhas\nnewlines!" }}

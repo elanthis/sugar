@@ -1,0 +1,15 @@
+Test: json value='dancing mice'
+Expect: "dancing mice"
+Result: "dancing mice"
+
+Test: json value=['one','two','three','bar']
+Expect: ["one","two","three","bar"]
+Result: ["one","two","three","bar"]
+
+Test: json value=10
+Expect: 10
+Result: 10
+
+Test: json value="This\nhas\nnewlines!"
+Expect: "This\nhas\nnewlines!"
+Result: "This\nhas\nnewlines!"

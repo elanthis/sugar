@@ -1,0 +1,15 @@
+Test: loop $i in 1,3 ; $i ; /loop
+Expect: 123
+Result: 123
+
+Test: loop $i in 3,1,-1 ; $i ; /loop
+Expect: 321
+Result: 321
+
+Test: loop $i in 3,4*6,7 ; $i ; /loop
+Expect: 3101724
+Result: 3101724
+
+Test: loop $i in 2,1 ; $i ; /loop 
+Expect: 
+Result:
