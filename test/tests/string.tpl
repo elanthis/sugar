@@ -1,15 +1,15 @@
 Test: ''
 Expect: 
-Result: {{ '' }}
+Result: 
 
 Test: '\'\"\\'
-Expect: '"\
-Result: {{ '\'\"\\' }}
+Expect: '&quot;\
+Result: '&quot;\
 
 Test: "\'\"\\"
-Expect: '"\
-Result: {{ "\'\"\\" }}
+Expect: '&quot;\
+Result: '&quot;\
 
 Test: printf format='%04d' params=[42]
 Expect: 0042
-Result: {{ printf format='%04d' params=[42] }}
+Result: 0042

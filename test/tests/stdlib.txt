@@ -1,0 +1,19 @@
+Test: json [12/4,['one'],2*3]
+Expect: [3,[&quot;one&quot;],6]
+Result: [3,[&quot;one&quot;],6]
+
+Test: json 'sally sells sea shells'
+Expect: &quot;sally sells sea shells&quot;
+Result: &quot;sally sells sea shells&quot;
+
+Test: eval source='{{ $x = 4; $x*$x }}'
+Expect: 16
+Result: 16
+
+Test: urlencode string='this+is%(illegal)in#url'
+Expect: this%2Bis%25%28illegal%29in%23url
+Result: this%2Bis%25%28illegal%29in%23url
+
+Test: urlencode string=(array a='foo' bar='baz+gar' boo='1%2 3')
+Expect: a=foo&amp;bar=baz%2Bgar&amp;boo=1%252+3
+Result: a=foo&amp;bar=baz%2Bgar&amp;boo=1%252+3

@@ -1,0 +1,5 @@
+Expect: A
+Result:	A
+
+Expect: B
+Result: B

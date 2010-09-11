@@ -1,0 +1,11 @@
+Expect: 17
+Result: 17
+
+Expect: 1
+Result: 1
+
+Expect: true
+Result: true
+
+Expect: 9
+Result: 9

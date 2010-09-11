@@ -1,3 +1,5 @@
+{{ $test = 'dancing mice' }}
+
 Test: one str='test'|upper
 Expect: UnoTEST
 Result: {{ one str='test'|upper }}
@@ -22,6 +24,6 @@ Test: $undefined|default:(one)|upper
 Expect: UNO
 Result: {{ $undefined|default:(one)|upper }}
 
-Test: '&lt;b&gt;bold&lt;/b&gt;'|raw
+Test: '<b>bold</b>'|raw
 Expect: <b>bold</b>
-Result: {{ 'bold'|raw }}
+Result: {{ '<b>bold</b>'|raw }}

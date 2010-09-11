@@ -1,18 +1,18 @@
 Test: '&lt;test&gt;'
 Expect: &lt;test&gt;
-Result: {{ '' }}
+Result: {{ '<test>' }}
 
 Test: '&lt;test&gt;'|escape
 Expect: &lt;test&gt;
-Result: {{ ''|escape }}
+Result: {{ '<test>'|escape }}
 
 Test: &lt;test&gt;'|escape:'xml'
 Expect: &lt;test&gt;
-Result: {{ ''|escape:'xml' }}
+Result: {{ '<test>'|escape:'xml' }}
 
 Test: '&lt;test&gt;'|escape:'url'
 Expect: %3Ctest%3E
-Result: {{ ''|escape:'url' }}
+Result: {{ '<test>'|escape:'url' }}
 
 Test: '"test"'|escape
 Expect: &quot;test&quot;
@@ -25,7 +25,3 @@ Result: {{ '"test"'|escape|escape }}
 Test: '"test"'|escape:'js'|escape
 Expect: '\&quot;test\&quot;'
 Result: {{ '"test"'|escape:'js'|escape }}
-
-Test: showHtmlNoEscape html='&lt;b&gt;hi&lt;/b&gt;'
-Expect: hi
-Test: {{ showHtmlNoEscape html='hi' }}

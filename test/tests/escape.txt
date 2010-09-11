@@ -1,0 +1,27 @@
+Test: '&lt;test&gt;'
+Expect: &lt;test&gt;
+Result: &lt;test&gt;
+
+Test: '&lt;test&gt;'|escape
+Expect: &lt;test&gt;
+Result: &lt;test&gt;
+
+Test: &lt;test&gt;'|escape:'xml'
+Expect: &lt;test&gt;
+Result: &lt;test&gt;
+
+Test: '&lt;test&gt;'|escape:'url'
+Expect: %3Ctest%3E
+Result: %3Ctest%3E
+
+Test: '"test"'|escape
+Expect: &quot;test&quot;
+Result: &quot;test&quot;
+
+Test: '"test"'|escape|escape
+Expect: &amp;quot;test&amp;quot;
+Result: &amp;quot;test&amp;quot;
+
+Test: '"test"'|escape:'js'|escape
+Expect: '\&quot;test\&quot;'
+Result: \&quot;test\&quot;
