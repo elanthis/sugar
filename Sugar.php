@@ -704,7 +704,7 @@ class Sugar
         // load driver, and check for handler
         $handle = $storage->getHandle($baseName);
         if ($handle === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$file);
+            throw new Sugar_Exception_Usage('template not found: '.$name);
         }
 
         // return new template object

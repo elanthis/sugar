@@ -95,7 +95,7 @@ function Sugar_Util_Json($value)
         return $value;
     case 'array':
         if (Sugar_Util_IsVector($value)) {
-            $escaped = array_map(array('SugarUtil', 'json'), $value);
+            $escaped = array_map('Sugar_Util_Json', $value);
             return '['.implode(',', $escaped).']';
         }
 
