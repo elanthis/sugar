@@ -4,7 +4,6 @@ Upcoming versions and their release criteria.
 ====
 
 - Restore $layout parameter to display*()/fetch*() for back-compat
-- Best test suite
 
 0.84
 ====

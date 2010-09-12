@@ -725,23 +725,26 @@ class Sugar
      * @param string $file    Template to display.
      * @param string $cacheId Cache identifier.
      * @param array  $vars    Additional vars to set during execution.
+     * @param string $inherit Template to inherit from; overrides source.
      *
      * @return bool true on success.
      * @throws Sugar_Exception_Usage when the template name is invalid.
      *
      * @deprecated
      */
-    public function displayCache($file, $cacheId, $vars = null)
+    public function displayCache($file, $cacheId, $vars = null, $inherit = null)
     {
         $template = $this->getTemplate($file, $cacheId);
+        $template->setInherit($inherit);
         return $template->display(new Sugar_Context($template->getContext(), (array)$vars));
     }
 
     /**
      * Load, compile, and display the requested template.
      *
-     * @param string $file   Template to display.
-     * @param array  $vars   Additional vars to set during execution.
+     * @param string $file    Template to display.
+     * @param array  $vars    Additional vars to set during execution.
+     * @param string $inherit Template to inherit from; overrides source.
      *
      * @return bool true on success.
      * @throws Sugar_Exception_Usage when the template name is invalid or
@@ -749,9 +752,9 @@ class Sugar
      *
      * @deprecated
      */
-    public function display($file, $vars = null)
+    public function display($file, $vars = null, $inherit = null)
     {
-        return $this->displayCache($file, null, $vars);
+        return $this->displayCache($file, null, $vars, $inherit);
     }
 
     /**
@@ -761,14 +764,16 @@ class Sugar
      * @param string $file    Template to process.
      * @param string $cacheId Cache identifier.
      * @param array  $vars    Additional vars to set during execution.
+     * @param string $inherit Template to inherit from; overrides source.
      *
      * @return string Template output.
      *
      * @deprecated
      */
-    public function fetchCache($file, $cacheId, $vars = null)
+    public function fetchCache($file, $cacheId, $vars = null, $inherit = null)
     {
         $template = $this->getTemplate($file, $cacheId);
+        $template->setInherit($inherit);
         return $template->fetch(new Sugar_Context($template->getContext(), (array)$vars));
     }
 
@@ -776,16 +781,17 @@ class Sugar
      * Displays a template using {@link Sugar::display}, but returns
      * the result as a string instead of displaying it to the user.
      *
-     * @param string $file   Template to process.
-     * @param array  $vars   Additional vars to set during execution.
+     * @param string $file    Template to process.
+     * @param array  $vars    Additional vars to set during execution.
+     * @param string $inherit Template to inherit from; overrides source.
      *
      * @return string Template output.
      *
      * @deprecated
      */
-    public function fetch($file, $vars = null)
+    public function fetch($file, $vars = null, $inherit = null)
     {
-        return $this->fetchCache($file, null, $vars);
+        return $this->fetchCache($file, null, $vars, $inherit);
     }
 
     /**

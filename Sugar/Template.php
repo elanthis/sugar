@@ -110,6 +110,14 @@ class Sugar_Template
     private $_compiled = null;
 
     /**
+     * Optional inherited template, overrides template specified inherited
+     * template.
+     *
+     * @var string $_inherit
+     */
+    private $_inherit = null;
+
+    /**
      * Constructor.
      *
      * @param Sugar               $sugar       Sugar object.
@@ -167,6 +175,17 @@ class Sugar_Template
     public function getContext()
     {
         return $this->_context;
+    }
+
+    /**
+     * Set the inherited template, which overrides any inherited
+     * template specified in the template source.
+     *
+     * @param string $file Template to inherit from
+     */
+    public function setInherit($file)
+    {
+        $this->_inherit = $file;
     }
     
     /**
@@ -347,11 +366,12 @@ class Sugar_Template
             $data = $this->_loadCompile();
 
             // if we have an inherited template, load it and merge it with our data
-            if ($data['inherit']) {
+            $inherit = $this->_inherit ? $this->_inherit : $data['inherit'];
+            if ($inherit) {
                 // load compiled parent (inherited template)
-                $parent = $this->sugar->getTemplate($data['inherit'], $this->cacheId);
+                $parent = $this->sugar->getTemplate($inherit, $this->cacheId);
                 if ($parent === false) {
-                    throw new Sugar_Exception_Usage('template not found: '.$data['inherit']);
+                    throw new Sugar_Exception_Usage('inherited template not found: '.$inherit);
                 }
                 $pdata = $parent->_loadCompile();
 
