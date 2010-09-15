@@ -431,10 +431,33 @@ class Sugar_Grammar
             // read in elements
             $elems = array();
             $data = true;
+            $key = null;
             while (!$this->_tokens->accept(']')) {
                 // read in element
                 $elem = $this->_compileExpr();
-                $elems []= $elem;
+
+                // if we have a =>, then it must be a key
+                // which must be constant
+                if ($this->_tokens->accept('=>')) {
+                    // array keys must be constant data for now
+                    if (!$this->_isData($elem)) {
+                        throw new Sugar_Exception_Parse(
+                            $this->_tokens->getFile(),
+                            $this->_tokens->getLine(),
+                            'array keys must be constants'
+                        );
+                    }
+                    $key = $elem[1];
+
+                    // grab actual data
+                    $elem = $this->_compileExpr();
+
+                    // put element into array
+                    $elems [$key]= $elem;
+                } else {
+                    // add element to new array
+                    $elems []= $elem;
+                }
 
                 // if not pure data, unmark data flag
                 if ($data && !$this->_isData($elem)) {

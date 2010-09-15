@@ -2,17 +2,23 @@ Test: [1,2,3]
 Expect: [1,2,3]
 Result: {{ [1,2,3] }}
 
-Test: ['foo','bar','baz']
+Test: ['foo','bar','baz']|raw
 Expect: ['foo','bar','baz']
-Result: {{ ['foo','bar','baz'] }}
+Result: {{ ["foo","bar","baz"]|raw }}
 
-Test: explode ' ', 'one two three'
+Test: ['foo' => 'bar', 5 => 'baz', 'gar']|raw
+Expect: {"foo":"bar","5":"baz","6":"gar"]
+Result: {{ ['foo' => 'bar', 5 => 'baz', 'gar']|raw }}
+
+Test: explode|Raw ' ', 'one two three'
 Expect: ['one','two','three']
-Result: {{ explode separator=' ' string='one two three' }}
+Result: {{ explode|raw separator=' ' string='one two three' }}
+
+{{ $list = ['one', 'two', 'three', 'foo' => 'bar'] }}
 
 Test: $list
-Expect: {0:'one',1:'two',2:'three','foo':'bar'}
-Result: {{ $list }}
+Expect: {"0":"one","1":"two","2":"three","foo":"bar"}
+Result: {{ $list|raw }}
 
 Test: $list.1
 Expect: two

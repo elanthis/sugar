@@ -215,7 +215,7 @@ class Sugar_Lexer
             }
 
             // get next token
-            if (!preg_match('/(?:'.preg_quote($this->_delimEnd).'|\$(\w+)|(\d+(?:[.]\d+)?)|\/([A-Za-z_]\w+)|(\w+)|==|!=|!in\b|<=|>=|\|\||&&|->|[.][.]|.)/msA', $source, $token, 0, $pos)) {
+            if (!preg_match('/(?:'.preg_quote($this->_delimEnd).'|\$(\w+)|(\d+(?:[.]\d+)?)|\/([A-Za-z_]\w+)|(\w+)|==|!=|!in\b|<=|>=|=>|\|\||&&|->|[.][.]|.)/msA', $source, $token, 0, $pos)) {
                 throw new Sugar_Exception_Parse(
                     $this->_file,
                     $line,

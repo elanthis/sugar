@@ -2,29 +2,35 @@ Test: [1,2,3]
 Expect: [1,2,3]
 Result: [1,2,3]
 
-Test: ['foo','bar','baz']
+Test: ['foo','bar','baz']|raw
 Expect: ['foo','bar','baz']
-Result: [&quot;foo&quot;,&quot;bar&quot;,&quot;baz&quot;]
+Result: ["foo","bar","baz"]
 
-Test: explode ' ', 'one two three'
+Test: ['foo' => 'bar', 5 => 'baz', 'gar']|raw
+Expect: {"foo":"bar","5":"baz","6":"gar"]
+Result: {"foo":"bar","5":"baz","6":"gar"}
+
+Test: explode|Raw ' ', 'one two three'
 Expect: ['one','two','three']
-Result: [&quot;one&quot;,&quot;two&quot;,&quot;three&quot;]
+Result: ["one","two","three"]
+
+
 
 Test: $list
-Expect: {0:'one',1:'two',2:'three','foo':'bar'}
-Result: 
+Expect: {"0":"one","1":"two","2":"three","foo":"bar"}
+Result: {"0":"one","1":"two","2":"three","foo":"bar"}
 
 Test: $list.1
 Expect: two
-Result: 
+Result: two
 
 Test: $list[1]
 Expect: two
-Result: 
+Result: two
 
 Test: $list->1
 Expect: two
-Result: 
+Result: two
 
 Test: $list.notdefined
 Expect: 
@@ -32,19 +38,19 @@ Result:
 
 Test: $list.foo
 Expect: bar
-Result: 
+Result: bar
 
 Test: $list['foo']
 Expect: bar
-Result: 
+Result: bar
 
 Test: $list->foo
 Expect: bar
-Result: 
+Result: bar
 
 Test: "one" in $list
 Expect: true
-Result: false
+Result: true
 
 Test: "nope" in $list
 Expect: false
@@ -52,12 +58,12 @@ Result: false
 
 Test: "nope" !in $list
 Expect: true
-Result: false
+Result: true
 
 Test: $c=2 ; $list.$c
 Expect: three
-Result: 
+Result: three
 
 Test: $c=2 ; $list[$c]
 Expect: three
-Result: 
+Result: three
