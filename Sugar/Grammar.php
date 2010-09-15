@@ -520,7 +520,6 @@ class Sugar_Grammar
             if ($this->_tokens->accept(Sugar_Token::EOF)
                 || $this->_tokens->acceptKeyword('else')
                 || $this->_tokens->acceptKeyword('elseif')
-                || $this->_tokens->acceptKeyword('elif')
                 || $this->_tokens->acceptKeyword('end')
                 || $this->_tokens->accept(Sugar_Token::END_BLOCK)
             ) {
@@ -536,7 +535,7 @@ class Sugar_Grammar
             elseif ($this->_tokens->accept(Sugar_Token::TERMINATOR)) {
                 // do nothing
             }
-            // print raw value
+            // flow control - if
             elseif ($this->_tokens->acceptKeyword('if')) {
                 // get first clause expr and body
                 $ops = $this->_compileExpr();
@@ -546,23 +545,26 @@ class Sugar_Grammar
 
                 // get else/else-if clauses
                 while (true) {
-                    if ($this->_tokens->acceptKeyword('elif')
-                        || $this->_tokens->acceptKeyword('elseif')
-                    ) {
+                    if ($this->_tokens->acceptKeyword('elseif')) {
+                        // smarty-style elseif keyword
                         $ops = $this->_compileExpr();
                         $this->_tokens->expect(Sugar_Token::TERMINATOR);
                         $body = $this->compileBlock('else-if');
                         $clauses []= array($ops, $body);
-                    } else if ($this->_tokens->acceptKeyword('else')) {
-                        // handle 'else if' construct
+                    } elseif ($this->_tokens->acceptKeyword('else')) {
                         if ($this->_tokens->acceptKeyword('if')) {
+                            // handle 'else if' construct
                             $ops = $this->_compileExpr();
                             $this->_tokens->expect(Sugar_Token::TERMINATOR);
                             $body = $this->compileBlock('else-if');
                             $clauses []= array($ops, $body);
                         } else {
+                            // plain else
                             $body = $this->compileBlock('else');
                             $clauses []= array(false, $body);
+
+                            // no further else/else-if blocks allowed
+                            break;
                         }
                     } else {
                         break;

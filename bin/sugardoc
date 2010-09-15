@@ -125,7 +125,7 @@ $template = <<<EOT
 						if \$line == '';
 							\$empty = true;
 						// this line is part of a code block
-						elif (substr string=\$line length=2) == '  ';
+						else if (substr string=\$line length=2) == '  ';
 							// if we're not currently in code block mode, switch
 							if \$lmode != 'c';
 								\$lmode = 'c';
@@ -222,7 +222,7 @@ $template = <<<EOT
 						if \$line == '';
 							\$empty = true;
 						// this line is part of a code block
-						elif (substr string=\$line length=2) == '  ';
+						else if (substr string=\$line length=2) == '  ';
 							// if we're not currently in code block mode, switch
 							if \$lmode != 'c';
 								\$lmode = 'c';

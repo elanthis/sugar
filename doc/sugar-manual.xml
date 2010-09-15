@@ -63,12 +63,12 @@ foo param1=$bar param2=5*5</programlisting>
 	Foo is not five
 {% /if %}</programlisting>
 				</example>
-				<para>It is also possible to chain multiple <code>if</code> statements together using the <code>elif</code> statement.  Each statement is tried until one succeeds.  If none of them succeed, then the <code>else</code> statement (if present) is executed.</para>
+				<para>It is also possible to chain multiple <code>if</code> statements together using the <code>else if</code> statement.  Each statement is tried until one succeeds.  If none of them succeed, then the <code>else</code> statement (if present) is executed.</para>
 				<example>
-					<title>If-elif-else</title>
+					<title>If-elseif-else</title>
 					<programlisting>{% if $foo == 5 %}
 	Foo is equal to five
-{% elif $foo > 5 %}
+{% else if $foo > 5 %}
 	Foo is greater than five
 {% else %}
 	Foo is less than five
