@@ -544,26 +544,28 @@ class Sugar_Grammar
                 $body = $this->compileBlock('if');
                 $clauses = array(array($ops, $body));
 
-                // get elif clauses
-                while ($this->_tokens->acceptKeyword('elif')
-                        || $this->_tokens->acceptKeyword('elseif')) {
-                    $ops = $this->_compileExpr();
-                    $this->_tokens->expect(Sugar_Token::TERMINATOR);
-                    $body = $this->compileBlock('elif');
-                    $clauses []= array($ops, $body);
-                }
-
-                // optional else clause
-                if ($this->_tokens->acceptKeyword('else')) {
-                    // handle 'else if' construct
-                    if ($this->_tokens->acceptKeyword('if')) {
+                // get else/else-if clauses
+                while (true) {
+                    if ($this->_tokens->acceptKeyword('elif')
+                        || $this->_tokens->acceptKeyword('elseif')
+                    ) {
                         $ops = $this->_compileExpr();
                         $this->_tokens->expect(Sugar_Token::TERMINATOR);
-                        $body = $this->compileBlock('elif');
+                        $body = $this->compileBlock('else-if');
                         $clauses []= array($ops, $body);
+                    } else if ($this->_tokens->acceptKeyword('else')) {
+                        // handle 'else if' construct
+                        if ($this->_tokens->acceptKeyword('if')) {
+                            $ops = $this->_compileExpr();
+                            $this->_tokens->expect(Sugar_Token::TERMINATOR);
+                            $body = $this->compileBlock('else-if');
+                            $clauses []= array($ops, $body);
+                        } else {
+                            $body = $this->compileBlock('else');
+                            $clauses []= array(false, $body);
+                        }
                     } else {
-                        $body = $this->compileBlock('else');
-                        $clauses []= array(false, $body);
+                        break;
                     }
                 }
 

@@ -1,8 +1,11 @@
-Expect: A
-Result:	A
+Expect: SUCCESS
+Result: SUCCESS
 
-Expect: B
-Result: B
+Expect: SUCCESS
+Result: SUCCESS
+
+Expect: SUCCESS
+Result:	SUCCESS
 
 Expect: SUCCESS
 Result: SUCCESS
