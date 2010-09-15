@@ -161,20 +161,20 @@ to a single expression.
 
     {{ $var|default:'string'|upper }}
 
-Conditional execution can be performed using the if, elif, and else
+Conditional execution can be performed using the if, else if, and else
 statements.  Example:
 
     {{ if $i > 7 }}
       The value is greater than 7.
-    {{ elif $i < -7 }}
+    {{ else if $i < -7 }}
       The value is less than 7.
-    {{ elif $i = $v }}
+    {{ else if $i = $v }}
       The value is equal to $v.
     {{ else }}
       The value is {{ $i }}
       {{ if $i < 0 }}
         which is negative
-      {{ elif $i > 0 }}
+      {{ else if $i > 0 }}
         which is positive
       {{ else }}
         which is zero

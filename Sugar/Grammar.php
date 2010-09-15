@@ -519,6 +519,7 @@ class Sugar_Grammar
             // terminators
             if ($this->_tokens->accept(Sugar_Token::EOF)
                 || $this->_tokens->acceptKeyword('else')
+                || $this->_tokens->acceptKeyword('elseif')
                 || $this->_tokens->acceptKeyword('elif')
                 || $this->_tokens->acceptKeyword('end')
                 || $this->_tokens->accept(Sugar_Token::END_BLOCK)
@@ -544,7 +545,8 @@ class Sugar_Grammar
                 $clauses = array(array($ops, $body));
 
                 // get elif clauses
-                while ($this->_tokens->acceptKeyword('elif')) {
+                while ($this->_tokens->acceptKeyword('elif')
+                        || $this->_tokens->acceptKeyword('elseif')) {
                     $ops = $this->_compileExpr();
                     $this->_tokens->expect(Sugar_Token::TERMINATOR);
                     $body = $this->compileBlock('elif');
@@ -553,8 +555,16 @@ class Sugar_Grammar
 
                 // optional else clause
                 if ($this->_tokens->acceptKeyword('else')) {
-                    $body = $this->compileBlock('else');
-                    $clauses []= array(false, $body);
+                    // handle 'else if' construct
+                    if ($this->_tokens->acceptKeyword('if')) {
+                        $ops = $this->_compileExpr();
+                        $this->_tokens->expect(Sugar_Token::TERMINATOR);
+                        $body = $this->compileBlock('elif');
+                        $clauses []= array($ops, $body);
+                    } else {
+                        $body = $this->compileBlock('else');
+                        $clauses []= array(false, $body);
+                    }
                 }
 
                 $this->_tokens->expectEndBlock('if');

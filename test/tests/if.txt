@@ -3,3 +3,6 @@ Result:	A
 
 Expect: B
 Result: B
+
+Expect: SUCCESS
+Result: SUCCESS
