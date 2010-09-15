@@ -1,26 +1,30 @@
 Upcoming versions and their release criteria.
 
-0.83
+0.85
 ====
 
-0.84
+- NO MORE SYNTAX CHANGES!!!
+- PHP-like foreach syntax instead of current syntax (no back-compat)
+- Top-level function rules
+
+0.86
 ====
 
+- STABLE SYNTAX!!!
 - Smarty compat for foreach syntax (maybe with a special
   flag for enabling?  ick)
 - Make opcode integers instead of strings
 - Calling display() on a template should not be part of the same cache
   output as a currently running display; that is black magic; add a way
 	to execute a template inside the cache output of another, via Runtime
-- Top-level function rules
 
-0.85
+0.87
 ====
 
 - Object-oriented API for plugin functions, modifiers
 - Add Sugar_Chunk class instad of array for base execution unit
 
-0.86
+0.90
 ====
 
 - Thoroughly document syntax
@@ -32,7 +36,6 @@ Upcoming versions and their release criteria.
 0.99
 ====
 
-- STABLE SYNTAX AND API!
 - FINAL API ADDITIONS (NO API BREAKS!)
 
 1.0
