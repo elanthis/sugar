@@ -42,7 +42,7 @@ All Sugar code is put with the tags `{{` and `}}`.  For example:
 
     {{ if $count > 10 }}
       <ul>
-      {{ foreach $key,$value in $list }}
+      {{ foreach $list as $key=>$value }}
         <li>{{ $key }}: <b>{{ $value }}</b></li>
       {{ /foreach }}
       </ul>
@@ -186,17 +186,17 @@ statement.  Either the array values or both the array keys and
 values can be iterated over.
 
     Just the values:
-    {{ foreach $i in $mylist }}
+    {{ foreach $mylist as $i }}
       {{ $i }}
     {{ /foreach }}
 
     Keys and values:
-    {{ foreach $k,$i in $mylist }}
+    {{ foreach $mylist as $k=>$i }}
       {{ $k }}={{ $i }}
     {{ /foreach }}
 
     Inline array:
-    {{ foreach $k in [1,2,3] }}
+    {{ foreach [1,2,3] as $k }}
       {{ $k }}
     {{ /foreach }}
 

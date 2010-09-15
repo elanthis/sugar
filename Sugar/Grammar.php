@@ -648,21 +648,25 @@ class Sugar_Grammar
                 $key = null;
                 $name = null;
 
+                // get expression to iterate over
+                $ops = $this->_compileExpr();
+
+                // get name (or key=>name)
+                $this->_tokens->expectKeyword('as');
+
                 // get name
                 $this->_tokens->expect(Sugar_Token::VARIABLE, $name);
 
-                // is it a key,name pair?
-                if ($this->_tokens->accept(',')) {
+                // is it a key=>name pair?
+                if ($this->_tokens->accept('=>')) {
                     $key = $name;
                     $this->_tokens->expect(Sugar_Token::VARIABLE, $name);
                 }
 
-                // now we need the expression
-                $this->_tokens->expectKeyword('in');
-                $ops = $this->_compileExpr();
+                // and that's the end of the foreach statement
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
-                // and the block itself
+                // compile the body
                 $body = $this->compileBlock('foreach');
                 $this->_tokens->expectEndBlock('foreach');
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);

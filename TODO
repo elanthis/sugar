@@ -3,8 +3,6 @@ Upcoming versions and their release criteria.
 0.85
 ====
 
-- NO MORE SYNTAX CHANGES!!!
-- PHP-like foreach syntax instead of current syntax (no back-compat)
 - Top-level function rules
 
 0.86

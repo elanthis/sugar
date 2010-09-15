@@ -1,11 +1,11 @@
-Test: foreach $i in $list; $i..','; /foreach
+Test: foreach $list as $i; $i..','; /foreach
 Expect: one,two,three,bar,
 Result: one,two,three,bar,
 
-Test: foreach $k,$i in $list; $k .. '=' .. $i .. ','; /foreach
+Test: foreach $list as $k=>$i; $k .. '=' .. $i .. ','; /foreach
 Expect: 0=one,1=two,2=three,3=bar,
 Result: 0=one,1=two,2=three,3=bar,
 
-Test: foreach $i in [1, 'one', 'bar', 42]; $i..','; /foreach
+Test: foreach [1, 'one', 'bar', 42] as $i; $i..','; /foreach
 Expect: 1,one,bar,42,
 Result: 1,one,bar,42,
