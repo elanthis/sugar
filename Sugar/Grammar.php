@@ -182,9 +182,10 @@ class Sugar_Grammar
     private function _parseBuiltinFunctionArgs($name, array $require)
     {
         $params = array();
-        while (!$this->_tokens->peekAny(array(')', ']', '}', ',', Sugar_Token::TERMINATOR))) {
-            // check for name=value assignment
-            $this->_tokens->expect(Sugar_Token::IDENTIFIER, $id);
+
+        // keep reading so long as we have identifiers (start of id=value)
+        while ($this->_tokens->accept(Sugar_Token::IDENTIFIER, $id)) {
+            // check for =value assignment
             $this->_tokens->expect('=');
             $this->_tokens->expect(Sugar_Token::LITERAL, $value);
 
@@ -291,8 +292,6 @@ class Sugar_Grammar
     /**
      * Compile an entire expression.
      *
-     * @param bool $skip         Hack to skip the first terminal, used in some
-     *                           hacky parsing routines.
      * @param bool $modifiers    If set to false, do not look for modifiers
      *                           after the expression.
      * @param bool &$escape_flag Out parameter, set false if escaping should be
@@ -300,16 +299,29 @@ class Sugar_Grammar
      *
      * @return array Bytecode of expression.
      */
-    private function _compileExpr($skip = false, $modifiers = true,
-    &$escape_flag = true) {
+    private function _compileExpr($modifiers = true, &$escape_flag = true) {
+        // compile a binary expression
+        $expr = $this->_compileBinary();
+
+        // look for and apply modifiers, if present
+        if ($modifiers && $this->_tokens->accept('|')) {
+            return array_merge($expr, $this->_compileModifiers($escape_flag));
+        } else {
+            return $expr;
+        }
+    }
+
+    /**
+     * Compile a binary expression.
+     *
+     * @return array Bytecode of expression.
+     */
+    private function _compileBinary() {
         // wrap operator stack
         $this->_stack []= '(';
 
-        // if skip is true (only used for our hacky variable assignment
-        // handling), don't do this part
-        if (!$skip) {
-            $this->_compileUnary();
-        }
+        // first left-hand operand (possibly the only node)
+        $this->_compileUnary();
 
         // while we have a binary operator, continue chunking along
         while ($op = $this->_tokens->getOp()) {
@@ -366,13 +378,7 @@ class Sugar_Grammar
 
         // remove compiled expression from the output stack
         $expr = array_pop($this->_output);
-
-        // look for and apply modifiers, if present
-        if ($modifiers && $this->_tokens->accept('|')) {
-            return array_merge($expr, $this->_compileModifiers($escape_flag));
-        } else {
-            return $expr;
-        }
+        return $expr;
     }
 
     /**
@@ -392,7 +398,7 @@ class Sugar_Grammar
             // parse and compile modifier parameters
             $params = array();
             while ($this->_tokens->accept(':')) {
-                $params []= $this->_compileExpr(false, false);
+                $params []= $this->_compileExpr(false);
             }
 
             // if the modifier was |raw, flag it
@@ -696,11 +702,11 @@ class Sugar_Grammar
                 }
                 // otherwise, it's an expression
                 else {
-                    // push the variable request, compile expr skipping first term
-                    // DIRTY HACK
-                    $this->_output []= array('lookup', $name);
+                    // put the variable name back, and then compile as an expression
+                    $this->_tokens->pushBack();
+
                     $escape_flag = true;
-                    $ops = $this->_compileExpr(true, true, $escape_flag);
+                    $ops = $this->_compileExpr(true, $escape_flag);
                     $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                     $block []= $ops;
@@ -719,6 +725,7 @@ class Sugar_Grammar
                 // get section identifier
                 $params = $this->_parseBuiltinFunctionArgs('section',
                         array('name'=>'string'));
+                $this->_tokens->expect(Sugar_Token::TERMINATOR);
                 $name = $params['name'];
 
                 // do not allow nested sections
@@ -756,6 +763,7 @@ class Sugar_Grammar
                 // parse arguments; expect a single argument, 'file'
                 $params = $this->_parseBuiltinFunctionArgs('inherit',
                         array('file'=>'string'));
+                $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // do not allow nested inherited templates
                 if ($blockType != 'document') {
@@ -783,6 +791,7 @@ class Sugar_Grammar
                 // parse arguments; expect a single argument, 'name'
                 $params = $this->_parseBuiltinFunctionArgs('insert',
                         array('name'=>'string'));
+                $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // push opcode
                 $block []= array('insert', $params['name']);
@@ -817,7 +826,7 @@ class Sugar_Grammar
             // we have a statement
             else {
                 $escape_flag = true;
-                $ops = $this->_compileExpr(false, true, $escape_flag);
+                $ops = $this->_compileExpr(true, $escape_flag);
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 $block []= $ops;

@@ -317,6 +317,14 @@ class Sugar_Lexer
     }
 
     /**
+     * Pushes a previously accepted/expected token back into the front of
+     * the token queue
+     */
+    public function pushBack() {
+        --$this->_next;
+    }
+
+    /**
      * Checks to the see if the next token matches the requested token
      * type.  If it does, the token is consumed.  The token data is
      * stored in the second parameter.  True is returned if the token

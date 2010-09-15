@@ -56,6 +56,7 @@ class Sugar_TestRunner {
 
 		require_once dirname(__FILE__).'/../Sugar.php';
 		$sugar = new Sugar;
+		$sugar->debug = true;
 		$sugar->pluginDir = dirname(__FILE__).'/plugins';
 		$sugar->templateDir = array(dirname(__FILE__).'/tests', dirname(__FILE__).'/tpl');
 		$sugar->cacheDir = dirname(__FILE__).'/cache';
