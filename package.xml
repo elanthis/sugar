@@ -34,15 +34,17 @@
     <file name="NEWS" role="doc" />
     <file name="Sugar.php" role="php" />
 	  <dir name="Sugar">
-     <file name="CacheHandler.php" role="php"/>
      <file name="CacheDriver.php" role="php"/>
+     <file name="CacheHandler.php" role="php"/>
+     <file name="Context.php" role="php"/>
      <file name="Exception.php" role="php"/>
      <file name="Grammar.php" role="php"/>
      <file name="Lexer.php" role="php"/>
-     <file name="Ref.php" role="php"/>
      <file name="Runtime.php" role="php"/>
      <file name="Stdlib.php" role="php"/>
      <file name="StorageDriver.php" role="php"/>
+     <file name="Template.php" role="php"/>
+     <file name="Token.php" role="php"/>
      <file name="Util.php" role="php"/>
 		 <dir name="Cache">
       <file name="File.php" role="php"/>
