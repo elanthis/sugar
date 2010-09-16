@@ -114,6 +114,20 @@ class Sugar_Lexer
     private $_delimEnd = '}}';
 
     /**
+     * Regular expression used to skip whitepace and comments.
+     *
+     * @var string
+     */
+    private $_regexIgnore = '';
+
+    /**
+     * Regular expression used to identify tokens.
+     *
+     * @var string
+     */
+    private $_regexToken = '';
+
+    /**
      * Constructor.
      *
      * @param string $src        The source code to tokenizer.
@@ -127,6 +141,9 @@ class Sugar_Lexer
         $this->_file = $file;
         $this->_delimStart = $delimStart;
         $this->_delimEnd = $delimEnd;
+
+        $this->_regexIgnore = '/(?:\s+|(?:\/\*.*?\*\/|\/\/.*?($|'.preg_quote($this->_delimEnd).')))/msA';
+        $this->_regexToken = '/(?:'.preg_quote($this->_delimEnd).'|\$(\w+)|(\d+(?:[.]\d+)?)|\/([A-Za-z_]\w+)|(\w+)|==|!=|!in\b|<=|>=|=>|\|\||&&|->|[.][.]|.)/msA';
     }
 
     /**
@@ -195,7 +212,7 @@ class Sugar_Lexer
             }
 
             // skip spaces and comments
-            while (preg_match('/(?:\s+|(?:\/\*.*?\*\/|\/\/.*?($|'.preg_quote($this->_delimEnd).')))/msA', $source, $ar, 0, $pos)) {
+            while (preg_match($this->_regexIgnore, $source, $ar, 0, $pos)) {
                 // increment position and line
                 $pos += strlen($ar[0]);
                 $line += substr_count($ar[0], "\n");
@@ -215,7 +232,7 @@ class Sugar_Lexer
             }
 
             // get next token
-            if (!preg_match('/(?:'.preg_quote($this->_delimEnd).'|\$(\w+)|(\d+(?:[.]\d+)?)|\/([A-Za-z_]\w+)|(\w+)|==|!=|!in\b|<=|>=|=>|\|\||&&|->|[.][.]|.)/msA', $source, $token, 0, $pos)) {
+            if (!preg_match($this->_regexToken, $source, $token, 0, $pos)) {
                 throw new Sugar_Exception_Parse(
                     $this->_file,
                     $line,
@@ -396,7 +413,7 @@ class Sugar_Lexer
      *
      * @throws Sugar_Exception_Parse always
      */
-    private function throwExpect($expected)
+    private function _throwExpect($expected)
     {
         $token = $this->_tokens[$this->_next];
 
@@ -429,11 +446,11 @@ class Sugar_Lexer
         // throw an error if it's the wrong token
         if (is_array($expect)) {
             if (!in_array($token->type, $expect)) {
-                $this->throwExpect(implode(' or ', $expect));
+                $this->_throwExpect(implode(' or ', $expect));
             }
         } else {
             if ($token->type != $expect) {
-                $this->throwExpect($expect);
+                $this->_throwExpect($expect);
             }
         }
 
@@ -462,7 +479,7 @@ class Sugar_Lexer
 
         // every keyword is an identifier
         if ($token->type != Sugar_Token::IDENTIFIER || $token->extra != $expect) {
-            $this->throwExpect($expect);
+            $this->_throwExpect($expect);
         }
 
         // increment for next call
@@ -485,7 +502,7 @@ class Sugar_Lexer
         if ($token->type != 'end' // back-compat
             && ($token->type != Sugar_Token::END_BLOCK || $token->extra != $name)
         ) {
-            $this->throwExpect('/'.$name);
+            $this->_throwExpect('/'.$name);
         }
 
         // increment for next call
