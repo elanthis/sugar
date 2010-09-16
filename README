@@ -42,9 +42,9 @@ All Sugar code is put with the tags `{{` and `}}`.  For example:
 
     {{ if $count > 10 }}
       <ul>
-      {{ for $key,$value in $list }}
+      {{ foreach $key,$value in $list }}
         <li>{{ $key }}: <b>{{ $value }}</b></li>
-      {{ /for }}
+      {{ /foreach }}
       </ul>
     {{ /if }}
 
@@ -181,24 +181,24 @@ statements.  Example:
       {{ /if }}
     {{ /if }}
 
-An array or PHP iterator can be looped over using the for
+An array or PHP iterator can be looped over using the foreach
 statement.  Either the array values or both the array keys and
 values can be iterated over.
 
     Just the values:
-    {{ for $i in $mylist }}
+    {{ foreach $i in $mylist }}
       {{ $i }}
-    {{ /for }}
+    {{ /foreach }}
 
     Keys and values:
-    {{ for $k,$i in $mylist }}
+    {{ foreach $k,$i in $mylist }}
       {{ $k }}={{ $i }}
-    {{ /for }}
+    {{ /foreach }}
 
     Inline array:
-    {{ for $k in [1,2,3] }}
+    {{ foreach $k in [1,2,3] }}
       {{ $k }}
-    {{ /for }}
+    {{ /foreach }}
 
 A code block can be expected a specific number of times by using the
 range loop statement.  The range loop is given a start number, an end

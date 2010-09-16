@@ -97,7 +97,7 @@ foo param1=$bar param2=5*5</programlisting>
 				<para>The <code>foreach</code> statement is very similar to the <code>loop</code> statement, except it iterates over the value of an array instead of a series of numbers.  Both indexed and associative arrays can be used.  The statement is given one or two variable names.  If only one is given, the array value will be assigned to it.  If two are given, the array key is given to the first and the value is given to the second.</para>
 				<example>
 					<title>Foreach loop</title>
-					<programlisting><![CDATA[{% foreach [1,2,3] as $value %}
+					<programlisting><![CDATA[{% foreach $value in [1,2,3] %}
 	{% $value %}<br />
 {% /foreach %}]]></programlisting>
 					<para>The above code will print out:</para>
@@ -109,7 +109,7 @@ foo param1=$bar param2=5*5</programlisting>
 					<title>Foreach loop with keys</title>
 					<para>The variable $array was assigned in PHP with array('foo'=>100, 'bar'=>200, 'baz'=>300).</para>
 					<programlisting><![CDATA[
-{% foreach $array as $key=>$value %}
+{% foreach $key,$value in $array %}
 	{% $key %} is {% $value %}<br />
 {% /foreach %}]]></programlisting>
 					<para>The above code will print out:</para>

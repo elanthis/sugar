@@ -3,13 +3,16 @@ Upcoming versions and their release criteria.
 0.85
 ====
 
+- NO MORE SYNTAX CHANGES!!!
+- PHP-like foreach syntax instead of current syntax (no back-compat)
 - Top-level function rules
-- Smarty compat for foreach syntax
 
 0.86
 ====
 
 - STABLE SYNTAX!!!
+- Smarty compat for foreach syntax (maybe with a special
+  flag for enabling?  ick)
 - Make opcode integers instead of strings
 - Calling display() on a template should not be part of the same cache
   output as a currently running display; that is black magic; add a way

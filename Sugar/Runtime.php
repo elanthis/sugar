@@ -441,7 +441,7 @@ class Sugar_Runtime {
                     $index += $step;
                 }
                 break;
-            case 'for':
+            case 'foreach':
                 $array = array_pop($stack);
                 $key = $code[++$i];
                 $name = $code[++$i];

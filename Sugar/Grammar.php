@@ -650,7 +650,7 @@ class Sugar_Grammar
                 $block []= array('range', $name, $body);
             }
             // loop over an array
-            elseif ($this->_tokens->acceptKeyword('for')) {
+            elseif ($this->_tokens->acceptKeyword('foreach')) {
                 $key = null;
                 $name = null;
 
@@ -663,21 +663,19 @@ class Sugar_Grammar
                     $this->_tokens->expect(Sugar_Token::VARIABLE, $name);
                 }
 
-                // get expression to iterate over
+                // now we need the expression
                 $this->_tokens->expectKeyword('in');
                 $ops = $this->_compileExpr();
-
-                // and that's the end of the foreach statement
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
-                // compile the body
-                $body = $this->compileBlock('for');
-                $this->_tokens->expectEndBlock('for');
+                // and the block itself
+                $body = $this->compileBlock('foreach');
+                $this->_tokens->expectEndBlock('foreach');
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // store foreach block
                 $block []= $ops;
-                $block []= array('for', $key, $name, $body);
+                $block []= array('foreach', $key, $name, $body);
             }
             // inhibit caching
             elseif ($this->_tokens->acceptKeyword('nocache')) {
