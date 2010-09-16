@@ -650,36 +650,34 @@ class Sugar_Grammar
                 $block []= array('range', $name, $body);
             }
             // loop over an array
-            elseif ($this->_tokens->acceptKeyword('foreach')) {
+            elseif ($this->_tokens->acceptKeyword('for')) {
                 $key = null;
                 $name = null;
-
-                // get expression to iterate over
-                $ops = $this->_compileExpr();
-
-                // get name (or key=>name)
-                $this->_tokens->expectKeyword('as');
 
                 // get name
                 $this->_tokens->expect(Sugar_Token::VARIABLE, $name);
 
-                // is it a key=>name pair?
-                if ($this->_tokens->accept('=>')) {
+                // is it a key,name pair?
+                if ($this->_tokens->accept(',')) {
                     $key = $name;
                     $this->_tokens->expect(Sugar_Token::VARIABLE, $name);
                 }
+
+                // get expression to iterate over
+                $this->_tokens->expectKeyword('in');
+                $ops = $this->_compileExpr();
 
                 // and that's the end of the foreach statement
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // compile the body
-                $body = $this->compileBlock('foreach');
-                $this->_tokens->expectEndBlock('foreach');
+                $body = $this->compileBlock('for');
+                $this->_tokens->expectEndBlock('for');
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // store foreach block
                 $block []= $ops;
-                $block []= array('foreach', $key, $name, $body);
+                $block []= array('for', $key, $name, $body);
             }
             // inhibit caching
             elseif ($this->_tokens->acceptKeyword('nocache')) {
