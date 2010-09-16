@@ -4,8 +4,8 @@ Upcoming versions and their release criteria.
 ====
 
 - NO MORE SYNTAX CHANGES!!!
-- PHP-like foreach syntax instead of current syntax (no back-compat)
 - Top-level function rules
+- Modifier rules
 
 0.86
 ====
@@ -46,7 +46,7 @@ Upcoming versions and their release criteria.
 1.2
 ===
 
-- ???
+- Smarty compatibility mode
 
 2.0
 ===
