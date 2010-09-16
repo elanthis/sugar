@@ -22,18 +22,23 @@ dist:
 	cp doc/sugardoc.css doc/sugar-manual.xml sugar-$(VERSION)/doc/
 
 	mkdir sugar-$(VERSION)/Sugar/
-	cp Sugar/*.php sugar-$(VERSION)/Sugar/
+	for file in `find Sugar -name '*.php'` ; do install -D "$$file" "sugar-$(VERSION)/$$file" ; done
 
 	mkdir sugar-$(VERSION)/test/
-	cp test/index.php sugar-$(VERSION)/test/
+	cp test/index.php test/Test.php test/run-test sugar-$(VERSION)/test/
 
 	mkdir sugar-$(VERSION)/test/plugins/
 	cp test/plugins/*.php sugar-$(VERSION)/test/plugins/
 
-	mkdir sugar-$(VERSION)/test/templates/
-	cp test/templates/*.tpl sugar-$(VERSION)/test/templates/
+	mkdir sugar-$(VERSION)/test/tpl/
+	cp test/tpl/*.tpl sugar-$(VERSION)/test/tpl/
 
-	mkdir sugar-$(VERSION)/test/templates/cache/
+	mkdir sugar-$(VERSION)/test/tests/
+	cp test/tests/*.php sugar-$(VERSION)/test/tests/
+	cp test/tests/*.tpl sugar-$(VERSION)/test/tests/
+	cp test/tests/*.txt sugar-$(VERSION)/test/tests/
+
+	mkdir sugar-$(VERSION)/test/cache/
 
 	tar -zcf sugar-$(VERSION).tar.gz sugar-$(VERSION)/
 	rm -fr sugar-$(VERSION)/
