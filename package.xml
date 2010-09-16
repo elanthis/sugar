@@ -16,10 +16,10 @@
   <active>yes</active>
  </lead>
  <date>2010-09-16</date>
- <time>14:28:00</time>
+ <time>14:41:00</time>
  <version>
-  <release>0.83.0</release>
-  <api>0.83.0</api>
+  <release>0.84.0</release>
+  <api>0.84.0</api>
  </version>
  <stability>
   <release>alpha</release>
@@ -52,6 +52,7 @@
 		 </dir>
 		 <dir name="Storage">
 		  <file name="File.php" role="php"/>
+		  <file name="String.php" role="php"/>
 		 </dir>
 		</dir>
    </dir>

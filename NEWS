@@ -1,5 +1,5 @@
 ==================
-** Version 0.83 **
+** Version 0.84 **
 ==================
 
 + Include PEAR package.xml file.
@@ -15,7 +15,7 @@
 + section, insert, inherit all look like built-in functions.
 
 ==================
-** Version 0.82 **
+** Version 0.84 **
 ==================
 
 + Registered functions can have escaping disabled by default.

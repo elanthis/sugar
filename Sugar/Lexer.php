@@ -65,7 +65,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Token.php';
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
- * @version    Release: 0.83
+ * @version    Release: 0.84
  * @link       http://php-sugar.net
  * @access     private
  */

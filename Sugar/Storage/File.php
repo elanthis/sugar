@@ -47,7 +47,7 @@
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
- * @version    Release: 0.83
+ * @version    Release: 0.84
  * @link       http://php-sugar.net
  */
 class Sugar_Storage_File implements Sugar_StorageDriver
