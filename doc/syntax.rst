@@ -8,13 +8,13 @@ Delimiters
 
 All Sugar code is put within the delimiters `{{` and `}}`.  For example::
 
-    {{ if $count > 10 }}
-      <ul>
-      {{ foreach $key,$value in $list }}
-        <li>{{ $key }}: <b>{{ $value }}</b></li>
-      {{ /foreach }}
-      </ul>
-    {{ /if }}
+	{{ if $count > 10 }}
+	  <ul>
+	  {{ foreach $key,$value in $list }}
+	    <li>{{ $key }}: <b>{{ $value }}</b></li>
+	  {{ /foreach }}
+	  </ul>
+	{{ /if }}
 
 Variables
 ---------
@@ -23,12 +23,12 @@ Variables are the dollar sign `$` followed by letters, numbers, and/or
 underscores.  Variables can be assigned by the Sugar API or by using
 the equal = operator in a template.  For example::
 
-    {{ $myvar = "a test" }}
-    My Var is {{ $myvar }}.
+	{{ $myvar = "a test" }}
+	My Var is {{ $myvar }}.
 
 The above code will print::
 
-    My Var is a test.
+	My Var is a test.
 
 To print the value of a variable, simply place the name of the
 variable in script tags.  You can also perform various mathematical
@@ -37,18 +37,18 @@ an expression.
 
 ::
 
-    {{ $i = 7 }}
-    {{ $i }} is 7
-    {{ 1+$i }} is 8
-    {{ $i*($i%5) }} is 14
+	{{ $i = 7 }}
+	{{ $i }} is 7
+	{{ 1+$i }} is 8
+	{{ $i*($i%5) }} is 14
 
-    {{ $s = "test" }}
-    {{ $s }} is test
-    {{ $s+7 }} is test7
-    {{ $s+" again" }} is test again
+	{{ $s = "test" }}
+	{{ $s }} is test
+	{{ $s+7 }} is test7
+	{{ $s+" again" }} is test again
 
-    {{ $test = $s+$i }}
-    {{ $test }} is test7
+	{{ $test = $s+$i }}
+	{{ $test }} is test7
 
 Arrays
 ~~~~~~
@@ -58,14 +58,14 @@ subscript operator.
 
 ::
 
-    {{ $array.key }}
-    {{ $array."the key" }}
-    {{ $array.0 }}
-    {{ $array.8 }}
-    {{ $array.$var }}
-    {{ $array[$var] }}
-    {{ $array[$var-6] }}
-    {{ $array["key"] }}
+	{{ $array.key }}
+	{{ $array."the key" }}
+	{{ $array.0 }}
+	{{ $array.8 }}
+	{{ $array.$var }}
+	{{ $array[$var] }}
+	{{ $array[$var-6] }}
+	{{ $array["key"] }}
 
 Arrays can be constructed using the array initializer function
 or using the [] initializer syntax.  The array function can
@@ -75,8 +75,8 @@ can make vectors (arrays with consecutive integer keys).
 
 ::
 
-    {{ $vector = [1, 2, 5] }}
-    {{ $map = (array first=1 second=2 third=5) }}
+	{{ $vector = [1, 2, 5] }}
+	{{ $map = (array first=1 second=2 third=5) }}
 
 Objects
 ~~~~~~~
@@ -88,10 +88,10 @@ parameters within ().
 
 ::
 
-    {{ $obj.name }}
-    {{ $obj[$var] }}
-    {{ $obj.method() }}
-    {{ $obj.foobar(1, $var, "test") }}
+	{{ $obj.name }}
+	{{ $obj[$var] }}
+	{{ $obj.method() }}
+	{{ $obj.foobar(1, $var, "test") }}
 
 HTML Escaping
 -------------
@@ -102,9 +102,9 @@ modifier.
 
 ::
 
-    {{ $html = "<b>bold</b>" }}
-    {{ $html }} = &lt;b&gt;bold&lt;/b&gt;
-    {{ $html|raw }} = <b>bold</b>
+	{{ $html = "<b>bold</b>" }}
+	{{ $html }} = &lt;b&gt;bold&lt;/b&gt;
+	{{ $html|raw }} = <b>bold</b>
 
 Functions
 ---------
@@ -116,9 +116,9 @@ a parameter name, an equals sign, and then the parameter value.
 
 ::
 
-    {{ myFunc }}
-    {{ myFunc value=$var }}
-    {{ myFunc value=$var*2 other="test" last=4+($i*7) }}
+	{{ myFunc }}
+	{{ myFunc value=$var }}
+	{{ myFunc value=$var*2 other="test" last=4+($i*7) }}
 
 Functions may also be called within an expression.  It is recommended
 to put the whole function inside of parenthesis, although this is
@@ -127,9 +127,9 @@ not required.
 
 ::
 
-    {{ "show "+getTime }}
-    {{ "show "+getTime 'tomorrow' }}
-    {{ 12*1+(foobar test="enable" time="now") }}
+	{{ "show "+getTime }}
+	{{ "show "+getTime 'tomorrow' }}
+	{{ 12*1+(foobar test="enable" time="now") }}
 
 Modifiers
 ---------
@@ -141,8 +141,8 @@ followed by the modifier name.
 
 ::
 
-    {{ 'some text'|upper }} becomes SOME TEXT
-    {{ 'Niagara Falls'|lower }} becomes niagara falls
+	{{ 'some text'|upper }} becomes SOME TEXT
+	{{ 'Niagara Falls'|lower }} becomes niagara falls
 
 A modifier can be applied to a function by putting the modifier
 directly after the function's name.  Putting the modifier after
@@ -151,23 +151,23 @@ the last parameter value, not the function itself!
 
 ::
 
-    {{ myFunc|upper value=$var }} modifier applied to result of myFunc
-    {{ myFunc value=$var|upper }} modifier applied to $var
+	{{ myFunc|upper value=$var }} modifier applied to result of myFunc
+	{{ myFunc value=$var|upper }} modifier applied to $var
 
 Parameters can be passed to a modifier by using a colon (:) followed
 by the parameter.  Any number of parameters can be used.
 
 ::
 
-    {{ $var|modifier:1:2:'three':4 }}
-    {{ myFunc|modifier:'parameter' value=$var }}
+	{{ $var|modifier:1:2:'three':4 }}
+	{{ myFunc|modifier:'parameter' value=$var }}
 
 Modifiers can be chained together, allowing for multiple modifications
 to a single expression.
 
 ::
 
-    {{ $var|default:'string'|upper }}
+	{{ $var|default:'string'|upper }}
 
 Conditional Blocks
 ------------------
@@ -177,22 +177,22 @@ statements.
 
 ::
 
-    {{ if $i > 7 }}
-      The value is greater than 7.
-    {{ else if $i < -7 }}
-      The value is less than 7.
-    {{ else if $i = $v }}
-      The value is equal to $v.
-    {{ else }}
-      The value is {{ $i }}
-      {{ if $i < 0 }}
-        which is negative
-      {{ else if $i > 0 }}
-        which is positive
-      {{ else }}
-        which is zero
-      {{ /if }}
-    {{ /if }}
+	{{ if $i > 7 }}
+	  The value is greater than 7.
+	{{ else if $i < -7 }}
+	  The value is less than 7.
+	{{ else if $i = $v }}
+	  The value is equal to $v.
+	{{ else }}
+	  The value is {{ $i }}
+	  {{ if $i < 0 }}
+	    which is negative
+	  {{ else if $i > 0 }}
+	    which is positive
+	  {{ else }}
+	    which is zero
+	  {{ /if }}
+	{{ /if }}
 
 Array Iteration
 ---------------
@@ -203,20 +203,20 @@ values can be iterated over.
 
 ::
 
-    Just the values:
-    {{ foreach $i in $mylist }}
-      {{ $i }}
-    {{ /foreach }}
+	Just the values:
+	{{ foreach $i in $mylist }}
+	  {{ $i }}
+	{{ /foreach }}
 
-    Keys and values:
-    {{ foreach $k,$i in $mylist }}
-      {{ $k }}={{ $i }}
-    {{ /foreach }}
+	Keys and values:
+	{{ foreach $k,$i in $mylist }}
+	  {{ $k }}={{ $i }}
+	{{ /foreach }}
 
-    Inline array:
-    {{ foreach $k in [1,2,3] }}
-      {{ $k }}
-    {{ /foreach }}
+	Inline array:
+	{{ foreach $k in [1,2,3] }}
+	  {{ $k }}
+	{{ /foreach }}
 
 Numeric Iteration
 -----------------
@@ -228,17 +228,17 @@ numbers 1 through 5.
 
 ::
 
-    {{ loop $i in 1,5 }}
-      {{ $i }}
-    {{ /loop }}
+	{{ loop $i in 1,5 }}
+	  {{ $i }}
+	{{ /loop }}
 
 This example displays the numbers 6, 4, and 2.
 
 ::
 
-    {{ loop $i in 3*2,1,-2 }}
-      {{ $i }}
-    {{ /loop }}
+	{{ loop $i in 3*2,1,-2 }}
+	  {{ $i }}
+	{{ /loop }}
 
 Including Templates
 -------------------
@@ -248,10 +248,10 @@ can be executed using the eval function.
 
 ::
 
-    {{ include "header" }}
-    {{ include 'some/other/template' }}
-    {{ eval 'var is {{ $var+1 }}' }}
-    {{ eval getCode }}
+	{{ include "header" }}
+	{{ include 'some/other/template' }}
+	{{ eval 'var is {{ $var+1 }}' }}
+	{{ eval getCode }}
 
 Disabling Caching
 -----------------
@@ -261,9 +261,9 @@ block directive.
 
 ::
 
-    {{ nocache }}
-      This value is not cached: {{ $value }}
-    {{ /nocache }}
+	{{ nocache }}
+	  This value is not cached: {{ $value }}
+	{{ /nocache }}
 
 Multiple Statements
 -------------------
@@ -274,9 +274,9 @@ identically:
 
 ::
 
-    {{ if $value }}Value: {{ $value }}{{ /if }}
+	{{ if $value }}Value: {{ $value }}{{ /if }}
 
-    {{ if $value ; 'Value: '; $value; /if }}
+	{{ if $value ; 'Value: '; $value; /if }}
 
 Sections & Inheritance
 ----------------------
@@ -288,9 +288,9 @@ insert directive.
 
 ::
 
-    {{ section name='title' }}My Title{{ /section }}
+	{{ section name='title' }}My Title{{ /section }}
 
-    Title is: {{ insert name='title' }}
+	Title is: {{ insert name='title' }}
 
 Templates can also be nested inside of another template, called a
 layout template.  This functionality is the primary use of sections.
