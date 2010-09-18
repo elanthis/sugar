@@ -16,11 +16,6 @@ Contents:
    api
    extend
    smarty
+   roadmap
+   news
    license
-
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`

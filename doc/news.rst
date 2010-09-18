@@ -1,10 +1,11 @@
-==================
-** Version 0.84 **
-==================
+Version History
+===============
 
-==================
-** Version 0.83 **
-==================
+Version 0.84
+------------
+
+Version 0.83
+------------
 
 + Include PEAR package.xml file.
 + Added uncache() and clearCache() methods.
@@ -18,17 +19,15 @@
 + pluginDir and templateDir may be arrays of paths.
 + section, insert, inherit all look like built-in functions.
 
-==================
-** Version 0.82 **
-==================
+Version 0.82
+------------
 
 + Registered functions can have escaping disabled by default.
 + Sections.
 + Layouts.
 
-==================
-** Version 0.81 **
-==================
+Version 0.81
+------------
 
 + Improved documentation.
 + Added modifiers.
@@ -37,9 +36,8 @@
 + Support Smarty-style block terminators (e.g. /if).
 + Method access control via $smarty->method_acl property.
 
-==================
-** Version 0.80 **
-==================
+Version 0.80
+------------
 
 + Added the ability to set functions as non-cachable back.
 + Added ability to change code delimiters.
@@ -51,9 +49,8 @@
 + Added plugin support for functions.
 + Cleaned up the stdlib naming slightly.
 
-==================
-** Version 0.74 **
-==================
+Version 0.74
+------------
 
 + Fix fetch*() family of functions.
 + More E_STRICT|E_ALL errors fixed.
@@ -63,25 +60,22 @@
 + Removed function flags.
 + Added gen-doc.php documentation generator.
 
-==================
-** Version 0.73 **
-==================
+Version 0.73
+------------
 
 + Fix isCached() in debug mode.
 + E_STRICT|E_ALL error fixed.
 + Fixed templates.
 
-==================
-** Version 0.72 **
-==================
+Version 0.72
+------------
 
 + Caching bug fixes.
 + New functions.
 + Include file timestamp checking for HTML caches.
 
-==================
-** Version 0.71 **
-==================
+Version 0.71
+------------
 
 + Removed the automatic conversion of names to strings
 + Massive cleanups to compiler
@@ -94,9 +88,8 @@
 + Complete API documentation in phpDocumentor format
 + Methods for retrieving template output
 
-==================
-** Version 0.70 **
-==================
+Version 0.70
+------------
 
 + Modified loop syntax
 + Added a while loop
