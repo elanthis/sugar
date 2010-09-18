@@ -1,0 +1,4 @@
+License & Copying
+=================
+
+.. include:: ../LICENSE
