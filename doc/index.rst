@@ -15,6 +15,7 @@ Contents:
    syntax
    api
    extend
+   smarty
    license
 
 Indices and tables

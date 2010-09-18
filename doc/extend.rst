@@ -44,18 +44,10 @@ Sugar will also search in the directory `$sugar->pluginDir` for
 files named sugar_function_foo.php to attempt to load up unknown
 function names.
 
-The `Sugar_Util_GetArg()` function is a utility function to help make
-writing Sugar function handlers easier.  The first parameter is the
-$params array received by the Sugar function handler, the second
-parameter is the name of the parameter (when named parameters are
-used), and the third parameter is the default value to return if the
-argument was not specified.  This provides behavior equivalent to
-PHP 6's ?: short-hand operator.
-
 Function return values will be passed back into the calling
 expression.  As with all expressions, the result of a function call
 that is to be displayed will be escaped by default.  To negate this
-behavior, use the ||raw modifier on the function call.
+behavior, use the raw modifier on the function call.
 
 Exposing objects to Sugar can introduce a potential security hazard
 if Sugar templates come from untrusted sources.  By default, any

@@ -37,6 +37,9 @@ To load a template, use the :func:`Sugar::getTemplate` method.
 
 	$tpl = $sugar->getTemplate('mytemplate.tpl');
 
+	// with a cache identifier
+	$tpl = $sugar->getTemplate('mytemplate.tpl', $cacheId);
+
 Setting Template Variables
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -47,8 +50,12 @@ To set a variable, use the :func:`Sugar_Template::set` method.
 ::
 
 	$tpl->set('life', 42);
-	$tpl->set('results', getDatabaseResults());
 	$tpl->set('name', $user->name);
+
+	// complex data
+	$tpl->set('results', $db->queryData());
+	$tpl->set('user', $user);
+	$tpl->set('data', array(1, 2, 3));
 
 Displaying
 ~~~~~~~~~~
@@ -143,45 +150,44 @@ Output Caching
 Enabling Caching
 ~~~~~~~~~~~~~~~~
 
-.. warning:: this section out of date
-
-Caching can be performed on a template by using the
-`Sugar::displayCache()` method.  This method takes a second optional
-parameter, which is a cache identifier, which is used to differentiate
-between multiple instances of the same template.  For example, a
-product template in an eCommerce application would use a different
-cache identifier for each product.  The second parameter can be
-ommitted if desired.
+Caching is enabled by passing a cache identifier to the
+:func:`Sugar::getTemplate` method.  This cache identifier will uniquely mark
+the generated output.  For instance, if a template represents a product page in
+an online store's catalog, the cache identifier should be the unique product
+identifier.  Then the cached output generated will be different for each
+product, which is the desired result.
 
 ::
 
-	$sugar->displayCache('homepage');
-	$sugar->displayCache('product', $product->id);
+	$tpl = $sugar->getTemplate('product.tpl', $product->id);
 
 Cache Querying
 ~~~~~~~~~~~~~~
 
 It is possible to check if a valid cache exists for a given template
-and cache identifier using the `Sugar::isCached()` method.  This allows
-the application to avoid expensive database queries or other
-operations when the results are already cached.
+and cache identifier using the :func:`Sugar_Template::isCached()` method.  This
+allows the application to avoid expensive database queries or other operations
+when the results are already cached.
 
 ::
 
-	if (!$sugar->isCached('life', 42))
+	if (!$tpl->isCached()) {
+		// perform expensive DB query
 	  $sugar->set('results', $db->queryData());
-	$sugar->displayCache('life', 42);
+	}
 
 Cache Clearing
 ~~~~~~~~~~~~~~
 
-A template can be removed from the cache by using the `Sugar::uncache()`
-method.  The same parameters that are passed to `Sugar::isCached()`
-must be passed to `Sugar::uncache()` to remove the specific cache
-entry desired.
+A template can be removed from the cache by using the
+:func:`Sugar_Template::uncache()` method.
 
 ::
 
-	$sugar->uncache('template');
+	$tpl->uncache();
 
-All cache entries can be cleared using `Sugar::clearCache()`.
+All cache entries can be cleared using :func:`Sugar::clearCache()`.
+
+::
+
+	$sugar->clearCache();
