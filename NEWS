@@ -2,6 +2,10 @@
 ** Version 0.84 **
 ==================
 
+==================
+** Version 0.83 **
+==================
+
 + Include PEAR package.xml file.
 + Added uncache() and clearCache() methods.
 + Renamed documentation tool to sugardoc.
@@ -15,7 +19,7 @@
 + section, insert, inherit all look like built-in functions.
 
 ==================
-** Version 0.84 **
+** Version 0.82 **
 ==================
 
 + Registered functions can have escaping disabled by default.
