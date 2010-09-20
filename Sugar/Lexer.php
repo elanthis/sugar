@@ -69,7 +69,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Token.php';
  * @link       http://php-sugar.net
  * @access     private
  */
-class Sugar_Lexer
+final class Sugar_Lexer
 {
     /**
      * Source code to be tokenized.

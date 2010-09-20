@@ -1,6 +1,8 @@
 <?php
 /**
- * Class for managing variable contexts
+ * Sugar compiler array creation node
+ *
+ * This is a small helper class used by the Sugar_Grammar class.
  *
  * PHP version 5
  *
@@ -26,7 +28,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -36,13 +38,11 @@
  */
 
 /**
- * Variable context
- *
- * Keeps track of the hierarchal contexts (scopes) variables are defined in.
+ * Sugar array creation node.
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -50,67 +50,49 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Context
+class Sugar_Node_Array extends Sugar_Node
 {
     /**
-     * Parent context, if any
+     * Array expressions (with literal keys)
      *
-     * @var Sugar_Context $_parent
+     * @var array
      */
-    private $_parent;
+    public $elements;
 
     /**
-     * Variables
+     * Returns False, as this is not a literal
      *
-     * @var array $_vars
+     * @return boolean false
      */
-    private $_vars;
-
-    /**
-     * Create instance
-     *
-     * @param mixed $parent Optional parent
-     * @param array $vars   Vars for context
-     */
-    public function __construct($parent, array $vars = array())
+    public function isLiteral()
     {
-        $this->_parent = $parent;
-        $this->_vars = $vars;
+        return false;
     }
 
     /**
-     * Get a variable value by name
+     * Returns false, not escaped by default
      *
-     * @param string $name Name of variable to lookup
-     *
-     * @return mixed Variable value, null if not found.
+     * @return boolean false
      */
-    public function get($name)
+    public function isEscaped()
     {
-        $name = strtolower($name);
-
-        // iterate through parent stack (avoid recursion overhead)
-        $context = $this;
-        do {
-            if (isset($context->_vars[$name])) {
-                return $context->_vars[$name];
-            } else {
-                $context = $context->_parent;
-            }
-        } while ($context);
-        return null;
+        return false;
     }
 
     /**
-     * (Re)assign a variable's value
+     * Returns compiled bytecode array for expression
      *
-     * @param string $name  Name of variable to assign
-     * @param mixed  $value Value of variable
+     * @return array Compiled bytecode.
      */
-    public function set($name, $value)
+    public function compile()
     {
-        $name = strtolower($name);
-        $this->_vars [$name]= $value;
+        // compile elements
+        $celements = array();
+        foreach ($this->elements as $key=>$node) {
+            $celements [$key]= $node->compile();
+        }
+
+        return array('array', $celements);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

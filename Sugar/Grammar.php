@@ -45,6 +45,19 @@
  */
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Lexer.php';
 
+/**#@+
+ * Expression nodes.
+ */
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Array.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Call.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Expr.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Literal.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Lookup.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Pipe.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Print.php';
+/**#@-*/
+
 /**
  * Runtime engine, used for optimization.
  */
@@ -66,7 +79,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
  * @link       http://php-sugar.net
  * @access     private
  */
-class Sugar_Grammar
+final class Sugar_Grammar
 {
     /**
      * Tokenizer.
@@ -74,20 +87,6 @@ class Sugar_Grammar
      * @var Sugar_Lexer
      */
     private $_tokens = null;
-
-    /**
-     * Stack of bytecode chunks used for expression parsing.
-     *
-     * @var array
-     */
-    private $_output = array();
-
-    /**
-     * Stack of opcodes used for expression parsing.
-     *
-     * @var array
-     */
-    private $_stack = array();
 
     /**
      * Sugar instance.
@@ -123,8 +122,7 @@ class Sugar_Grammar
      * @var array
      */
     static public $precedence = array(
-        '.' => 0, '->' => 0, 'method' => 0, '[' => 0,
-        '!' => 1, 'negate' => 1,
+        '.' => 1, '->' => 1, '[' => 1,
         '*' => 2, '/' => 2, '%' => 2,
         '+' => 3, '-' => 3,
         '..' => 4,
@@ -158,7 +156,7 @@ class Sugar_Grammar
             $this->_tokens->expect('=');
 
             // assign parameter
-            $params [$name]= $this->_compileExpr();
+            $params [$name]= $this->_compileBinary();
         }
         return $params;
     }
@@ -235,7 +233,7 @@ class Sugar_Grammar
         $params = array();
         while (!$this->_tokens->accept(')')) {
             // assign parameter
-            $params []= $this->_compileExpr();
+            $params []= $this->_compileBinary();
 
             // if we're at a ), end now
             if ($this->_tokens->accept(')')) {
@@ -249,6 +247,48 @@ class Sugar_Grammar
     }
 
     /**
+     * Compile an entire expression.
+     *
+     * @return Sugar_Node Compiler node
+     */
+    private function _compileExpr() {
+        // function call
+        if ($this->_tokens->accept(Sugar_Token::IDENTIFIER, $name)) {
+            // parse modifiers
+            $modifiers = array();
+            if ($this->_tokens->accept('|')) {
+                $modifiers = $this->_compileModifiers();
+            }
+
+            // get args
+            $params = $this->_parseFunctionArgs();
+
+            // build function call
+            $expr = new Sugar_Node_Call($this->_sugar);
+            $expr->operator = 'call';
+            $expr->name = $name;
+            $expr->file = $this->_tokens->getFile();
+            $expr->line = $this->_tokens->getLine();
+            $expr->params = $params;
+
+            // apply 
+            if ($modifiers) {
+                $pexpr = new Sugar_Node_Pipe($this->_sugar);
+                $pexpr->node = $expr;
+                $pexpr->modifiers = $modifiers;
+                return $pexpr;
+            } else {
+                return $expr;
+            }
+        } else
+        // other kind of expression
+        {
+            // compile a binary expression
+            return $this->_compileBinary();
+        }
+    }
+
+    /**
      * Collapses the output and operator stacks for all pending operators
      * under a given precedence level.
      *
@@ -256,181 +296,155 @@ class Sugar_Grammar
      *
      * @return bool True on success.
      */
-    private function _collapseOps($level)
+    private function _collapseOps($level, &$stack, &$output)
     {
-        while ($this->_stack && self::$precedence[end($this->_stack)] <= $level) {
+        while ($stack && self::$precedence[end($stack)] <= $level) {
             // get operator
-            $op = array_pop($this->_stack);
+            $op = array_pop($stack);
 
-            // if unary, pop right-hand operand
-            if ($op == '!' || $op == 'negate') {
-                $right = array_pop($this->_output);
-                $this->_output []= array_merge($right, array($op));
-            } else {
-                // binary, pop both
-                $right = array_pop($this->_output);
-                $left = array_pop($this->_output);
-                $this->_output []= array_merge($left, $right, array($op));
-            }
+            // pop operands
+            $right = array_pop($output);
+            $left = array_pop($output);
+
+            // create binary expression
+            $expr = new Sugar_Node_Expr($this->_sugar);
+            $expr->operator = $op;
+            $expr->operands []= $left;
+            $expr->operands []= $right;
+
+            // push resulting expression
+            $output []= $expr;
         }
         return true;
     }
 
     /**
-     * Check if a particular bytecode chunk is a push operator (just data)
-     * or not.
+     * Compile a binary expression.
      *
-     * @param array $node Bytecode to check.
-     *
-     * @return bool True if the node is only data.
+     * @return Sugar_Node Compiled node.
      */
-    private static function _isData($node)
-    {
-        return (count($node) == 2 && $node[0] == 'push');
+    private function _compileBinary() {
+        // create operator stack
+        $stack = array();
+
+        // first left-hand operand (possibly the only node)
+        $output []= $this->_compileUnaryWithModifiers();
+
+        // while we have a binary operator, continue chunking along
+        while ($op = $this->_tokens->getOp()) {
+            // pop higher precedence operators
+            $this->_collapseOps(self::$precedence[$op], $stack, $output);
+
+            // if it's an array or object . or -> op, we can also take a name
+            // FIXME: this is a pretty hacky place for this
+            if (($op == '.' || $op == '->') && $this->_tokens->accept(Sugar_Token::IDENTIFIER, $name)) {
+                // check if this is a method call
+                if ($this->_tokens->accept('(')) {
+                    // get name and parameters
+                    $params = $this->_parseMethodArgs();
+
+                    // create method call
+                    $expr = new Sugar_Node_Call($this->_sugar);
+                    $expr->operator = 'method';
+                    $expr->name = $name;
+                    $expr->file = $this->_tokens->getFile();
+                    $expr->line = $this->_tokens->getLine();
+                    $expr->params = $params;
+
+                    // add call to operand stack
+                    $output []= $expr;
+                } else { // not a method call
+                    $stack []= '.';
+
+                    $expr = new Sugar_Node_Literal($this->_sugar);
+                    $expr->value = $name;
+                    $output []= $expr;
+                }
+
+            // if it's an array [] operator, we need to handle the trailing ]
+            } elseif ($op == '[') {
+                // actual operator is .
+                $stack []= '.';
+
+                // compile rest of expression
+                $output []= $this->_compileExpr();
+                $this->_tokens->expect(']');
+
+            // actual opcode for -> is just .
+            } else if ($op == '->') {
+                $stack []= '.';
+                $output []= $this->_compileUnary();
+
+            // regular case, just go
+            } else {
+                $stack []= $op;
+                $output []= $this->_compileUnaryWithModifiers();
+            }
+        }
+
+        // pop remaining operators
+        $this->_collapseOps(10, $stack, $output);
+
+        // expect a single item in the output stack and no items in the
+        // operator stack
+        if (!empty($stack)) {
+            throw new Sugar_Exception_Parse(
+                $this->_tokens->getFile(),
+                $this->_tokens->getLine(),
+                'Internal error: operator stack is not empty after binary expression'
+            );
+        }
+
+        if (count($output) != 1) {
+            throw new Sugar_Exception_Parse(
+                $this->_tokens->getFile(),
+                $this->_tokens->getLine(),
+                'Internal error: result stack does not have a single element after binary expression'
+            );
+        }
+
+        // return our compiled expression
+        return $output[0];
     }
 
     /**
-     * Compile an entire expression.
+     * Compiles a unary expression, or plain value, with any modifiers.
      *
-     * @param bool $modifiers    If set to false, do not look for modifiers
-     *                           after the expression.
-     * @param bool &$escape_flag Out parameter, set false if escaping should be
-     *                           disabled.
-     *
-     * @return array Bytecode of expression.
+     * @return Sugar_Node Expression node.
      */
-    private function _compileExpr($modifiers = true, &$escape_flag = true) {
-        // compile a binary expression
-        $expr = $this->_compileBinary();
+    private function _compileUnaryWithModifiers()
+    {
+        // compile the base unary expression
+        $expr = $this->_compileUnary();
 
-        // look for and apply modifiers, if present
-        if ($modifiers && $this->_tokens->accept('|')) {
-            return array_merge($expr, $this->_compileModifiers($escape_flag));
+        // check for a modifier chain
+        if ($this->_tokens->accept('|')) {
+            $pexpr = new Sugar_Node_Pipe($this->_sugar);
+            $pexpr->node = $expr;
+            $pexpr->modifiers = $this->_compileModifiers();
+            return $pexpr;
         } else {
             return $expr;
         }
     }
 
     /**
-     * Compile a binary expression.
+     * Compiles a unary expression, or a plain value.  Not the best named
+     * method.
      *
-     * @return array Bytecode of expression.
+     * @return Sugar_Node Expression node.
      */
-    private function _compileBinary() {
-        // wrap operator stack
-        $this->_stack []= '(';
-
-        // first left-hand operand (possibly the only node)
-        $this->_compileUnary();
-
-        // while we have a binary operator, continue chunking along
-        while ($op = $this->_tokens->getOp()) {
-            // pop higher precedence operators
-            $this->_collapseOps(self::$precedence[$op]);
-
-            // if it's an array or object . or -> op, we can also take a name
-            if (($op == '.' || $op == '->') && $this->_tokens->accept(Sugar_Token::IDENTIFIER, $name)) {
-                // check if this is a method call
-                if ($this->_tokens->accept('(')) {
-                    // get name and parameters
-                    $method = $name;
-                    $params = $this->_parseMethodArgs();
-
-                    // create method call
-                    $this->_output []= array_merge(
-                        array_pop($this->_output), array(
-                            'method', $method, $params,
-                            $this->_tokens->getFile(),
-                            $this->_tokens->getLine()
-                        )
-                    );
-                } else { // not a method call
-                    $this->_stack []= '.';
-                    $this->_output []= array('push', $name);
-                }
-
-            // if it's an array [] operator, we need to handle the trailing ]
-            } elseif ($op == '[') {
-                // actual operator is .
-                $this->_stack []= '.';
-
-                // compile rest of expression
-                $this->_compileUnary();
-                $this->_tokens->expect(']');
-
-            // actual opcode for -> is just .
-            } else if ($op == '->') {
-                $this->_stack []= '.';
-                $this->_compileUnary();
-
-            // regular case, just go
-            } else {
-                $this->_stack []= $op;
-                $this->_compileUnary();
-            }
-        }
-
-        // pop remaining operators
-        $this->_collapseOps(10);
-
-        // peel operator stack
-        array_pop($this->_stack);
-
-        // remove compiled expression from the output stack
-        $expr = array_pop($this->_output);
-        return $expr;
-    }
-
-    /**
-     * Parses a modifier, not include the leading pipe.
-     *
-     * @param bool &$escape_flag Out parameter, set to false if escaping should
-     *                           be disabled.
-     *
-     * @return array Opcodes
-     */
-    private function _compileModifiers(&$escape_flag = true)
-    {
-        $opcodes = array();
-        do {
-            $this->_tokens->expect(Sugar_Token::IDENTIFIER, $name);
-
-            // parse and compile modifier parameters
-            $params = array();
-            while ($this->_tokens->accept(':')) {
-                $params []= $this->_compileExpr(false);
-            }
-
-            // if the modifier was |raw, flag it
-            if ($name == 'raw' || $name == 'escape') {
-                $escape_flag = false;
-            }
-            if ($name != 'raw') {
-                array_push($opcodes, 'modifier', $name, $params);
-            }
-        } while ($this->_tokens->accept('|'));
-
-        return $opcodes;
-    }
-
-    /**
-     * Compiles a single terminal (or unary expression... or a few other
-     * constructs.  Not the best named method.  The resulting bytecode
-     * is pushed to the output stack.
-     *
-     * @return bool True on success.
-     */
-    private function _compileUnary()
-    {
+    private function _compileUnary() {
         // unary -
-        if ($this->_tokens->accept('-')) {
-            $this->_stack []= 'negate';
-            $this->_compileUnary();
+        if ($this->_tokens->accept('-')) { $expr = new
+        Sugar_Node_Expr($this->_sugar); $expr->operator = 'negate';
+        $expr->operands []= $this->_compileUnary();
 
         // unary !
         } elseif ($this->_tokens->accept('!')) {
-            $this->_stack []= '!';
-            $this->_compileUnary();
+            $expr = new Sugar_Node_Expr($this->_sugar);
+            $expr->operator = '!';
+            $expr->operands []= $this->_compileUnary();
 
         // array constructor
         } elseif ($this->_tokens->accept('[')) {
@@ -440,23 +454,23 @@ class Sugar_Grammar
             $key = null;
             while (!$this->_tokens->accept(']')) {
                 // read in element
-                $elem = $this->_compileExpr();
+                $elem = $this->_compileBinary();
 
                 // if we have a =>, then it must be a key
                 // which must be constant
                 if ($this->_tokens->accept('=>')) {
                     // array keys must be constant data for now
-                    if (!$this->_isData($elem)) {
+                    if (!$elem->isLiteral()) {
                         throw new Sugar_Exception_Parse(
                             $this->_tokens->getFile(),
                             $this->_tokens->getLine(),
                             'array keys must be constants'
                         );
                     }
-                    $key = $elem[1];
+                    $key = $elem->value;
 
                     // grab actual data
-                    $elem = $this->_compileExpr();
+                    $elem = $this->_compileBinary();
 
                     // put element into array
                     $elems [$key]= $elem;
@@ -466,7 +480,7 @@ class Sugar_Grammar
                 }
 
                 // if not pure data, unmark data flag
-                if ($data && !$this->_isData($elem)) {
+                if ($data && !$elem->isLiteral()) {
                     $data = false;
                 }
 
@@ -482,53 +496,61 @@ class Sugar_Grammar
             // if the data flag is true, all elements are pure data,
             // so we can push this as a value instead of an opcode
             if ($data) {
-                foreach ($elems as $i=>$v) {
-                    $elems[$i] = $v[1];
+                foreach ($elems as $key=>$node) {
+                    $elems [$key]= $node->value;
                 }
-                $this->_output []= array('push', $elems);
+                $expr = new Sugar_Node_Literal($this->_sugar);
+                $expr->value = $elems;
             } else {
-                $this->_output []= array('array', $elems);
+                $expr = new Sugar_Node_Array($this->_sugar);
+                $expr->elements = $elems;
             }
 
         // sub-expression
         } elseif ($this->_tokens->accept('(')) {
             // compile sub-expression
-            $this->_output []= $this->_compileExpr();
+            $expr = $this->_compileExpr();
 
             // ensure trailing )
             $this->_tokens->expect(')');
 
-        // function call
-        } elseif ($this->_tokens->accept(Sugar_Token::IDENTIFIER, $name)) {
-            // parse modifiers
-            $modifiers = array();
-            if ($this->_tokens->accept('|')) {
-                $modifiers = $this->_compileModifiers();
-            }
-
-            // get args
-            $params = $this->_parseFunctionArgs();
-
-            // return new function all
-            $this->_output []= array_merge(
-                array(
-                    'call', $name, $params, $this->_tokens->getFile(),
-                    $this->_tokens->getLine()
-                ),
-                $modifiers
-            );
-
         // static values
         } elseif ($this->_tokens->accept(Sugar_Token::LITERAL, $data)) {
-            $this->_output []= array('push', $data);
+            $expr = new Sugar_Node_Literal($this->_sugar);
+            $expr->value = $data;
 
         // vars (last item, expec it)
         } else {
             $this->_tokens->expect(Sugar_Token::VARIABLE, $name);
-            $this->_output []= array('lookup', $name);
+            $expr = new Sugar_Node_Lookup($this->_sugar);
+            $expr->name = $name;
         }
 
-        return true;
+        return $expr;
+    }
+
+    /**
+     * Parses a modifier, not include the leading pipe.
+     *
+     * @return array Opcodes
+     */
+    private function _compileModifiers()
+    {
+        $modifiers = array();
+        do {
+            $this->_tokens->expect(Sugar_Token::IDENTIFIER, $name);
+
+            // parse and compile modifier parameters
+            $params = array();
+            while ($this->_tokens->accept(':')) {
+                $params []= $this->_compileUnary();
+            }
+
+            // append modifier opcodes
+            $modifiers []= array('name' => $name, 'params' => $params);
+        } while ($this->_tokens->accept('|'));
+
+        return $modifiers;
     }
 
     /**
@@ -539,7 +561,7 @@ class Sugar_Grammar
      *
      * @return array Block's bytecode.
      */
-    public function compileBlock($blockType)
+    private function _compileBlock($blockType)
     {
         $block = array();
 
@@ -556,9 +578,9 @@ class Sugar_Grammar
                 $this->_tokens->unshift();
                 break;
             }
-            // raw string
+            // literal string
             elseif ($this->_tokens->accept(Sugar_Token::DOCUMENT, $literal)) {
-                $block []= array('echo', $literal);
+                $block []= array('lprint', $literal);
             }
             // if the command is empty, ignore
             elseif ($this->_tokens->accept(Sugar_Token::TERMINATOR)) {
@@ -567,29 +589,29 @@ class Sugar_Grammar
             // flow control - if
             elseif ($this->_tokens->acceptKeyword('if')) {
                 // get first clause expr and body
-                $ops = $this->_compileExpr();
+                $ops = $this->_compileExpr()->compile();
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
-                $body = $this->compileBlock('if');
+                $body = $this->_compileBlock('if');
                 $clauses = array(array($ops, $body));
 
                 // get else/else-if clauses
                 while (true) {
                     if ($this->_tokens->acceptKeyword('elseif')) {
                         // smarty-style elseif keyword
-                        $ops = $this->_compileExpr();
+                        $ops = $this->_compileExpr()->compile();
                         $this->_tokens->expect(Sugar_Token::TERMINATOR);
-                        $body = $this->compileBlock('else-if');
+                        $body = $this->_compileBlock('else-if');
                         $clauses []= array($ops, $body);
                     } elseif ($this->_tokens->acceptKeyword('else')) {
                         if ($this->_tokens->acceptKeyword('if')) {
                             // handle 'else if' construct
-                            $ops = $this->_compileExpr();
+                            $ops = $this->_compileExpr()->compile();
                             $this->_tokens->expect(Sugar_Token::TERMINATOR);
-                            $body = $this->compileBlock('else-if');
+                            $body = $this->_compileBlock('else-if');
                             $clauses []= array($ops, $body);
                         } else {
                             // plain else
-                            $body = $this->compileBlock('else');
+                            $body = $this->_compileBlock('else');
                             $clauses []= array(false, $body);
 
                             // no further else/else-if blocks allowed
@@ -609,11 +631,11 @@ class Sugar_Grammar
             // while loop
             elseif ($this->_tokens->acceptKeyword('while')) {
                 // get expression
-                $test = $this->_compileExpr();
+                $test = $this->_compileExpr()->compile();
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // get body
-                $body = $this->compileBlock('while');
+                $body = $this->_compileBlock('while');
                 $this->_tokens->expectEndBlock('while');
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
@@ -625,13 +647,13 @@ class Sugar_Grammar
                 // name in lower,upper
                 $this->_tokens->expect(Sugar_Token::VARIABLE, $name);
                 $this->_tokens->expectKeyword('in');
-                $lower = $this->_compileExpr();
+                $lower = $this->_compileBinary()->compile();
                 $this->_tokens->expect(',');
-                $upper = $this->_compileExpr();
+                $upper = $this->_compileBinary()->compile();
 
                 // optional: ,step
                 if ($this->_tokens->accept(',')) {
-                    $step = $this->_compileExpr();
+                    $step = $this->_compileBinary()->compile();
                 } else {
                     $step = array('push', 1);
                 }
@@ -639,7 +661,7 @@ class Sugar_Grammar
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // block
-                $body = $this->compileBlock('loop');
+                $body = $this->_compileBlock('loop');
                 $this->_tokens->expectEndBlock('loop');
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
@@ -665,11 +687,11 @@ class Sugar_Grammar
 
                 // now we need the expression
                 $this->_tokens->expectKeyword('in');
-                $ops = $this->_compileExpr();
+                $ops = $this->_compileExpr()->compile();
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // and the block itself
-                $body = $this->compileBlock('foreach');
+                $body = $this->_compileBlock('foreach');
                 $this->_tokens->expectEndBlock('foreach');
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
@@ -680,7 +702,7 @@ class Sugar_Grammar
             // inhibit caching
             elseif ($this->_tokens->acceptKeyword('nocache')) {
                 // get block
-                $body = $this->compileBlock('nocache');
+                $body = $this->_compileBlock('nocache');
                 $this->_tokens->expectEndBlock('nocache');
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
@@ -690,7 +712,7 @@ class Sugar_Grammar
             elseif ($this->_tokens->accept(Sugar_Token::VARIABLE, $name)) {
                 // if it's followed by a =, it's an assignment
                 if ($this->_tokens->accept('=')) {
-                    $ops = $this->_compileExpr();
+                    $ops = $this->_compileExpr()->compile();
                     $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                     $block []= $ops;
@@ -701,12 +723,13 @@ class Sugar_Grammar
                     // put the variable name back, and then compile as an expression
                     $this->_tokens->pushBack();
 
-                    $escape_flag = true;
-                    $ops = $this->_compileExpr(true, $escape_flag);
+                    // compile a print node
+                    $expr = new Sugar_Node_Print($this->_sugar);
+                    $expr->node = $this->_compileExpr();
                     $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
-                    $block []= $ops;
-                    $block []= array($escape_flag ? 'print' : 'rawprint');
+                    // append print opcodes
+                    $block []= $expr->compile();
                 }
             }
             // new section?
@@ -743,7 +766,7 @@ class Sugar_Grammar
                 }
 
                 // parse section body
-                $body = $this->compileBlock('section');
+                $body = $this->_compileBlock('section');
                 $this->_tokens->expectEndBlock('section');
 
                 // store section
@@ -792,41 +815,15 @@ class Sugar_Grammar
                 // push opcode
                 $block []= array('insert', $params['name']);
             }
-            // function call?
-            elseif ($this->_tokens->accept(Sugar_Token::IDENTIFIER, $func)) {
-                // get modifier, if present
-                $modifiers = null;
-                $escape_flag = true;
-                if ($this->_tokens->accept('|')) {
-                    $modifiers = $this->_compileModifiers($escape_flag);
-                }
-
-                // parameters
-                $params = $this->_parseFunctionArgs();
-
-                // build function call; if we have no modifiers, use 'call_top'
-                // optimization; otherwise, use call, pass through modifiers,
-                // and then use print/rawprint
-                if ($modifiers) {
-                    $block []= array('call', $func, $params, $this->_tokens->getFile(),
-                        $this->_tokens->getLine());
-                    $block []= $modifiers;
-                    $block []= array($escape_flag ? 'print' : 'rawprint');
-                } else {
-                    $block []= array(
-                        'call_top', $func, $params, $escape_flag,
-                        $this->_tokens->getFile(), $this->_tokens->getLine()
-                    );
-                }
-            }
-            // we have a statement
+            // we have some kind of expression to evaluate and display
             else {
-                $escape_flag = true;
-                $ops = $this->_compileExpr(true, $escape_flag);
+                // compile a print node
+                $expr = new Sugar_Node_Print($this->_sugar);
+                $expr->node = $this->_compileExpr();
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
-                $block []= $ops;
-                $block []= array($escape_flag ? 'print' : 'rawprint');
+                // append print opcodes
+                $block []= $expr->compile();
             }
         }
 
@@ -857,7 +854,7 @@ class Sugar_Grammar
         $this->_tokens->tokenize();
 
         // build byte-code for content section
-        $bytecode = $this->compileBlock('document');
+        $bytecode = $this->_compileBlock('document');
         $this->_tokens->expect(Sugar_Token::EOF);
 
         // create meta-block

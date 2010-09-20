@@ -50,7 +50,7 @@
  * @version    Release: 0.84
  * @link       http://php-sugar.net
  */
-class Sugar_Storage_File implements Sugar_StorageDriver
+final class Sugar_Storage_File implements Sugar_StorageDriver
 {
     /**
      * Sugar instances.

@@ -23,5 +23,5 @@ Expect: &amp;quot;test&amp;quot;
 Result: &amp;quot;test&amp;quot;
 
 Test: '"test"'|escape:'js'|escape
-Expect: '\&quot;test\&quot;'
+Expect: \&quot;test\&quot;
 Result: \&quot;test\&quot;

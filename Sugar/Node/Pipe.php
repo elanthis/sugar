@@ -1,6 +1,8 @@
 <?php
 /**
- * Class for managing variable contexts
+ * Sugar modifier (pipe operator) node
+ *
+ * This is a small helper class used by the Sugar_Grammar class.
  *
  * PHP version 5
  *
@@ -26,7 +28,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -36,13 +38,13 @@
  */
 
 /**
- * Variable context
+ * Sugar modifier (pipe operator) node.
  *
- * Keeps track of the hierarchal contexts (scopes) variables are defined in.
+ * Represents a series of modifiers applied to an expression in the compiler tree.
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -50,67 +52,76 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Context
+class Sugar_Node_Pipe extends Sugar_Node
 {
     /**
-     * Parent context, if any
+     * Base node
      *
-     * @var Sugar_Context $_parent
+     * @var Sude_Node
      */
-    private $_parent;
+    public $node;
 
     /**
-     * Variables
+     * Modifiers to apply
      *
-     * @var array $_vars
+     * @var array
      */
-    private $_vars;
+    public $modifiers = array();
 
     /**
-     * Create instance
+     * Return false, as modified nodes are not a literal.
      *
-     * @param mixed $parent Optional parent
-     * @param array $vars   Vars for context
+     * @return boolean false
      */
-    public function __construct($parent, array $vars = array())
+    public function isLiteral()
     {
-        $this->_parent = $parent;
-        $this->_vars = $vars;
+        return false;
     }
 
     /**
-     * Get a variable value by name
+     * Checks if the last modifier is an escape modifier
      *
-     * @param string $name Name of variable to lookup
-     *
-     * @return mixed Variable value, null if not found.
+     * @return boolean true if last modifier is an esape modifier
      */
-    public function get($name)
+    public function isEscaped()
     {
-        $name = strtolower($name);
+        // get last modifier's name
+        $name = $this->modifiers[count($this->modifiers) - 1]['name'];
 
-        // iterate through parent stack (avoid recursion overhead)
-        $context = $this;
-        do {
-            if (isset($context->_vars[$name])) {
-                return $context->_vars[$name];
-            } else {
-                $context = $context->_parent;
+        // if the built-in escape or raw modifier is used, we are escaped
+        if ($name == 'escape' || $name == 'raw') {
+            return true;
+        }
+
+        // no other modifer is escaped by default
+        return false;
+    }
+
+    /**
+     * Returns compiled bytecode array for expression
+     *
+     * @return array Compiled bytecode.
+     */
+    public function compile()
+    {
+        // resulting opcodes
+        $opcodes = array($this->node->compile());
+
+        // compile modifiers
+        $cmodifiers = array();
+        foreach ($this->modifiers as $mod) {
+            // compile modifier parameters
+            $cparams = array();
+            foreach ($mod['params'] as $node) {
+                $cparams []= $node->compile();
             }
-        } while ($context);
-        return null;
-    }
 
-    /**
-     * (Re)assign a variable's value
-     *
-     * @param string $name  Name of variable to assign
-     * @param mixed  $value Value of variable
-     */
-    public function set($name, $value)
-    {
-        $name = strtolower($name);
-        $this->_vars [$name]= $value;
+            // append modifier invocation to opcodes
+            $opcodes []= array('modifier', $mod['name'], $cparams);
+        }
+
+        // merge resulting output
+        return call_user_func_array('array_merge', $opcodes);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

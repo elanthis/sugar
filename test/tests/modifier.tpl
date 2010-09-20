@@ -24,6 +24,10 @@ Test: $undefined|default:(one)|upper
 Expect: UNO
 Result: {{ $undefined|default:(one)|upper }}
 
+Test: $undefined.foo|default:'BaR'|lower
+Expect: bar
+Result: {{ $undefined.foo|default:'BaR'|lower }}
+
 Test: '<b>bold</b>'|raw
 Expect: <b>bold</b>
 Result: {{ '<b>bold</b>'|raw }}

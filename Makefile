@@ -17,16 +17,16 @@ all:
 dist:
 	-[ -d 'sugar-$(VERSION)' ] && rm -fr 'sugar-$(VERSION)/'
 	mkdir 'sugar-$(VERSION)/'
-	cp Sugar.php README LICENSE NEWS Makefile 'sugar-$(VERSION)/'
+	cp Sugar.php README LICENSE Makefile 'sugar-$(VERSION)/'
 
 	mkdir 'sugar-$(VERSION)/bin/'
 	cp bin/sugardoc 'sugar-$(VERSION)/bin/'
 
 	mkdir 'sugar-$(VERSION)/doc/'
-	cp doc/sugardoc.css doc/sugar-manual.xml 'sugar-$(VERSION)/doc/'
+	cp doc/conf.py doc/Makefile doc/*.rst 'sugar-$(VERSION)/doc/'
 
 	mkdir 'sugar-$(VERSION)/Sugar/'
-	for file in `find Sugar -name '*.php'` ; do install -D '$$file' 'sugar-$(VERSION)/$$file' ; done
+	for file in `find Sugar -name '*.php'` ; do install -D "$$file" "sugar-$(VERSION)/$$file" ; done
 
 	mkdir 'sugar-$(VERSION)/test/'
 	cp test/index.php test/Test.php test/run-test 'sugar-$(VERSION)/test/'

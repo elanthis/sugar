@@ -1,6 +1,8 @@
 <?php
 /**
- * Class for managing variable contexts
+ * Sugar function/method invocation node
+ *
+ * This is a small helper class used by the Sugar_Grammar class.
  *
  * PHP version 5
  *
@@ -26,7 +28,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -36,13 +38,13 @@
  */
 
 /**
- * Variable context
+ * Sugar function/method invocation node
  *
- * Keeps track of the hierarchal contexts (scopes) variables are defined in.
+ * Represents a function or method call.
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -50,67 +52,95 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Context
+class Sugar_Node_Call extends Sugar_Node
 {
     /**
-     * Parent context, if any
+     * Expression operator (either 'call' for a function or
+     * 'method' for a method)
      *
-     * @var Sugar_Context $_parent
+     * @var string
      */
-    private $_parent;
+    public $operator;
 
     /**
-     * Variables
+     * Function/method name
      *
-     * @var array $_vars
+     * @var string
      */
-    private $_vars;
+    public $name;
 
     /**
-     * Create instance
+     * File of invocation
      *
-     * @param mixed $parent Optional parent
-     * @param array $vars   Vars for context
+     * @var string
      */
-    public function __construct($parent, array $vars = array())
+    public $file;
+
+    /**
+     * Line number in file of invocation
+     *
+     * @var integer
+     */
+    public $line;
+
+    /**
+     * Parameters
+     *
+     * @var array
+     */
+    public $params = array();
+
+    /**
+     * Return false, as an invocation is not a literal.
+     *
+     * @return boolean false
+     */
+    public function isLiteral()
     {
-        $this->_parent = $parent;
-        $this->_vars = $vars;
+        return false;
     }
 
     /**
-     * Get a variable value by name
+     * Checks if the function is escaped by default.
      *
-     * @param string $name Name of variable to lookup
+     * Note that methods are never escaped by default
      *
-     * @return mixed Variable value, null if not found.
+     * @return boolean True if an escaped function, false otherwise
      */
-    public function get($name)
+    public function isEscaped()
     {
-        $name = strtolower($name);
+        // methods are never escaped by default
+        if ($this->operator != 'call') {
+            return false;
+        }
 
-        // iterate through parent stack (avoid recursion overhead)
-        $context = $this;
-        do {
-            if (isset($context->_vars[$name])) {
-                return $context->_vars[$name];
-            } else {
-                $context = $context->_parent;
-            }
-        } while ($context);
-        return null;
+        // load the requested function
+        $func = $this->_sugar->getFunction($this->name);
+        if (!$func) {
+            return false;
+        }
+
+        // if the function has escaping disabled, then treat the
+        // function return value as if it is escaped
+        return !$func['escape'];
     }
 
     /**
-     * (Re)assign a variable's value
+     * Returns compiled bytecode array for expression
      *
-     * @param string $name  Name of variable to assign
-     * @param mixed  $value Value of variable
+     * @return array Compiled bytecode.
      */
-    public function set($name, $value)
+    public function compile()
     {
-        $name = strtolower($name);
-        $this->_vars [$name]= $value;
+        // compile parameters
+        $cparams = array();
+        foreach ($this->params as $name=>$node) {
+            $cparams [$name]= $node->compile();
+        }
+
+        // return full expression
+        return array($this->operator, $this->name, $cparams,
+            $this->file, $this->line);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

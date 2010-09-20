@@ -23,5 +23,5 @@ Expect: &amp;quot;test&amp;quot;
 Result: {{ '"test"'|escape|escape }}
 
 Test: '"test"'|escape:'js'|escape
-Expect: '\&quot;test\&quot;'
+Expect: \&quot;test\&quot;
 Result: {{ '"test"'|escape:'js'|escape }}

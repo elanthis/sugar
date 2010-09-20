@@ -373,6 +373,17 @@ function sugar_modifier_escape($value, $sugar, $params)
 }
 
 /*++
+ *+ @name raw
+ *+ @modifier
+ *+
+ *+ Suppresses escaping of output.
+ */
+function sugar_modifier_raw($value, $sugar, $params)
+{
+    return $value;
+}
+
+/*++
  *+ @name var
  *+ @param string $name The variable to lookup.
  *+ @return mixed The value of the requested variable.

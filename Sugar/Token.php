@@ -52,7 +52,7 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-class Sugar_Token
+final class Sugar_Token
 {
     /**
      * Token type: End-Of-File

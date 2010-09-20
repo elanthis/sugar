@@ -57,7 +57,7 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-class Sugar_Runtime {
+final class Sugar_Runtime {
     /**
      * Sugar handle
      *
@@ -135,14 +135,14 @@ class Sugar_Runtime {
         for ($i = 0; $i < count($code); ++$i) {
             $opcode = $code[$i];
             switch($opcode) {
-            case 'echo':
+            case 'lprint':
                 $this->_display($code[++$i]);
                 break;
-            case 'print':
+            case 'eprint':
                 $v1 = array_pop($stack);
                 $this->_display($this->sugar->escape($this->_valueToString($v1)));
                 break;
-            case 'rawprint':
+            case 'rprint':
                 $v1 = array_pop($stack);
                 $this->_display($this->_valueToString($v1));
                 break;
