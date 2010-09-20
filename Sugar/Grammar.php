@@ -54,6 +54,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Call.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Expr.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Literal.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Lookup.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Method.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Pipe.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Node/Print.php';
 /**#@-*/
@@ -265,7 +266,6 @@ final class Sugar_Grammar
 
             // build function call
             $expr = new Sugar_Node_Call($this->_sugar);
-            $expr->operator = 'call';
             $expr->name = $name;
             $expr->file = $this->_tokens->getFile();
             $expr->line = $this->_tokens->getLine();
@@ -510,8 +510,8 @@ final class Sugar_Grammar
                         $params = $this->_parseMethodArgs();
 
                         // create method call
-                        $nexpr = new Sugar_Node_Call($this->_sugar);
-                        $nexpr->operator = 'method';
+                        $nexpr = new Sugar_Node_Method($this->_sugar);
+                        $nexpr->node = $expr;
                         $nexpr->name = $name;
                         $nexpr->file = $this->_tokens->getFile();
                         $nexpr->line = $this->_tokens->getLine();

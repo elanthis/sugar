@@ -57,6 +57,7 @@
 		  <file name="Expr.php" role="php"/>
 		  <file name="Literal.php" role="php"/>
 		  <file name="Lookup.php" role="php"/>
+		  <file name="Method.php" role="php"/>
 		  <file name="Pipe.php" role="php"/>
 		  <file name="Print.php" role="php"/>
 		 </dir>

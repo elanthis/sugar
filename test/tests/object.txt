@@ -1,0 +1,17 @@
+Expect: foo
+Result: foo
+
+Expect: foo
+Result: foo
+
+Expect: foo
+Result: foo
+
+Expect: [1,2,3]
+Result: [1,2,3]
+
+Expect: p1=foo p2= p3=
+Result: p1=foo p2= p3=
+
+Expect: p1=abc p2=def p3=ghi
+Result: p1=abc p2=def p3=ghi

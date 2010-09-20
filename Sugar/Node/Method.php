@@ -1,6 +1,6 @@
 <?php
 /**
- * Sugar function invocation node
+ * Sugar method invocation node
  *
  * This is a small helper class used by the Sugar_Grammar class.
  *
@@ -38,9 +38,9 @@
  */
 
 /**
- * Sugar function invocation node
+ * Sugar method invocation node
  *
- * Represents a function call.
+ * Represents a method call.
  *
  * @category   Template
  * @package    Sugar
@@ -52,10 +52,17 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-class Sugar_Node_Call extends Sugar_Node
+class Sugar_Node_Method extends Sugar_Node
 {
     /**
-     * Function name
+     * Object node method is being called on
+     *
+     * @var Sugar_Node
+     */
+    public $node;
+
+    /**
+     * Method name
      *
      * @var string
      */
@@ -93,21 +100,13 @@ class Sugar_Node_Call extends Sugar_Node
     }
 
     /**
-     * Checks if the function is escaped by default.
+     * Methods are never escaped by default
      *
-     * @return boolean True if an escaped function, false otherwise
+     * @return boolean false
      */
     public function isEscaped()
     {
-        // load the requested function
-        $func = $this->_sugar->getFunction($this->name);
-        if (!$func) {
-            return false;
-        }
-
-        // if the function has escaping disabled, then treat the
-        // function return value as if it is escaped
-        return !$func['escape'];
+        return false;
     }
 
     /**
@@ -123,9 +122,15 @@ class Sugar_Node_Call extends Sugar_Node
             $cparams [$name]= $node->compile();
         }
 
-        // return full expression
-        return array('call', $this->name, $cparams,
+        // compile base node expression
+        $opcodes = $this->node->compile();
+
+        // add method call
+        array_push($opcodes, 'method', $this->name, $cparams,
             $this->file, $this->line);
+
+        // return compiled bytecode
+        return $opcodes;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
