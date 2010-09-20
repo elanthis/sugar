@@ -4,7 +4,7 @@ Sugar Roadmap
 Version 1.0
 -----------
 
-Version 0.86
+Version 0.85
 ~~~~~~~~~~~~
 
 + NO MORE SYNTAX CHANGES!!!
