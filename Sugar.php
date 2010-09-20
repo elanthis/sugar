@@ -54,8 +54,8 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Plugin/Function.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Plugin/Modifier.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Function.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Modifier.php';
 /**#@-*/
 
 /**#@+
@@ -310,6 +310,13 @@ class Sugar
     public $pluginDir = './plugins';
 
     /**
+     * Core pluign directory.
+     *
+     * @var string
+     */
+    private $_corePluginDir;
+
+    /**
      * Character set that output should be in.
      *
      * @var string
@@ -342,6 +349,7 @@ class Sugar
      */
     public function __construct()
     {
+        $this->_corePluginDir = dirname(__FILE__).'/Sugar/Plugins';
         $this->_plugins ['storage']['file']= new Sugar_Storage_File($this);
         $this->_plugins ['storage']['string']= new Sugar_Storage_String($this);
         $this->cache = new Sugar_Cache_File($this);
@@ -438,8 +446,7 @@ class Sugar
         }
 
         // create plugin wrapper
-        $wrapper = "Sugar_Plugin_ModifierWrapper";
-        $plugin = new $wrapper($this);
+        $plugin = new Sugar_ModifierWrapper($this);
         $plugin->cacheable = $cache;
         $plugin->escape = $escape;
         $plugin->callable = $native;
@@ -466,8 +473,7 @@ class Sugar
         }
 
         // create plugin wrapper
-        $wrapper = "Sugar_Plugin_ModifierWrapper";
-        $plugin = new $wrapper($this);
+        $plugin = new Sugar_ModifierWrapper($this);
         $plugin->callable = $native;
 
         // register
@@ -522,7 +528,7 @@ class Sugar
 
         // try to auto-lookup the function
         if (function_exists($native)) {
-            $wrapper = "Sugar_Plugin_{$type}Wrapper";
+            $wrapper = "Sugar_{$type}Wrapper";
             $plugin = new $wrapper($this);
             $plugin->callable = $native;
             return $plugin;
@@ -556,7 +562,8 @@ class Sugar
         }
 
         // search for a plugin path
-        $path = Sugar_Util_SearchForFile($this->pluginDir, "sugar_{$type}_{$name}.php");
+        $path = Sugar_Util_SearchForFile($this->pluginDir,
+                "sugar_{$type}_{$name}.php", $this->_corePluginDir);
         if ($path !== false) {
             // file found, include it
             require_once $path;

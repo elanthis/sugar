@@ -13,6 +13,7 @@ Contents:
 
    install
    syntax
+   stdlib
    api
    extend
    smarty

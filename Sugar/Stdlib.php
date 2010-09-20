@@ -675,44 +675,6 @@ function sugar_modifier_lower($value)
     return strtolower($value);
 }
 
-/*++
- *+ @name default
- *+ @modifier
- *+ @param mixed $value Value to test.
- *+ @param mixed $default Value to use if $value is unset.
- *+
- *+ If $value is not null, return $value, otherwise return $default.
- *+
- *+ Example:
- *+   {% $undefined |default:'Not Defined' %}
- */
-function sugar_modifier_default($value, $sugar, $params) {
-    if (is_null($value) && isset($params[0]))
-        return $params[0];
-    else
-        return $value;
-}
-
-/*++
- *+ @name ldelim
- *+ @return string Left delimiter.
- *+
- *+ Returns the left delimiter token.
- */
-function sugar_function_ldelim($sugar, $params) {
-    return $sugar->delimStart;
-}
-
-/*++
- *+ @name rdelim
- *+ @return string Right delimiter.
- *+
- *+ Returns the right delimiter token.
- */
-function sugar_function_rdelim($sugar, $params) {
-    return $sugar->delimEnd;
-}
-
 /**#@-*/
 
 // vim: set expandtab shiftwidth=4 tabstop=4 :

@@ -1,6 +1,6 @@
 <?php
 /**
- * Modifier plugin base class.
+ * Function plugin base class.
  *
  * PHP version 5
  *
@@ -36,7 +36,7 @@
  */
 
 /**
- * Modifier plugin base class.
+ * Function plugin base class.
  *
  * @category   Template
  * @package    Sugar
@@ -48,7 +48,7 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-abstract class Sugar_Plugin_Modifier
+abstract class Sugar_Function
 {
     /**
      * Sugar object
@@ -65,6 +65,13 @@ abstract class Sugar_Plugin_Modifier
     public $escape = true;
 
     /**
+     * Whether or not the function is cacheable
+     *
+     * @var boolean
+     */
+    public $cache = true;
+
+    /**
      * Constructor
      *
      * @param Sugar $sugar
@@ -75,17 +82,16 @@ abstract class Sugar_Plugin_Modifier
     }
 
     /**
-     * Execute the modifier
+     * Execute the function
      *
-     * @param mixed $value  Value to modify.
      * @param array $params Parameters
-     * @return mixed Modifier result
+     * @return mixed Function result
      */
-    abstract function invoke($value, array $params);
+    abstract function invoke(array $params);
 }
 
 /**
- * Modifier plugin wrapper class.
+ * Function plugin invocable wrapper class.
  *
  * @category   Template
  * @package    Sugar
@@ -97,25 +103,24 @@ abstract class Sugar_Plugin_Modifier
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Plugin_ModifierWrapper extends Sugar_Plugin_Modifier
+final class Sugar_FunctionWrapper extends Sugar_Function
 {
     /**
-     * Modifier callable
+     * The callable for this function
      *
      * @var callable
      */
     public $callable;
 
     /**
-     * Execute the modifier
+     * Execute the function
      *
-     * @param mixed $value  Value to modify.
      * @param array $params Parameters
-     * @return mixed Modifier result
+     * @return mixed Function result
      */
-    public function invoke($value, array $params)
+    public function invoke(array $params)
     {
-        return call_user_func($this->callable, $value, $this->sugar, $params);
+        return call_user_func($this->callable, $this->sugar, $params);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

@@ -176,10 +176,11 @@ function Sugar_Util_ValueToTime($value)
  *
  * @param mixed  $haystack The directory/directories to search in.
  * @param string $needle   The file being searched for.
+ * @param string $backup   Second haystack (optional).
  *
  * @return mixed The full path to the file if found, false otherwise.
  */
-function Sugar_Util_SearchForFile($haystack, $needle)
+function Sugar_Util_SearchForFile($haystack, $needle, $backup = null)
 {
     // search multiple directories if templateDir is an array,
     // otherwise only search the given dir
@@ -192,6 +193,14 @@ function Sugar_Util_SearchForFile($haystack, $needle)
         }
     } else {
         $path = $haystack.'/'.$needle;
+        if (is_file($path) && is_readable($path)) {
+            return $path;
+        }
+    }
+
+    // try the backup directory
+    if (!is_null($backup)) {
+        $path = $backup.'/'.$needle;
         if (is_file($path) && is_readable($path)) {
             return $path;
         }

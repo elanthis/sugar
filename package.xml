@@ -38,8 +38,10 @@
      <file name="CacheHandler.php" role="php"/>
      <file name="Context.php" role="php"/>
      <file name="Exception.php" role="php"/>
+		 <file name="Function.php" role="php"/>
      <file name="Grammar.php" role="php"/>
      <file name="Lexer.php" role="php"/>
+		 <file name="Modifier.php" role="php"/>
      <file name="Node.php" role="php"/>
      <file name="Runtime.php" role="php"/>
      <file name="Stdlib.php" role="php"/>
@@ -50,10 +52,6 @@
 		 <dir name="Cache">
       <file name="File.php" role="php"/>
       <file name="Memcache.php" role="php"/>
-		 </dir>
-		 <dir name="Plugin">
-      <file name="Function.php" role="php"/>
-      <file name="Modifier.php" role="php"/>
 		 </dir>
 		 <dir name="Node">
 		  <file name="Array.php" role="php"/>
