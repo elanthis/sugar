@@ -86,7 +86,7 @@ class Sugar_Node_Literal extends Sugar_Node
      */
     public function compile()
     {
-        return array('push', $this->value);
+        return array(Sugar_Runtime::OP_PUSH, $this->value);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

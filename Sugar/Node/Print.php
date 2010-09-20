@@ -91,7 +91,7 @@ class Sugar_Node_Print extends Sugar_Node
 
         // generate output
         $opcodes = $this->node->compile();
-        $opcodes []= $escaped ? 'rprint' : 'eprint';
+        $opcodes []= $escaped ? Sugar_Runtime::OP_RPRINT : Sugar_Runtime::OP_EPRINT;
         return $opcodes;
     }
 }

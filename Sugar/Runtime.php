@@ -58,6 +58,46 @@
  * @access     private
  */
 final class Sugar_Runtime {
+    /**@#+*/
+    /** Opcodes */
+    const OP_LPRINT = 1;
+    const OP_EPRINT = 2;
+    const OP_RPRINT = 3;
+    const OP_PUSH = 4;
+    const OP_LOOKUP = 5;
+    const OP_ASSIGN = 6;
+    const OP_INSERT = 7;
+    const OP_NEGATE = 8;
+    const OP_NOT = 9;
+    const OP_CONCAT = 10;
+    const OP_ADD = 11;
+    const OP_MULTIPLY = 12;
+    const OP_SUBTRACT = 13;
+    const OP_DIVIDE = 14;
+    const OP_MODULUS = 15;
+    const OP_EQ = 16;
+    const OP_NE = 17;
+    const OP_OR = 18;
+    const OP_AND = 19;
+    const OP_LT = 20;
+    const OP_LTE = 21;
+    const OP_GT = 22;
+    const OP_GTE = 23;
+    const OP_IN = 24;
+    const OP_NOT_IN = 25;
+    const OP_CALL = 26;
+    const OP_CALL_TOP = 27;
+    const OP_METHOD = 28;
+    const OP_MODIFY = 29;
+    const OP_IF = 30;
+    const OP_RANGE = 31;
+    const OP_FOREACH = 32;
+    const OP_WHILE = 33;
+    const OP_NOCACHE = 34;
+    const OP_DEREF = 35;
+    const OP_MAKE_ARRAY = 36;
+    /**@#-*/
+
     /**
      * Sugar handle
      *
@@ -135,31 +175,31 @@ final class Sugar_Runtime {
         for ($i = 0; $i < count($code); ++$i) {
             $opcode = $code[$i];
             switch($opcode) {
-            case 'lprint':
+            case Sugar_Runtime::OP_LPRINT:
                 $this->_display($code[++$i]);
                 break;
-            case 'eprint':
+            case Sugar_Runtime::OP_EPRINT:
                 $v1 = array_pop($stack);
                 $this->_display($this->sugar->escape($this->_valueToString($v1)));
                 break;
-            case 'rprint':
+            case Sugar_Runtime::OP_RPRINT:
                 $v1 = array_pop($stack);
                 $this->_display($this->_valueToString($v1));
                 break;
-            case 'push':
+            case Sugar_Runtime::OP_PUSH:
                 $v1 = $code[++$i];
                 $stack []= $v1;
                 break;
-            case 'lookup':
+            case Sugar_Runtime::OP_LOOKUP:
                 $name = strtolower($code[++$i]);
                 $stack []= $vars->get($name);
                 break;
-            case 'assign':
+            case Sugar_Runtime::OP_ASSIGN:
                 $name = $code[++$i];
                 $v1 = array_pop($stack);
                 $vars->set($name, $v1);
                 break;
-            case 'insert':
+            case Sugar_Runtime::OP_INSERT:
                 $name = $code[++$i];
                 if (isset($sections[$name])) {
                     $this->execute($vars, $sections[$name], $sections);
@@ -171,20 +211,20 @@ final class Sugar_Runtime {
                     );
                 }
                 break;
-            case 'negate':
+            case Sugar_Runtime::OP_NEGATE:
                 $v1 = array_pop($stack);
                 $stack []= -$v1;
                 break;
-            case '!':
+            case Sugar_Runtime::OP_NOT:
                 $v1 = array_pop($stack);
                 $stack []= !$v1;
                 break;
-            case '..':
+            case Sugar_Runtime::OP_CONCAT:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= $v1 . $v2;
                 break;
-            case '+':
+            case Sugar_Runtime::OP_ADD:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 if (is_numeric($v1) && is_numeric($v2)) {
@@ -195,17 +235,17 @@ final class Sugar_Runtime {
                     $stack []= $v1 . $v2;
                 }
                 break;
-            case '*':
+            case Sugar_Runtime::OP_MULTIPLY:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= $v1 * $v2;
                 break;
-            case '-':
+            case Sugar_Runtime::OP_SUBTRACT:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= $v1 - $v2;
                 break;
-            case '/':
+            case Sugar_Runtime::OP_DIVIDE:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 if ($v2 == 0) {
@@ -214,7 +254,7 @@ final class Sugar_Runtime {
                     $stack []= $v1 / $v2;
                 }
                 break;
-            case '%':
+            case Sugar_Runtime::OP_MODULUS:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 if ($v2 == 0) {
@@ -223,58 +263,58 @@ final class Sugar_Runtime {
                     $stack []= $v1 % $v2;
                 }
                 break;
-            case '==':
+            case Sugar_Runtime::OP_EQ:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= ($v1 == $v2);
                 break;
-            case '!=':
+            case Sugar_Runtime::OP_NE:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= ($v1 != $v2);
                 break;
-            case '||':
+            case Sugar_Runtime::OP_OR:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= ($v1 || $v2);
                 break;
-            case '&&':
+            case Sugar_Runtime::OP_AND:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= ($v1 && $v2);
                 break;
-            case '<':
+            case Sugar_Runtime::OP_LT:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= ($v1 < $v2);
                 break;
-            case '<=':
+            case Sugar_Runtime::OP_LTE:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= ($v1 <= $v2);
                 break;
-            case '>':
+            case Sugar_Runtime::OP_GT:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= ($v1 > $v2);
                 break;
-            case '>=':
+            case Sugar_Runtime::OP_GTE:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= ($v1 >= $v2);
                 break;
-            case 'in':
+            case Sugar_Runtime::OP_IN:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= (is_array($v2) && in_array($v1, $v2));
                 break;
-            case '!in':
+            case Sugar_Runtime::OP_NOT_IN:
                 $v2 = array_pop($stack);
                 $v1 = array_pop($stack);
                 $stack []= (is_array($v2) && !in_array($v1, $v2));
                 break;
-            case 'call':
-            case 'call_top':
+            case Sugar_Runtime::OP_CALL:
+            case Sugar_Runtime::OP_CALL_TOP:
                 $func = $code[++$i];
                 $args = $code[++$i];
                 $escape_flag = $opcode == 'call_top' ? $code[++$i] : false;
@@ -318,7 +358,7 @@ final class Sugar_Runtime {
                     $stack []= $ret;
                 }
                 break;
-            case 'method':
+            case Sugar_Runtime::OP_METHOD:
                 $obj = array_pop($stack);
                 $func = $code[++$i];
                 $args = $code[++$i];
@@ -377,7 +417,7 @@ final class Sugar_Runtime {
                     $stack []= null;
                 }
                 break;
-            case 'modifier':
+            case Sugar_Runtime::OP_MODIFY:
                 $name = $code[++$i];
                 $args = $code[++$i];
                 $value = array_pop($stack);
@@ -410,7 +450,7 @@ final class Sugar_Runtime {
                 // store return value
                 $stack []= $ret;
                 break;
-            case 'if':
+            case Sugar_Runtime::OP_IF:
                 $clauses = $code[++$i];
                 foreach ($clauses as $clause) {
                     if ($clause[0] === false || $this->execute($vars, $clause[0], $sections)) {
@@ -419,7 +459,7 @@ final class Sugar_Runtime {
                     }
                 }
                 break;
-            case 'range':
+            case Sugar_Runtime::OP_RANGE:
                 $step = array_pop($stack);
                 $upper = array_pop($stack);
                 $lower = array_pop($stack);
@@ -441,7 +481,7 @@ final class Sugar_Runtime {
                     $index += $step;
                 }
                 break;
-            case 'foreach':
+            case Sugar_Runtime::OP_FOREACH:
                 $array = array_pop($stack);
                 $key = $code[++$i];
                 $name = $code[++$i];
@@ -456,14 +496,14 @@ final class Sugar_Runtime {
                     }
                 }
                 break;
-            case 'while':
+            case Sugar_Runtime::OP_WHILE:
                 $test = $code[++$i];
                 $block = $code[++$i];
                 while ($this->execute($vars, $test, $sections)) {
                     $this->execute($vars, $block, $sections);
                 }
                 break;
-            case 'nocache':
+            case Sugar_Runtime::OP_NOCACHE:
                 $block = $code[++$i];
                 if ($this->sugar->cacheHandler) {
                     $this->sugar->cacheHandler->addBlock($block);
@@ -471,7 +511,7 @@ final class Sugar_Runtime {
                     $this->execute($vars, $block, $sections);
                 }
                 break;
-            case '.':
+            case Sugar_Runtime::OP_DEREF:
                 $index = array_pop($stack);
                 $obj = array_pop($stack);
                 if (is_array($obj) && isset($obj[$index])) {
@@ -482,7 +522,7 @@ final class Sugar_Runtime {
                     $stack []= null;
                 }
                 break;
-            case 'array':
+            case Sugar_Runtime::OP_MAKE_ARRAY:
                 $elems = $code[++$i];
                 $array = array();
                 foreach ($elems as $elem) {

@@ -9,12 +9,11 @@ Version 0.85
 
 + NO MORE SYNTAX CHANGES!!!
 + Object-oriented API for plugin functions, modifiers
-+ Add Sugar_Chunk class instad of array for base execution unit
 
 Version 0.90
 ~~~~~~~~~~~~
 
-+ Make opcode integers instead of strings
++ NO MORE API CHANGES!!!
 + Calling display() on a template should not be part of the same cache
   output as a currently running display; that is black magic; add a way
   to execute a template inside the cache output of another, via Runtime

@@ -92,7 +92,7 @@ class Sugar_Node_Array extends Sugar_Node
             $celements [$key]= $node->compile();
         }
 
-        return array('array', $celements);
+        return array(Sugar_Runtime::OP_MAKE_ARRAY, $celements);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

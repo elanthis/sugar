@@ -124,7 +124,7 @@ class Sugar_Node_Call extends Sugar_Node
         }
 
         // return full expression
-        return array('call', $this->name, $cparams,
+        return array(Sugar_Runtime::OP_CALL, $this->name, $cparams,
             $this->file, $this->line);
     }
 }

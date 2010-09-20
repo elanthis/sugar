@@ -117,7 +117,7 @@ class Sugar_Node_Pipe extends Sugar_Node
             }
 
             // append modifier invocation to opcodes
-            $opcodes []= array('modifier', $mod['name'], $cparams);
+            $opcodes []= array(Sugar_Runtime::OP_MODIFY, $mod['name'], $cparams);
         }
 
         // merge resulting output

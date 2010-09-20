@@ -123,7 +123,6 @@ final class Sugar_Grammar
      * @var array
      */
     static public $precedence = array(
-        '.' => 1, '->' => 1, '[' => 1,
         '*' => 2, '/' => 2, '%' => 2,
         '+' => 3, '-' => 3,
         '..' => 4,
@@ -131,6 +130,30 @@ final class Sugar_Grammar
         '!=' => 5, '<=' => 5, '>=' => 5, 'in' => 5, '!in' => 5,
         '||' => 6, '&&' => 6,
         '(' => 100 // safe wrapper
+    );
+
+    /**
+     * Operator bytecode map
+     *
+     * @var array
+     */
+    static public $operators = array(
+        '*' => Sugar_Runtime::OP_MULTIPLY,
+        '/' => Sugar_Runtime::OP_DIVIDE,
+        '%' => Sugar_Runtime::OP_MODULUS,
+        '+' => Sugar_Runtime::OP_ADD,
+        '-' => Sugar_Runtime::OP_SUBTRACT,
+        '..' => Sugar_Runtime::OP_CONCAT,
+        '==' => Sugar_Runtime::OP_EQ,
+        '!=' => Sugar_Runtime::OP_NE,
+        '<' => Sugar_Runtime::OP_LT,
+        '>' => Sugar_Runtime::OP_GT,
+        '<=' => Sugar_Runtime::OP_LTE,
+        '>=' => Sugar_Runtime::OP_GTE,
+        'in' => Sugar_Runtime::OP_IN,
+        '!in' => Sugar_Runtime::OP_NOT_IN,
+        '||' => Sugar_Runtime::OP_OR,
+        '&&' => Sugar_Runtime::OP_AND,
     );
 
     /**
@@ -308,7 +331,7 @@ final class Sugar_Grammar
 
             // create binary expression
             $expr = new Sugar_Node_Expr($this->_sugar);
-            $expr->operator = $op;
+            $expr->operator = self::$operators[$op];
             $expr->operands []= $left;
             $expr->operands []= $right;
 
@@ -395,13 +418,14 @@ final class Sugar_Grammar
     private function _compileUnary() {
         // unary -
         if ($this->_tokens->accept('-')) {
-            $expr = new Sugar_Node_Expr($this->_sugar); $expr->operator = 'negate';
+            $expr = new Sugar_Node_Expr($this->_sugar);
+            $expr->operator = Sugar_Runtime::OP_NEGATE;
             $expr->operands []= $this->_compileUnary();
 
         // unary !
         } elseif ($this->_tokens->accept('!')) {
             $expr = new Sugar_Node_Expr($this->_sugar);
-            $expr->operator = '!';
+            $expr->operator = Sugar_Runtime::OP_NOT;
             $expr->operands []= $this->_compileUnary();
 
         // no unary operator
@@ -525,14 +549,14 @@ final class Sugar_Grammar
 
                         // array lookup expression
                         $nexpr = new Sugar_Node_Expr($this->_sugar);
-                        $nexpr->operator = '.';
+                        $nexpr->operator = Sugar_Runtime::OP_DEREF;
                         $nexpr->operands []= $expr;
                         $nexpr->operands []= $lexpr;
                     }
                 } else {
                     // array lookup expression
                     $nexpr = new Sugar_Node_Expr($this->_sugar);
-                    $nexpr->operator = '.';
+                    $nexpr->operator = Sugar_Runtime::OP_DEREF;
                     $nexpr->operands []= $expr;
                     $nexpr->operands []= $this->_compileUnary();
                 }
@@ -543,7 +567,7 @@ final class Sugar_Grammar
             // if it's an array [] operator, we need to handle the trailing ]
             } elseif ($this->_tokens->accept('[')) {
                 $nexpr = new Sugar_Node_Expr($this->_sugar);
-                $nexpr->operator = '.';
+                $nexpr->operator = Sugar_Runtime::OP_DEREF;
                 $nexpr->operands []= $expr;
                 $nexpr->operands []= $this->_compileExpr();
                 $expr = $nexpr;
@@ -610,7 +634,7 @@ final class Sugar_Grammar
             }
             // literal string
             elseif ($this->_tokens->accept(Sugar_Token::DOCUMENT, $literal)) {
-                $block []= array('lprint', $literal);
+                $block []= array(Sugar_Runtime::OP_LPRINT, $literal);
             }
             // if the command is empty, ignore
             elseif ($this->_tokens->accept(Sugar_Token::TERMINATOR)) {
@@ -656,7 +680,7 @@ final class Sugar_Grammar
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // push block
-                $block []= array('if', $clauses);
+                $block []= array(Sugar_Runtime::OP_IF, $clauses);
             }
             // while loop
             elseif ($this->_tokens->acceptKeyword('while')) {
@@ -670,7 +694,7 @@ final class Sugar_Grammar
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // push block
-                $block []= array('while', $test, $body);
+                $block []= array(Sugar_Runtime::OP_WHILE, $test, $body);
             }
             // range loop
             elseif ($this->_tokens->acceptKeyword('loop')) {
@@ -685,7 +709,7 @@ final class Sugar_Grammar
                 if ($this->_tokens->accept(',')) {
                     $step = $this->_compileBinary()->compile();
                 } else {
-                    $step = array('push', 1);
+                    $step = array(Sugar_Runtime::OP_PUSH, 1);
                 }
 
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
@@ -699,7 +723,7 @@ final class Sugar_Grammar
                 $block []= $lower;
                 $block []= $upper;
                 $block []= $step;
-                $block []= array('range', $name, $body);
+                $block []= array(Sugar_Runtime::OP_RANGE, $name, $body);
             }
             // loop over an array
             elseif ($this->_tokens->acceptKeyword('foreach')) {
@@ -727,7 +751,7 @@ final class Sugar_Grammar
 
                 // store foreach block
                 $block []= $ops;
-                $block []= array('foreach', $key, $name, $body);
+                $block []= array(Sugar_Runtime::OP_FOREACH, $key, $name, $body);
             }
             // inhibit caching
             elseif ($this->_tokens->acceptKeyword('nocache')) {
@@ -736,7 +760,7 @@ final class Sugar_Grammar
                 $this->_tokens->expectEndBlock('nocache');
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
-                $block []= array('nocache', $body);
+                $block []= array(Sugar_Runtime::OP_NOCACHE, $body);
             }
             // if we have a var, we might have an assignment... or just an expression
             elseif ($this->_tokens->accept(Sugar_Token::VARIABLE, $name)) {
@@ -746,7 +770,7 @@ final class Sugar_Grammar
                     $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                     $block []= $ops;
-                    $block []= array('assign', strtolower($name));
+                    $block []= array(Sugar_Runtime::OP_ASSIGN, strtolower($name));
                 }
                 // otherwise, it's an expression
                 else {
@@ -804,7 +828,7 @@ final class Sugar_Grammar
 
                 // add insert instruction if requested
                 if ($add_insert) {
-                    $block []= array('insert', $name);
+                    $block []= array(Sugar_Runtime::OP_INSERT, $name);
                 }
             }
             // inherited layout templates
@@ -843,7 +867,7 @@ final class Sugar_Grammar
                 $this->_tokens->expect(Sugar_Token::TERMINATOR);
 
                 // push opcode
-                $block []= array('insert', $params['name']);
+                $block []= array(Sugar_Runtime::OP_INSERT, $params['name']);
             }
             // we have some kind of expression to evaluate and display
             else {

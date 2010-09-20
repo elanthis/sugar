@@ -86,7 +86,7 @@ class Sugar_Node_Lookup extends Sugar_Node
      */
     public function compile()
     {
-        return array('lookup', $this->name);
+        return array(Sugar_Runtime::OP_LOOKUP, $this->name);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

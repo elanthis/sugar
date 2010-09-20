@@ -126,7 +126,7 @@ class Sugar_Node_Method extends Sugar_Node
         $opcodes = $this->node->compile();
 
         // add method call
-        array_push($opcodes, 'method', $this->name, $cparams,
+        array_push($opcodes, Sugar_Runtime::OP_METHOD, $this->name, $cparams,
             $this->file, $this->line);
 
         // return compiled bytecode
