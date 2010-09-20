@@ -28,6 +28,10 @@ Test: $undefined.foo|default:'BaR'|lower
 Expect: bar
 Result: {{ $undefined.foo|default:'BaR'|lower }}
 
+Test: 'BaR'|default:3|lower
+Expect: bar
+Result: {{ 'BaR'|default:3|lower }}
+
 Test: '<b>bold</b>'|raw
 Expect: <b>bold</b>
 Result: {{ '<b>bold</b>'|raw }}

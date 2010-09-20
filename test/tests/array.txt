@@ -16,9 +16,14 @@ Result: ["one","two","three"]
 
 
 
+
 Test: $list
 Expect: {"0":"one","1":"two","2":"three","foo":"bar"}
 Result: {"0":"one","1":"two","2":"three","foo":"bar"}
+
+Test: $nested['foo']['bar']
+Expect: baz
+Result: baz
 
 Test: $list.1
 Expect: two

@@ -4,6 +4,11 @@ Version History
 Version 0.84
 ------------
 
++ Simplification of compiler parsing rules (no significant breaks).
++ Modifiers can now be used in more places.
++ Functions can only be called in top-level expressions or inside
+  parenthesized expressions.
+
 Version 0.83
 ------------
 

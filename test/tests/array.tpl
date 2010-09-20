@@ -15,10 +15,15 @@ Expect: ['one','two','three']
 Result: {{ explode|raw separator=' ' string='one two three' }}
 
 {{ $list = ['one', 'two', 'three', 'foo' => 'bar'] }}
+{{ $nested = ['foo' => ['bar' => 'baz']] }}
 
 Test: $list
 Expect: {"0":"one","1":"two","2":"three","foo":"bar"}
 Result: {{ $list|raw }}
+
+Test: $nested['foo']['bar']
+Expect: baz
+Result: {{ $nested['foo']['bar'] }}
 
 Test: $list.1
 Expect: two

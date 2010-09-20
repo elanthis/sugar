@@ -335,51 +335,9 @@ final class Sugar_Grammar
             // pop higher precedence operators
             $this->_collapseOps(self::$precedence[$op], $stack, $output);
 
-            // if it's an array or object . or -> op, we can also take a name
-            // FIXME: this is a pretty hacky place for this
-            if (($op == '.' || $op == '->') && $this->_tokens->accept(Sugar_Token::IDENTIFIER, $name)) {
-                // check if this is a method call
-                if ($this->_tokens->accept('(')) {
-                    // get name and parameters
-                    $params = $this->_parseMethodArgs();
-
-                    // create method call
-                    $expr = new Sugar_Node_Call($this->_sugar);
-                    $expr->operator = 'method';
-                    $expr->name = $name;
-                    $expr->file = $this->_tokens->getFile();
-                    $expr->line = $this->_tokens->getLine();
-                    $expr->params = $params;
-
-                    // add call to operand stack
-                    $output []= $expr;
-                } else { // not a method call
-                    $stack []= '.';
-
-                    $expr = new Sugar_Node_Literal($this->_sugar);
-                    $expr->value = $name;
-                    $output []= $expr;
-                }
-
-            // if it's an array [] operator, we need to handle the trailing ]
-            } elseif ($op == '[') {
-                // actual operator is .
-                $stack []= '.';
-
-                // compile rest of expression
-                $output []= $this->_compileExpr();
-                $this->_tokens->expect(']');
-
-            // actual opcode for -> is just .
-            } else if ($op == '->') {
-                $stack []= '.';
-                $output []= $this->_compileUnary();
-
-            // regular case, just go
-            } else {
-                $stack []= $op;
-                $output []= $this->_compileUnaryWithModifiers();
-            }
+            // push operator and right-hand operand
+            $stack []= $op;
+            $output []= $this->_compileUnaryWithModifiers();
         }
 
         // pop remaining operators
@@ -436,9 +394,9 @@ final class Sugar_Grammar
      */
     private function _compileUnary() {
         // unary -
-        if ($this->_tokens->accept('-')) { $expr = new
-        Sugar_Node_Expr($this->_sugar); $expr->operator = 'negate';
-        $expr->operands []= $this->_compileUnary();
+        if ($this->_tokens->accept('-')) {
+            $expr = new Sugar_Node_Expr($this->_sugar); $expr->operator = 'negate';
+            $expr->operands []= $this->_compileUnary();
 
         // unary !
         } elseif ($this->_tokens->accept('!')) {
@@ -446,8 +404,23 @@ final class Sugar_Grammar
             $expr->operator = '!';
             $expr->operands []= $this->_compileUnary();
 
+        // no unary operator
+        } else {
+            $expr = $this->_compileValue();
+        }
+
+        return $expr;
+    }
+
+    /**
+     * Compile a value (no operators)
+     *
+     * @return Sugar_Node
+     */
+    private function _compileValue()
+    {
         // array constructor
-        } elseif ($this->_tokens->accept('[')) {
+        if ($this->_tokens->accept('[')) {
             // read in elements
             $elems = array();
             $data = true;
@@ -524,6 +497,63 @@ final class Sugar_Grammar
             $this->_tokens->expect(Sugar_Token::VARIABLE, $name);
             $expr = new Sugar_Node_Lookup($this->_sugar);
             $expr->name = $name;
+        }
+
+        // look for referencing 'operators' for array or object accesses
+        while (true) {
+            // if it's an array or object . or -> op, we can also take a name
+            if ($this->_tokens->accept('.') || $this->_tokens->accept('->')) {
+                if ($this->_tokens->accept(Sugar_Token::IDENTIFIER, $name)) {
+                    // check if this is a method call
+                    if ($this->_tokens->accept('(')) {
+                        // get name and parameters
+                        $params = $this->_parseMethodArgs();
+
+                        // create method call
+                        $nexpr = new Sugar_Node_Call($this->_sugar);
+                        $nexpr->operator = 'method';
+                        $nexpr->name = $name;
+                        $nexpr->file = $this->_tokens->getFile();
+                        $nexpr->line = $this->_tokens->getLine();
+                        $nexpr->params = $params;
+
+                    // not a method call
+                    } else {
+                        // create literal node for the name
+                        $lexpr = new Sugar_Node_Literal($this->_sugar);
+                        $lexpr->value = $name;
+
+                        // array lookup expression
+                        $nexpr = new Sugar_Node_Expr($this->_sugar);
+                        $nexpr->operator = '.';
+                        $nexpr->operands []= $expr;
+                        $nexpr->operands []= $lexpr;
+                    }
+                } else {
+                    // array lookup expression
+                    $nexpr = new Sugar_Node_Expr($this->_sugar);
+                    $nexpr->operator = '.';
+                    $nexpr->operands []= $expr;
+                    $nexpr->operands []= $this->_compileUnary();
+                }
+
+                // remember expression for next loop
+                $expr = $nexpr;
+
+            // if it's an array [] operator, we need to handle the trailing ]
+            } elseif ($this->_tokens->accept('[')) {
+                $nexpr = new Sugar_Node_Expr($this->_sugar);
+                $nexpr->operator = '.';
+                $nexpr->operands []= $expr;
+                $nexpr->operands []= $this->_compileExpr();
+                $expr = $nexpr;
+
+                $this->_tokens->expect(']');
+
+            // no further array/object references
+            } else {
+                break;
+            }
         }
 
         return $expr;

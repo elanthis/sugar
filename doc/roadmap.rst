@@ -4,12 +4,6 @@ Sugar Roadmap
 Version 1.0
 -----------
 
-Version 0.85
-~~~~~~~~~~~~
-
-+ Top-level function rules
-+ Modifier rules
-
 Version 0.86
 ~~~~~~~~~~~~
 

@@ -22,6 +22,14 @@ Test: $undefined|default:(one)|upper
 Expect: UNO
 Result: UNO
 
+Test: $undefined.foo|default:'BaR'|lower
+Expect: bar
+Result: bar
+
+Test: 'BaR'|default:3|lower
+Expect: bar
+Result: bar
+
 Test: '<b>bold</b>'|raw
 Expect: <b>bold</b>
 Result: <b>bold</b>
