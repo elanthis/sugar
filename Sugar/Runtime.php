@@ -314,25 +314,20 @@ final class Sugar_Runtime {
                 $stack []= (is_array($v2) && !in_array($v1, $v2));
                 break;
             case Sugar_Runtime::OP_CALL:
-            case Sugar_Runtime::OP_CALL_TOP:
                 $func = $code[++$i];
                 $args = $code[++$i];
-                $escape_flag = $opcode == 'call_top' ? $code[++$i] : false;
                 $debug_file = $code[++$i];
                 $debug_line = $code[++$i];
 
                 // lookup function
-                $callable = $this->sugar->getFunction($func);
-                if (!$callable) {
+                $plugin = $this->sugar->getFunction($func);
+                if (!$plugin) {
                     throw new Sugar_Exception_Runtime(
                         $debug_file,
                         $debug_line,
                         'unknown function `'.$func.'`'
                     );
                 }
-
-                // update escape flag based on function default
-                $escape_flag = $escape_flag && $callable['escape'];
 
                 // compile args
                 $params = array();
@@ -343,7 +338,7 @@ final class Sugar_Runtime {
                 // exception net
                 try {
                     // call function, using appropriate method
-                    $ret = call_user_func($callable['invoke'], $this->sugar, $params);
+                    $ret = $plugin->invoke($params);
                 } catch (Exception $e) {
                     $this->sugar->handleError($e);
                     $ret = null;
@@ -423,8 +418,8 @@ final class Sugar_Runtime {
                 $value = array_pop($stack);
 
                 // lookup function
-                $callable = $this->sugar->getModifier($name);
-                if (!$callable) {
+                $plugin = $this->sugar->getModifier($name);
+                if (!$plugin) {
                     throw new Sugar_Exception_Runtime(
                         'FIXME',
                         1,
@@ -441,7 +436,7 @@ final class Sugar_Runtime {
                 // exception net
                 try {
                     // invoke the modifier
-                    $ret = call_user_func($callable, $value, $this->sugar, $params);
+                    $ret = $plugin->invoke($value, $params);
                 } catch (Exception $e) {
                     $this->sugar->handleError($e);
                     $ret = null;

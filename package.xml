@@ -51,6 +51,10 @@
       <file name="File.php" role="php"/>
       <file name="Memcache.php" role="php"/>
 		 </dir>
+		 <dir name="Plugin">
+      <file name="Function.php" role="php"/>
+      <file name="Modifier.php" role="php"/>
+		 </dir>
 		 <dir name="Node">
 		  <file name="Array.php" role="php"/>
 		  <file name="Call.php" role="php"/>

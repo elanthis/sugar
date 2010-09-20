@@ -1,8 +1,6 @@
 <?php
 /**
- * Sugar function invocation node
- *
- * This is a small helper class used by the Sugar_Grammar class.
+ * Modifier plugin base class.
  *
  * PHP version 5
  *
@@ -28,7 +26,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Compiler
+ * @subpackage Plugin
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -38,13 +36,11 @@
  */
 
 /**
- * Sugar function invocation node
- *
- * Represents a function call.
+ * Modifier plugin base class.
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Compiler
+ * @subpackage Plugin
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -52,80 +48,74 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-class Sugar_Node_Call extends Sugar_Node
+abstract class Sugar_Plugin_Modifier
 {
     /**
-     * Function name
+     * Sugar object
      *
-     * @var string
+     * @var Sugar
      */
-    public $name;
+    public $sugar;
 
     /**
-     * File of invocation
+     * Whether or not the output should be escaped
      *
-     * @var string
+     * @var boolean
      */
-    public $file;
+    public $escape = true;
 
     /**
-     * Line number in file of invocation
+     * Constructor
      *
-     * @var integer
+     * @param Sugar $sugar
      */
-    public $line;
-
-    /**
-     * Parameters
-     *
-     * @var array
-     */
-    public $params = array();
-
-    /**
-     * Return false, as an invocation is not a literal.
-     *
-     * @return boolean false
-     */
-    public function isLiteral()
+    final public function __construct(Sugar $sugar)
     {
-        return false;
+        $this->sugar = $sugar;
     }
 
     /**
-     * Checks if the function is escaped by default.
+     * Execute the modifier
      *
-     * @return boolean True if an escaped function, false otherwise
+     * @param mixed $value  Value to modify.
+     * @param array $params Parameters
+     * @return mixed Modifier result
      */
-    public function isEscaped()
-    {
-        // load the requested function
-        $plugin = $this->_sugar->getFunction($this->name);
-        if (!$plugin) {
-            return false;
-        }
+    abstract function invoke($value, array $params);
+}
 
-        // if the plugintion has escaping disabled, then treat the
-        // plugintion return value as if it is escaped
-        return !$plugin->escape;
-    }
+/**
+ * Modifier plugin wrapper class.
+ *
+ * @category   Template
+ * @package    Sugar
+ * @subpackage Plugin
+ * @author     Sean Middleditch <sean@mojodo.com>
+ * @copyright  2010 Mojodo, Inc. and contributors
+ * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @version    Release: 0.84
+ * @link       http://php-sugar.net
+ * @access     private
+ */
+final class Sugar_Plugin_ModifierWrapper extends Sugar_Plugin_Modifier
+{
+    /**
+     * Modifier callable
+     *
+     * @var callable
+     */
+    public $callable;
 
     /**
-     * Returns compiled bytecode array for expression
+     * Execute the modifier
      *
-     * @return array Compiled bytecode.
+     * @param mixed $value  Value to modify.
+     * @param array $params Parameters
+     * @return mixed Modifier result
      */
-    public function compile()
+    public function invoke($value, array $params)
     {
-        // compile parameters
-        $cparams = array();
-        foreach ($this->params as $name=>$node) {
-            $cparams [$name]= $node->compile();
-        }
-
-        // return full expression
-        return array(Sugar_Runtime::OP_CALL, $this->name, $cparams,
-            $this->file, $this->line);
+        return call_user_func($this->callable, $value, $this->sugar, $params);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

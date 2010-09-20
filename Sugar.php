@@ -53,7 +53,9 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Context.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
-include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Plugin/Function.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Plugin/Modifier.php';
 /**#@-*/
 
 /**#@+
@@ -203,23 +205,15 @@ class Sugar
     private $_globals;
 
     /**
-     * Map of all registered functions.  The key is the function name,
-     * and the value is an array containing the callback and function
-     * flags.
+     * List of loaded plugins.
+     *
+     * @var array
      */
-    private $_functions = array();
-
-    /**
-     * Map of all registered modifiers.  The key is the modifier name,
-     * and the value is the callback.
-     */
-    private $_modifiers = array();
-
-    /**
-     * A map of storage drivers.  The key is the storage driver name,
-     * and the value is the storage driver object.
-     */
-    private $_storage = array();
+    private $_plugins = array(
+        'function' => array(),
+        'modifier' => array(),
+        'storage' => array()
+    );
 
     /**
      * Cache management.  Used internally.
@@ -348,8 +342,8 @@ class Sugar
      */
     public function __construct()
     {
-        $this->_storage ['file']= new Sugar_Storage_File($this);
-        $this->_storage ['string']= new Sugar_Storage_String($this);
+        $this->_plugins ['storage']['file']= new Sugar_Storage_File($this);
+        $this->_plugins ['storage']['string']= new Sugar_Storage_String($this);
         $this->cache = new Sugar_Cache_File($this);
         $this->_runtime = new Sugar_Runtime($this);
         $this->_globals = new Sugar_Context(null, array());
@@ -438,12 +432,20 @@ class Sugar
      */
     public function addFunction($name, $invoke = null, $cache = true, $escape = true)
     {
+        // look up default function name
         if (!$invoke) {
             $invoke = 'sugar_function_'.strtolower($name);
         }
 
-        $this->_functions [strtolower($name)]= array('name'=>$name,
-                'invoke'=>$invoke, 'cache'=>$cache, 'escape'=>$escape);
+        // create plugin wrapper
+        $wrapper = "Sugar_Plugin_ModifierWrapper";
+        $plugin = new $wrapper($this);
+        $plugin->cacheable = $cache;
+        $plugin->escape = $escape;
+        $plugin->callable = $native;
+
+        // register
+        $this->_plugins ['function'][strtolower($name)]= $plugin;
         return true;
     }
 
@@ -458,11 +460,33 @@ class Sugar
      */
     public function addModifier($name, $invoke = null)
     {
+        // look up default function name
         if (!$invoke) {
             $invoke = 'sugar_modifier_'.strtolower($name);
         }
 
-        $this->_functions [strtolower($name)]= $invoke;
+        // create plugin wrapper
+        $wrapper = "Sugar_Plugin_ModifierWrapper";
+        $plugin = new $wrapper($this);
+        $plugin->callable = $native;
+
+        // register
+        $this->_plugins ['modifier'][strtolower($name)]= $plugin;
+        return true;
+    }
+
+    /**
+     * Register a new storage driver.
+     *
+     * @param string        $name   Name to register driver under, used in
+     *                              template references.
+     * @param Sugar_StorageDriver $driver Driver object to register.
+     *
+     * @return bool true on success
+     */
+    public function addStorage($name, Sugar_StorageDriver $driver)
+    {
+        $this->_plugins ['storage'][$name]= $driver;
         return true;
     }
 
@@ -479,6 +503,77 @@ class Sugar
     }
 
     /**
+     * Check if a plugin is already loaded (or auto-loadable) and return
+     * the object.
+     *
+     * @param string $type The type of plugin ('function', 'modifier', etc.)
+     * @param string $name Name of the plugin to load
+     * @return mixed The plugin object, or null if not found
+     */
+    private function _getPluginHelper($type, $name)
+    {
+        $native = "sugar_{$type}_{$name}";
+
+        // try to auto-lookup the plugin class
+        if (class_exists($native)) {
+            $plugin = new $native($this);
+            return $plugin;
+        }
+
+        // try to auto-lookup the function
+        if (function_exists($native)) {
+            $wrapper = "Sugar_Plugin_{$type}Wrapper";
+            $plugin = new $wrapper($this);
+            $plugin->callable = $native;
+            return $plugin;
+        }
+
+        // nothing found
+        return false;
+    }
+
+    /**
+     * Load a plugin
+     *
+     * @param string $type The type of plugin ('function', 'modifier', etc.)
+     * @param string $name Name of the plugin to load
+     * @return mixed The plugin object, or null if not found
+     */
+    private function _getPlugin($type, $name)
+    {
+        $name = strtolower($name);
+
+        // check for registered functions
+        if (isset($this->_plugins[$type][$name])) {
+            return $this->_plugins[$type][$name];
+        }
+
+        // check if plugin already exists (or can be auto-loaded)
+        $plugin = $this->_getPluginHelper($type, $name);
+        if ($plugin !== false) {
+            $this->_plugins [$type][$name]= $plugin;
+            return $plugin;
+        }
+
+        // search for a plugin path
+        $path = Sugar_Util_SearchForFile($this->pluginDir, "sugar_{$type}_{$name}.php");
+        if ($path !== false) {
+            // file found, include it
+            require_once $path;
+
+            // and now check again if the plugin exists
+            $plugin = $this->_getPluginHelper($type, $name);
+            if ($plugin !== false) {
+                $this->_plugins [$type][$name]= $plugin;
+                return $plugin;
+            }
+        }
+
+        // nothing found
+        return false;
+    }
+
+    /**
      * Returns an array containing the data for template function.  This
      * will first look for registered functions, then it will attempt to
      * auto-register a function using the smarty_function_foo naming
@@ -490,33 +585,7 @@ class Sugar
      */
     public function getFunction($name)
     {
-        $name = strtolower($name);
-
-        // check for registered functions
-        if (isset($this->_functions[$name])) {
-            return $this->_functions[$name];
-        }
-
-        // try to auto-lookup the function
-        $invoke = "sugar_function_$name";
-        if (function_exists($invoke)) {
-            return $this->_functions[$name] = array('name'=>$name,
-                    'invoke'=>$invoke, 'cache'=>true, 'escape'=>true);
-        }
-
-        // attempt plugin loading
-        $path = Sugar_Util_SearchForFile($this->pluginDir, $invoke.'.php');
-        if ($path !== false) {
-            require_once $path;
-            if (function_exists($invoke)) {
-                $this->_functions[$name] = array('name'=>$name,
-                        'invoke'=>$invoke, 'cache'=>true, 'escape'=>true);
-                return $this->_functions[$name];
-            }
-        }
-
-        // nothing found
-        return false;
+        return $this->_getPlugin('function', $name);
     }
 
     /**
@@ -531,44 +600,7 @@ class Sugar
      */
     public function getModifier($name)
     {
-        $name = strtolower($name);
-        // check for registered modifiers
-        if (isset($this->_modifiers[$name])) {
-            return $this->_modifiers[$name];
-        }
-
-        // try to auto-lookup the modifier
-        $invoke = "sugar_modifier_$name";
-        if (function_exists($invoke)) {
-            return $this->_modifiers[$name] = $invoke;
-        }
-
-        // attempt plugin loading
-        $path = Sugar_Util_SearchForFile($this->pluginDir, $invoke.'.php');
-        if ($path !== false) {
-            require_once $path;
-            if (function_exists($invoke)) {
-                return $this->_modifiers[$name] = $invoke;
-            }
-        }
-
-        // nothing found
-        return false;
-    }
-
-    /**
-     * Register a new storage driver.
-     *
-     * @param string        $name   Name to register driver under, used in
-     *                              template references.
-     * @param Sugar_StorageDriver $driver Driver object to register.
-     *
-     * @return bool true on success
-     */
-    public function addStorage($name, Sugar_StorageDriver $driver)
-    {
-        $this->_storage [$name]= $driver;
-        return true;
+        return $this->_getPlugin('modifier', $name);
     }
 
     /**
@@ -580,7 +612,7 @@ class Sugar
      */
     public function getStorage($name)
     {
-        return isset($this->_storage[$name]) ? $this->_storage[$name] : null;
+        return isset($this->_plugins['storage'][$name]) ? $this->_plugins['storage'][$name] : null;
     }
 
     /**

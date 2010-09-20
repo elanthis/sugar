@@ -124,7 +124,7 @@ function sugar_function_urlencode($sugar, $params)
  *+ recreate the value in JSON notation.  Useful for
  *+ exporting template variables to JavaScript.
  */
-function sugar_modifier_json($value, $sugar, $value)
+function sugar_modifier_json($value, $sugar, $params)
 {
     return Sugar_Util_Json($value);
 }
