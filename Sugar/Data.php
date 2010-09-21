@@ -1,6 +1,6 @@
 <?php
 /**
- * Class for managing variable scopes
+ * Class for managing variable datas
  *
  * PHP version 5
  *
@@ -36,9 +36,9 @@
  */
 
 /**
- * Variable scope
+ * Variable data
  *
- * Keeps track of the hierarchal scopes (scopes) variables are defined in.
+ * Keeps track of the hierarchal datas (datas) variables are defined in.
  *
  * @category   Template
  * @package    Sugar
@@ -50,12 +50,12 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Scope
+final class Sugar_Data
 {
     /**
-     * Parent scope, if any
+     * Parent data, if any
      *
-     * @var Sugar_Scope $_parent
+     * @var Sugar_Data $_parent
      */
     private $_parent;
 
@@ -70,7 +70,7 @@ final class Sugar_Scope
      * Create instance
      *
      * @param mixed $parent Optional parent
-     * @param array $vars   Vars for scope
+     * @param array $vars   Vars for data
      */
     public function __construct($parent, array $vars = array())
     {
@@ -90,14 +90,14 @@ final class Sugar_Scope
         $name = strtolower($name);
 
         // iterate through parent stack (avoid recursion overhead)
-        $scope = $this;
+        $data = $this;
         do {
-            if (isset($scope->_vars[$name])) {
-                return $scope->_vars[$name];
+            if (isset($data->_vars[$name])) {
+                return $data->_vars[$name];
             } else {
-                $scope = $scope->_parent;
+                $data = $data->_parent;
             }
-        } while ($scope);
+        } while ($data);
         return null;
     }
 

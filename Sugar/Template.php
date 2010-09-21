@@ -86,11 +86,11 @@ class Sugar_Template
     private $_handle;
 
     /**
-     * Local variable scope
+     * Local variable data
      *
-     * @var Sugar_Scope $_scope
+     * @var Sugar_Data $_data
      */
-    private $_scope;
+    private $_data;
 
     /**
      * HTML cache data.
@@ -134,7 +134,7 @@ class Sugar_Template
         $this->name = $name;
         $this->cacheId = $cacheId;
 
-        $this->_scope = new Sugar_Scope($sugar->getGlobals(), array());
+        $this->_data = new Sugar_Data($sugar->getGlobals(), array());
     }
 
     /**
@@ -168,13 +168,13 @@ class Sugar_Template
     }
 
     /**
-     * Get the template's local variable scope
+     * Get the template's local variable data
      *
-     * @return Sugar_Scope
+     * @return Sugar_Data
      */
-    public function getScope()
+    public function getData()
     {
-        return $this->_scope;
+        return $this->_data;
     }
 
     /**
@@ -260,14 +260,14 @@ class Sugar_Template
     }
 
     /**
-     * Helper to set a variable in the template's local scope
+     * Helper to set a variable in the template's local data
      *
      * @param string $name  Name of variable to set
      * @param mixed  $value Value of variable
      */
     public function set($name, $value)
     {
-        $this->_scope->set($name, $value);
+        $this->_data->set($name, $value);
     }
 
     /**
@@ -320,19 +320,19 @@ class Sugar_Template
     /**
      * Display the template
      *
-     * @param Sugar_Scope $scope Optional scope to use instead
-     *                           of the default local scope
+     * @param Sugar_Data $data Optional data to use instead
+     *                           of the default local data
      */
-    public function display($scope = null)
+    public function display($data = null)
     {
         try {
-            // use a default scope if none provided
-            if (is_null($scope)) {
-                $scope = new Sugar_Scope($this->getScope(), array());
+            // use a default data if none provided
+            if (is_null($data)) {
+                $data = new Sugar_Data($this->getData(), array());
             }
 
             // create the context for executing this tempalte in, and a runtime
-            $context = new Sugar_Context($this->sugar, $this, $scope);
+            $context = new Sugar_Context($this->sugar, $this, $data);
 
             // if we are to be cached, check for an existing cache and use that if
             // it exists and is up to date
@@ -415,16 +415,16 @@ class Sugar_Template
     /**
      * Fetch template output as a string
      *
-     * @param Sugar_Scope $scope Optional scope to use instead
-     *                           of the default local scope
+     * @param Sugar_Data $data Optional data to use instead
+     *                           of the default local data
      *
      * @return string
      */
-    public function fetch($scope = null)
+    public function fetch($data = null)
     {
         ob_start();
         try {
-            $this->display($scope);
+            $this->display($data);
             $output = ob_get_contents();
         } catch (Exception $e) {
             ob_end_clean();

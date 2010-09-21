@@ -38,7 +38,7 @@
 /**
  * Runtime context.
  *
- * Tracks current variable scope, current template, and cache handler.
+ * Tracks current variable data, current template, and cache handler.
  *
  * @category   Template
  * @package    Sugar
@@ -60,25 +60,25 @@ final class Sugar_Context
     public $_template;
 
     /**
-     * Variable scope
+     * Variable data
      *
-     * @var Sugar_Scope
+     * @var Sugar_Data
      */
-    private $_scope;
+    private $_data;
 
     /**
      * Create instance
      *
      * @param Sugar          $sugar     Sugar instance
      * @param Sugar_Template $template Template being evaluated
-     * @param Sugar_Scope    $scope    Variable scope for executiong
+     * @param Sugar_Data    $data    Variable data for executiong
      */
     public function __construct(Sugar $sugar, Sugar_Template $template,
-        Sugar_Scope $scope
+        Sugar_Data $data
     ) {
         $this->_sugar = $sugar;
         $this->_template = $template;
-        $this->_scope = $scope;
+        $this->_data = $data;
     }
 
     /**
@@ -102,13 +102,13 @@ final class Sugar_Context
     }
 
     /**
-     * Get the variable scope in use.
+     * Get the variable data in use.
      *
-     * @return Sugar_Scope
+     * @return Sugar_Data
      */
-    public function getScope()
+    public function getData()
     {
-        return $this->_scope;
+        return $this->_data;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

@@ -49,7 +49,7 @@ $GLOBALS['__sugar_rootdir'] = dirname(__FILE__);
  * Core includes.
  */
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Exception.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Scope.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Data.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Context.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
@@ -197,9 +197,9 @@ class Sugar
     const CACHE_LIMIT = 5;
 
     /**
-     * Global variable scope
+     * Global variable data
      *
-     * @var Sugar_Scope
+     * @var Sugar_Data
      */
     private $_globals;
 
@@ -345,7 +345,7 @@ class Sugar
         $this->_storage ['file']= new Sugar_Storage_File($this);
         $this->_storage ['string']= new Sugar_Storage_String($this);
         $this->cache = new Sugar_Cache_File($this);
-        $this->_globals = new Sugar_Scope(null, array());
+        $this->_globals = new Sugar_Data(null, array());
         $this->errors = self::ERROR_PRINT;
         $this->output = self::OUTPUT_HTML;
     }
@@ -649,9 +649,9 @@ class Sugar
     }
 
     /**
-     * Get the global variable scope.
+     * Get the global variable data.
      *
-     * @return Sugar_Scope
+     * @return Sugar_Data
      */
     public function getGlobals()
     {
@@ -719,7 +719,7 @@ class Sugar
     {
         $template = $this->getTemplate($file, $cacheId);
         $template->setInherit($inherit);
-        return $template->display(new Sugar_Scope($template->getScope(), (array)$vars));
+        return $template->display(new Sugar_Data($template->getData(), (array)$vars));
     }
 
     /**
@@ -757,7 +757,7 @@ class Sugar
     {
         $template = $this->getTemplate($file, $cacheId);
         $template->setInherit($inherit);
-        return $template->fetch(new Sugar_Scope($template->getScope(), (array)$vars));
+        return $template->fetch(new Sugar_Data($template->getData(), (array)$vars));
     }
 
     /**

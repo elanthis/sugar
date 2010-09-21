@@ -171,7 +171,7 @@ final class Sugar_Runtime {
     public static function execute(Sugar_Context $context, array $code, array $sections)
     {
         $sugar = $context->getSugar();
-        $scope = $context->getScope();
+        $data = $context->getData();
         $stack = array();
 
         for ($i = 0; $i < count($code); ++$i) {
@@ -194,12 +194,12 @@ final class Sugar_Runtime {
                 break;
             case Sugar_Runtime::OP_LOOKUP:
                 $name = strtolower($code[++$i]);
-                $stack []= $scope->get($name);
+                $stack []= $data->get($name);
                 break;
             case Sugar_Runtime::OP_ASSIGN:
                 $name = $code[++$i];
                 $v1 = array_pop($stack);
-                $scope->set($name, $v1);
+                $data->set($name, $v1);
                 break;
             case Sugar_Runtime::OP_INSERT:
                 $name = $code[++$i];
@@ -479,7 +479,7 @@ final class Sugar_Runtime {
                 while (($step < 0 && $index >= $upper)
                     || ($step > 0 && $index <= $upper)
                 ) {
-                    $scope->set($name, $index);
+                    $data->set($name, $index);
                     self::execute($context, $block, $sections);
                     $index += $step;
                 }
@@ -492,9 +492,9 @@ final class Sugar_Runtime {
                 if (is_array($array) || is_object($array)) {
                     foreach ($array as $k=>$v) {
                         if ($key) {
-                            $scope->set($key, $k);
+                            $data->set($key, $k);
                         }
-                        $scope->set($name, $v);
+                        $data->set($name, $v);
                         self::execute($context, $block, $sections);
                     }
                 }
