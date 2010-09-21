@@ -223,13 +223,6 @@ class Sugar
     private $_storage = array();
 
     /**
-     * Cache management.  Used internally.
-     *
-     * @var Sugar_CacheHandler
-     */
-    public $cacheHandler = null;
-
-    /**
      * This is the cache driver to use for storing bytecode and HTML caches.
      * This is initialized to the {@link Sugar_Cache_File} driver by default.
      *

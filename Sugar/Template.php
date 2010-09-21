@@ -331,14 +331,12 @@ class Sugar_Template
                 $data = new Sugar_Data($this->getData(), array());
             }
 
-            // create the context for executing this tempalte in, and a runtime
-            $context = new Sugar_Context($this->sugar, $this, $data);
-
             // if we are to be cached, check for an existing cache and use that if
             // it exists and is up to date
             if (!$this->sugar->debug && !is_null($this->cacheId)) {
                 $data = $this->_loadCache();
                 if ($data !== false) {
+                    $context = new Sugar_Context($this->sugar, $this, $data, null);
                     Sugar_Runtime::execute($context, $data['bytecode'], $data['sections']);
                     return true;
                 }
@@ -346,7 +344,6 @@ class Sugar_Template
 
             // if we are to be cached and aren't alrady running inside an existing
             // cache handler instance, create a new one
-            $caching = false;
             if (!is_null($this->cacheId) && !$this->sugar->cacheHandler) {
                 /**
                  * Cache handler.
@@ -354,9 +351,13 @@ class Sugar_Template
                 include_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheHandler.php';
 
                 // create cache
-                $this->sugar->cacheHandler = new Sugar_CacheHandler($this->sugar);
-                $caching = true;
+                $cacheHandler = new Sugar_CacheHandler($this->sugar);
+            } else {
+                $cacheHandler = null;
             }
+
+            // create the context for executing this tempalte in, and a runtime
+            $context = new Sugar_Context($this->sugar, $this, $data, $cacheHandler);
 
             // add file to cache handlers file reference list
             if (!is_null($this->cacheId)) {
@@ -394,7 +395,7 @@ class Sugar_Template
 
             // clean up the cache handler and display the uncachable data if
             // and only if we created the cache handler
-            if ($caching) {
+            if ($cacheHandler) {
                 $cache = $this->sugar->cacheHandler->getOutput();
                 $this->sugar->cacheHandler = null;
 

@@ -139,15 +139,15 @@ final class Sugar_Runtime {
      * Display output, either to the cache handler or to the PHP
      * output stream.
      *
-     * @param Sugar  $sugar  Sugar instance.
-     * @param string $output Output.
+     * @param Sugar_CacheHandler $cacheHandler Cache handler (or null for no caching).
+     * @param string             $output       Output.
      *
      * @return bool True on success.
      */
-    private static function _display(Sugar $sugar, $output)
+    private static function _display($cacheHandler, $output)
     {
-        if ($sugar->cacheHandler) {
-            return $sugar->cacheHandler->addOutput($output);
+        if ($cacheHandler) {
+            return $cacheHandler->addOutput($output);
         } else {
             echo $output;
             return true;
@@ -172,21 +172,22 @@ final class Sugar_Runtime {
     {
         $sugar = $context->getSugar();
         $data = $context->getData();
+        $cacheHandler = $context->getCacheHandler();
         $stack = array();
 
         for ($i = 0; $i < count($code); ++$i) {
             $opcode = $code[$i];
             switch($opcode) {
             case Sugar_Runtime::OP_LPRINT:
-                self::_display($sugar, $code[++$i]);
+                self::_display($cacheHandler, $code[++$i]);
                 break;
             case Sugar_Runtime::OP_EPRINT:
                 $v1 = array_pop($stack);
-                self::_display($sugar, $sugar->escape(self::_valueToString($v1)));
+                self::_display($cacheHandler, $sugar->escape(self::_valueToString($v1)));
                 break;
             case Sugar_Runtime::OP_RPRINT:
                 $v1 = array_pop($stack);
-                self::_display($sugar, self::_valueToString($v1));
+                self::_display($cacheHandler, self::_valueToString($v1));
                 break;
             case Sugar_Runtime::OP_PUSH:
                 $v1 = $code[++$i];
@@ -353,9 +354,9 @@ final class Sugar_Runtime {
 
                 // process return value
                 if ($opcode == 'call_top' && $escape_flag) {
-                    self::_display($sugar, $sugar->escape(self::_valueToString($ret)));
+                    self::_display($cacheHandler, $sugar->escape(self::_valueToString($ret)));
                 } elseif ($opcode == 'call_top') {
-                    self::_display($sugar, self::_valueToString($ret));
+                    self::_display($cacheHandler, self::_valueToString($ret));
                 } else {
                     $stack []= $ret;
                 }
