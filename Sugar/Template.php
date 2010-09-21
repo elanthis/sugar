@@ -307,7 +307,7 @@ class Sugar_Template
             throw new Sugar_Exception_Usage('template not found: '.$this->getName());
         }
         $parser = new Sugar_Grammar($this->sugar);
-        $data = $parser->compile($source, $this->getName());
+        $data = $parser->compile($this, $source);
         unset($parser);
 
         // store compiled bytecode into cache
@@ -334,17 +334,17 @@ class Sugar_Template
             // if we are to be cached, check for an existing cache and use that if
             // it exists and is up to date
             if (!$this->sugar->debug && !is_null($this->cacheId)) {
-                $data = $this->_loadCache();
-                if ($data !== false) {
-                    $context = new Sugar_Context($this->sugar, $this, $data, null);
-                    Sugar_Runtime::execute($context, $data['bytecode'], $data['sections']);
+                $code = $this->_loadCache();
+                if ($code !== false) {
+                    $context = new Sugar_Context($this->sugar, $this, $data, $code, null);
+                    Sugar_Runtime::execute($context);
                     return true;
                 }
             }
 
             // if we are to be cached and aren't alrady running inside an existing
             // cache handler instance, create a new one
-            if (!is_null($this->cacheId) && !$this->sugar->cacheHandler) {
+            if (!is_null($this->cacheId)) {
                 /**
                  * Cache handler.
                  */
@@ -356,54 +356,57 @@ class Sugar_Template
                 $cacheHandler = null;
             }
 
-            // create the context for executing this tempalte in, and a runtime
-            $context = new Sugar_Context($this->sugar, $this, $data, $cacheHandler);
-
             // add file to cache handlers file reference list
             if (!is_null($this->cacheId)) {
                 $this->sugar->cacheHandler->addRef($this);
             }
 
             // load compiled template
-            $data = $this->_loadCompile();
+            $code = $this->_loadCompile();
 
             // if we have an inherited template, load it and merge it with our data
-            $inherit = $this->_inherit ? $this->_inherit : $data['inherit'];
+            $inherit = $this->_inherit ? $this->_inherit : $code->getInherit();
             if ($inherit) {
                 // load compiled parent (inherited template)
                 $parent = $this->sugar->getTemplate($inherit, $this->cacheId);
                 if ($parent === false) {
                     throw new Sugar_Exception_Usage('inherited template not found: '.$inherit);
                 }
-                $pdata = $parent->_loadCompile();
+                $pcode = $parent->_loadCompile();
+
+                die('fix this');
 
                 // merge parent with page template
-                $pdata ['sections']= array_merge($pdata['sections'], $data['sections']);
+                $pcode ['sections']= array_merge($pcode['sections'], $code['sections']);
 
                 // set page main bytecode as content section if and only if
                 // the page template did not define its own explicit content
                 // section.
-                if (!isset($data['sections']['content'])) {
-                    $pdata['sections']['content'] = $data['bytecode'];
+                if (!isset($code['sections']['content'])) {
+                    $pcode['sections']['content'] = $code['bytecode'];
                 }
 
-                $data = $pdata;
+                $code = $pcode;
             }
 
             // execute our compiled template
-            Sugar_Runtime::execute($context, $data['bytecode'], $data['sections']);
+            $context = new Sugar_Context($this->sugar, $this, $data, $code, $cacheHandler);
+            Sugar_Runtime::execute($context);
+            unset($context);
 
             // clean up the cache handler and display the uncachable data if
             // and only if we created the cache handler
             if ($cacheHandler) {
-                $cache = $this->sugar->cacheHandler->getOutput();
-                $this->sugar->cacheHandler = null;
+                $cache = $cacheHandler->getOutput();
+                unset($cacheHandler);
 
                 // attempt to save cache
                 $this->sugar->cache->store($this, Sugar::CACHE_HTML, $cache);
 
                 // display cache
-                Sugar_Runtime::execute($context, $cache['bytecode'], $cache['sections']);
+                $context = new Sugar_Context($this->sugar, $this, $data, $cache, $cacheHandler);
+                Sugar_Runtime::execute($context);
+                unset($context);
             }
 
             return true;

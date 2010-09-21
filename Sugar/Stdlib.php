@@ -59,7 +59,7 @@
  *+
  *+ This function loads up a template file and displays it.
  */
-function sugar_function_include($sugar, $params)
+function sugar_function_include($sugar, $params, $context)
 {
     // get the template name from the parameter list.
     // the name is unset, and the rest of the parameter list is
@@ -72,7 +72,14 @@ function sugar_function_include($sugar, $params)
         unset($params['file']);
     }
 
-    $sugar->display($tpl, $params);
+    // load the new template
+    $template = $sugar->getTemplate($name);
+
+    // create date set
+    $data = new Sugar_Data($context->getData(), $params);
+
+    // display new template
+    $template->display($data);
 }
 
 /*++

@@ -1,6 +1,7 @@
 <?php
 /**
- * Class for managing runtime contexts
+ * Contains the compiled version of a template, which may be a cached
+ * template.
  *
  * PHP version 5
  *
@@ -26,7 +27,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -36,13 +37,12 @@
  */
 
 /**
- * Runtime context.
- *
- * Tracks current variable data, current template, and cache handler.
+ * Contains the compiled version of a template, which may be a cached
+ * template.
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -50,89 +50,56 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Context
+final class Sugar_Compiled
 {
     /**
-     * Template
+     * Template to inherit from
      *
-     * @var Sugar_Template
+     * @var string
      */
-    public $_template;
+    private $_inherit;
 
     /**
-     * Variable data
+     * Sections
      *
-     * @var Sugar_Data
+     * @var array
      */
-    private $_data;
+    private $_sections;
 
     /**
-     * Compiled code being executed
+     * "Bytecode" data
      *
-     * @var Sugar_Compiled
+     * @var array
      */
     private $_code;
 
     /**
-     * Cache handler.
-     *
-     * @var Sugar_CacheHandler
-     */
-    private $_cacheHandler;
-
-    /**
      * Create instance
      *
-     * @param Sugar              $sugar        Sugar instance
-     * @param Sugar_Template     $template     Template being evaluated
-     * @param Sugar_Data         $data         Variable data for executiong
-     * @param Sugar_Compiled     $code         Compiled code being executed
-     * @param Sugar_CacheHandler $cacheHandler Optional caching handler
+     * @param string $inherit  Name of template to inherit from ('' for none)
+     * @param array  $code     Main code
+     * @param array  $sections Sections defined in template
      */
-    public function __construct(Sugar $sugar, Sugar_Template $template,
-        Sugar_Data $data, Sugar_Compiled $code, $cacheHandler
-    ) {
-        $this->_sugar = $sugar;
-        $this->_template = $template;
-        $this->_data = $data;
+    public function __construct($inherit, array $code, array $sections) {
+        $this->_inherit = $inherit;
         $this->_code = $code;
-        $this->_cacheHandler = $cacheHandler;
+        $this->_sections = $sections;
     }
 
     /**
-     * Get the context's Sugar intance
+     * Get the inherited template
      *
-     * @return Sugar
+     * @return string
      */
-    public function getSugar()
+    public function getInherit()
     {
-        return $this->_sugar;
+        return $this->_inherit;
     }
 
     /**
-     * Get the template being executed.
+     * Get the main code
      *
-     * @return Sugar_Template
-     */
-    public function getTemplate()
-    {
-        return $this->_template;
-    }
-
-    /**
-     * Get the variable data in use.
-     *
-     * @return Sugar_Data
-     */
-    public function getData()
-    {
-        return $this->_data;
-    }
-
-    /**
-     * Get compiled code
-     *
-     * @return Sugar_Compiled
+     * @return array
      */
     public function getCode()
     {
@@ -140,13 +107,18 @@ final class Sugar_Context
     }
 
     /**
-     * Get our cache handler.
+     * Get a particular section by name
      *
-     * @return Sugar_CacheHandler
+     * @param string $name Name of section to get
+     * @return mixed Code for section if it exists, false otherwise
      */
-    public function getCacheHandler()
+    public function getSection($name)
     {
-        return $this->_cacheHandler;
+        if (isset($this->_sections[$name])) {
+            return $this->_sections[$name];
+        } else {
+            return false;
+        }
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

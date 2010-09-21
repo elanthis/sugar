@@ -1,0 +1,6 @@
+Expect: foo
+Result: foo
+
+
+Expect: bar
+Result: bar

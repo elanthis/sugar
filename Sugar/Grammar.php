@@ -892,16 +892,17 @@ final class Sugar_Grammar
     /**
      * Compile the given source code into bytecode.
      *
-     * @param string $src  Source code to compile.
-     * @param string $file Name of the file being compiled.
+     * @param Sugar_Template $template Template being compiled
+     * @param string         $source   Source code to compile.
      *
-     * @return array Bytecode.
+     * @return Sugar_Compiled
      */
-    public function compile($src, $file = '<input>')
+    public function compile($template, $source)
     {
         // create tokenizer
+        $file = $template->getName();
         $this->_tokens = new Sugar_Lexer(
-            $src, $file, $this->_sugar->delimStart, $this->_sugar->delimEnd
+            $source, $file, $this->_sugar->delimStart, $this->_sugar->delimEnd
         );
 
         // tokenize input
@@ -912,21 +913,14 @@ final class Sugar_Grammar
         $this->_tokens->expect(Sugar_Token::EOF);
 
         // create meta-block
-        $code = array(
-            'type' => 'ctpl',
-            'version' => Sugar::VERSION,
-            'bytecode' => $bytecode,
-            'inherit' => $this->_inherit,
-            'sections' => $this->_sections,
-        );
+        $compiled = new Sugar_Compiled($this->_inherit, $bytecode, $this->_sections);
 
-        // free tokenizer
+        // reset set
         $this->_tokens = null;
-
-        // free sections array
+        $this->_inherit = null;
         $this->_sections = array();
 
-        return $code;
+        return $compiled;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

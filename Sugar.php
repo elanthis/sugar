@@ -52,6 +52,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Exception.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Data.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Context.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Compiled.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';

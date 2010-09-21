@@ -155,26 +155,23 @@ final class Sugar_Runtime {
     }
 
     /**
-     * Executes the given bytecode.  The return value is the last item on
-     * the stack, if any.  For complete templates, this should be nothing
-     * (null).
+     * Executes the given bytecode.
      *
-     * @param Sugar_Context $context  Context to execute with
-     * @param array         $code     Bytecode to execute.
-     * @param array         $sections Section bytecodes.
+     * @param Sugar_Context      $context      Context to execute with
+     * @param Sugar              $sugar        Sugar instance
+     * @param Sugar_Data         $date         Variable data
+     * @param Sugar_CacheHandler $cacheHandler Caching handler
+     * @param array              $code         Bytecode to execute.
+     * @param array              $stack        Stack
      *
      * @return mixed Last value on stack.
      * @throws Sugar_Exception_Runtime when the user has provided code that
      * cannot be executed, such as attempting to call a function that does
      * not exist.
      */
-    public static function execute(Sugar_Context $context, array $code, array $sections)
-    {
-        $sugar = $context->getSugar();
-        $data = $context->getData();
-        $cacheHandler = $context->getCacheHandler();
-        $stack = array();
-
+    private static function _execute(Sugar_Context $context, Sugar $sugar,
+        Sugar_Data $data, $cacheHandler, array $code, array &$stack
+    ) {
         for ($i = 0; $i < count($code); ++$i) {
             $opcode = $code[$i];
             switch($opcode) {
@@ -204,8 +201,10 @@ final class Sugar_Runtime {
                 break;
             case Sugar_Runtime::OP_INSERT:
                 $name = $code[++$i];
-                if (isset($sections[$name])) {
-                    self::execute($context, $sections[$name], $sections);
+                $section = $context->getCode()->getSection($name);
+                if ($section !== false) {
+                    self::_execute($context, $sugar, $data, $cacheHandler,
+                            $section, $stack);
                 } else {
                     throw new Sugar_Exception_Runtime(
                         $debug_file,
@@ -340,7 +339,8 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $name=>$pcode) {
-                    $params[$name] = self::execute($context, $pcode, $sections);
+                    $params[$name] = self::_execute($context, $sugar, $data,
+                            $cacheHandler, $pcode, $stack);
                 }
 
                 // exception net
@@ -388,7 +388,8 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $pcode) {
-                    $params [] = self::execute($context, $pcode, $sections);
+                    $params [] = self::_execute($context, $sugar, $data,
+                            $cacheHandler, $pcode, $stack);
                 }
 
                 // perform ACL checking on the method call
@@ -439,7 +440,8 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $pcode) {
-                    $params []= self::execute($context, $pcode, $sections);
+                    $params []= self::_execute($context, $sugar, $data,
+                        $cacheHandler, $pcode, $stack);
                 }
 
                 // exception net
@@ -457,8 +459,11 @@ final class Sugar_Runtime {
             case Sugar_Runtime::OP_IF:
                 $clauses = $code[++$i];
                 foreach ($clauses as $clause) {
-                    if ($clause[0] === false || self::execute($context, $clause[0], $sections)) {
-                        self::execute($context, $clause[1], $sections);
+                    if ($clause[0] === false || self::_execute($context, $sugar, $data,
+                        $cacheHandler, $clause[0], $stack
+                    )) {
+                        self::_execute($context, $sugar, $data,
+                            $cacheHandler, $clause[1], $stack);
                         break;
                     }
                 }
@@ -481,7 +486,8 @@ final class Sugar_Runtime {
                     || ($step > 0 && $index <= $upper)
                 ) {
                     $data->set($name, $index);
-                    self::execute($context, $block, $sections);
+                    self::_execute($context, $sugar, $data, $cacheHandler,
+                            $block, $stack);
                     $index += $step;
                 }
                 break;
@@ -496,15 +502,19 @@ final class Sugar_Runtime {
                             $data->set($key, $k);
                         }
                         $data->set($name, $v);
-                        self::execute($context, $block, $sections);
+                        self::_execute($context, $sugar, $data,
+                                $cacheHandler, $block, $stack);
                     }
                 }
                 break;
             case Sugar_Runtime::OP_WHILE:
                 $test = $code[++$i];
                 $block = $code[++$i];
-                while (self::execute($context, $test, $sections)) {
-                    self::execute($context, $block, $sections);
+                while (self::_execute($context, $sugar, $data,
+                    $cacheHandler, $test, $stack
+                )) {
+                    self::_execute($context, $sugar, $data,
+                        $cacheHandler, $block, $stack);
                 }
                 break;
             case Sugar_Runtime::OP_NOCACHE:
@@ -512,7 +522,8 @@ final class Sugar_Runtime {
                 if ($sugar->cacheHandler) {
                     $sugar->cacheHandler->addBlock($block);
                 } else {
-                    self::execute($context, $block, $sections);
+                    self::_execute($context, $sugar, $data,
+                        $cacheHandler, $block, $stack);
                 }
                 break;
             case Sugar_Runtime::OP_DEREF:
@@ -530,7 +541,8 @@ final class Sugar_Runtime {
                 $elems = $code[++$i];
                 $array = array();
                 foreach ($elems as $elem) {
-                    $array []= self::execute($context, $elem, $sections);
+                    $array []= self::_execute($context, $sugar, $data,
+                        $cacheHandler, $elem, $stack);
                 }
                 $stack []= $array;
                 break;
@@ -541,7 +553,27 @@ final class Sugar_Runtime {
             }
         }
 
-        return end($stack);
+        return empty($stack) ? null : array_pop($stack);
+    }
+
+    /**
+     * Executes the given bytecode.  The return value is the last item on
+     * the stack, if any.  For complete templates, this should be nothing
+     * (null).
+     *
+     * @param Sugar_Context  $context Context to execute with
+     *
+     * @return mixed Last value on stack.
+     * @throws Sugar_Exception_Runtime when the user has provided code that
+     * cannot be executed, such as attempting to call a function that does
+     * not exist.
+     */
+    public static function execute(Sugar_Context $context)
+    {
+        $stack = array();
+        self::_execute($context, $context->getSugar(),
+            $context->getData(), $context->getCacheHandler(),
+            $context->getCode()->getCode(), $stack);
     }
 }
 
