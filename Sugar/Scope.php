@@ -1,6 +1,6 @@
 <?php
 /**
- * Class for managing variable contexts
+ * Class for managing variable scopes
  *
  * PHP version 5
  *
@@ -36,9 +36,9 @@
  */
 
 /**
- * Variable context
+ * Variable scope
  *
- * Keeps track of the hierarchal contexts (scopes) variables are defined in.
+ * Keeps track of the hierarchal scopes (scopes) variables are defined in.
  *
  * @category   Template
  * @package    Sugar
@@ -50,12 +50,12 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Context
+final class Sugar_Scope
 {
     /**
-     * Parent context, if any
+     * Parent scope, if any
      *
-     * @var Sugar_Context $_parent
+     * @var Sugar_Scope $_parent
      */
     private $_parent;
 
@@ -70,7 +70,7 @@ final class Sugar_Context
      * Create instance
      *
      * @param mixed $parent Optional parent
-     * @param array $vars   Vars for context
+     * @param array $vars   Vars for scope
      */
     public function __construct($parent, array $vars = array())
     {
@@ -90,14 +90,14 @@ final class Sugar_Context
         $name = strtolower($name);
 
         // iterate through parent stack (avoid recursion overhead)
-        $context = $this;
+        $scope = $this;
         do {
-            if (isset($context->_vars[$name])) {
-                return $context->_vars[$name];
+            if (isset($scope->_vars[$name])) {
+                return $scope->_vars[$name];
             } else {
-                $context = $context->_parent;
+                $scope = $scope->_parent;
             }
-        } while ($context);
+        } while ($scope);
         return null;
     }
 

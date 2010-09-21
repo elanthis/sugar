@@ -86,11 +86,11 @@ class Sugar_Template
     private $_handle;
 
     /**
-     * Local variable context
+     * Local variable scope
      *
-     * @var Sugar_Context $_context
+     * @var Sugar_Scope $_scope
      */
-    private $_context;
+    private $_scope;
 
     /**
      * HTML cache data.
@@ -134,7 +134,7 @@ class Sugar_Template
         $this->name = $name;
         $this->cacheId = $cacheId;
 
-        $this->_context = new Sugar_Context($sugar->getContext(), array());
+        $this->_scope = new Sugar_Scope($sugar->getGlobals(), array());
     }
 
     /**
@@ -168,13 +168,13 @@ class Sugar_Template
     }
 
     /**
-     * Get the template's local variable context
+     * Get the template's local variable scope
      *
-     * @return Sugar_Context
+     * @return Sugar_Scope
      */
-    public function getContext()
+    public function getScope()
     {
-        return $this->_context;
+        return $this->_scope;
     }
 
     /**
@@ -260,14 +260,14 @@ class Sugar_Template
     }
 
     /**
-     * Helper to set a variable in the template's local context
+     * Helper to set a variable in the template's local scope
      *
      * @param string $name  Name of variable to set
      * @param mixed  $value Value of variable
      */
     public function set($name, $value)
     {
-        $this->_context->set($name, $value);
+        $this->_scope->set($name, $value);
     }
 
     /**
@@ -320,17 +320,17 @@ class Sugar_Template
     /**
      * Display the template
      *
-     * @param Sugar_Context $context Optional context to use instead
-     *                               of the default local context
+     * @param Sugar_Scope $scope Optional scope to use instead
+     *                           of the default local scope
      */
-    public function display($context = null)
+    public function display($scope = null)
     {
         try {
             $runtime = $this->sugar->getRuntime();
 
-            // use a default context if none provided
-            if (is_null($context)) {
-                $context = new Sugar_Context($this->getContext(), array());
+            // use a default scope if none provided
+            if (is_null($scope)) {
+                $scope = new Sugar_Scope($this->getScope(), array());
             }
 
             // if we are to be cached, check for an existing cache and use that if
@@ -338,7 +338,7 @@ class Sugar_Template
             if (!$this->sugar->debug && !is_null($this->cacheId)) {
                 $data = $this->_loadCache();
                 if ($data !== false) {
-                    $runtime->execute($context, $data['bytecode'], $data['sections']);
+                    $runtime->execute($scope, $data['bytecode'], $data['sections']);
                     return true;
                 }
             }
@@ -389,7 +389,7 @@ class Sugar_Template
             }
 
             // execute our compiled template
-            $runtime->execute($context, $data['bytecode'], $data['sections']);
+            $runtime->execute($scope, $data['bytecode'], $data['sections']);
 
             // clean up the cache handler and display the uncachable data if
             // and only if we created the cache handler
@@ -401,7 +401,7 @@ class Sugar_Template
                 $this->sugar->cache->store($this, Sugar::CACHE_HTML, $cache);
 
                 // display cache
-                $runtime->execute($context, $cache['bytecode'], $cache['sections']);
+                $runtime->execute($scope, $cache['bytecode'], $cache['sections']);
             }
 
             return true;
@@ -414,16 +414,16 @@ class Sugar_Template
     /**
      * Fetch template output as a string
      *
-     * @param Sugar_Context $context Optional context to use instead
-     *                               of the default local context
+     * @param Sugar_Scope $scope Optional scope to use instead
+     *                           of the default local scope
      *
      * @return string
      */
-    public function fetch($context = null)
+    public function fetch($scope = null)
     {
         ob_start();
         try {
-            $this->display($context);
+            $this->display($scope);
             $output = ob_get_contents();
         } catch (Exception $e) {
             ob_end_clean();

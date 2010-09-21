@@ -159,16 +159,16 @@ final class Sugar_Runtime {
      * the stack, if any.  For complete templates, this should be nothing
      * (null).
      *
-     * @param Sugar_Context $vars     Variable context
-     * @param array         $code     Bytecode to execute.
-     * @param array         $sections Section bytecodes.
+     * @param Sugar_Scope $vars     Variable scope
+     * @param array       $code     Bytecode to execute.
+     * @param array       $sections Section bytecodes.
      *
      * @return mixed Last value on stack.
      * @throws Sugar_Exception_Runtime when the user has provided code that
      * cannot be executed, such as attempting to call a function that does
      * not exist.
      */
-    public function execute(Sugar_Context $vars, $code, $sections)
+    public function execute(Sugar_Scope $vars, $code, $sections)
     {
         $stack = array();
 
