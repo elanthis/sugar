@@ -99,21 +99,20 @@ final class Sugar_Runtime {
     /**@#-*/
 
     /**
-     * Sugar handle
+     * Execution context
      *
-     * @var public $sugar
+     * @var Sugar_Context
      */
-    public $sugar;
+    private $_context;
 
     /**
      * Constructor
      *
-     * @param Sugar $sugar Sugar handle
-     * @param array $vars  Defined variables
+     * @param Sugar_Context $context Context being executed
      */
-    public function __construct(Sugar $sugar)
+    public function __construct(Sugar_Context $context)
     {
-        $this->sugar = $sugar;
+        $context = $context;
     }
 
     /**
@@ -125,7 +124,7 @@ final class Sugar_Runtime {
      *
      * @return string User-visible rendition of the value.
      */
-    private function _valueToString($value)
+    private static function _valueToString($value)
     {
         if (is_bool($value)) {
             return $value?'true':'false';
@@ -140,14 +139,15 @@ final class Sugar_Runtime {
      * Display output, either to the cache handler or to the PHP
      * output stream.
      *
+     * @param Sugar  $sugar  Sugar instance.
      * @param string $output Output.
      *
      * @return bool True on success.
      */
-    private function _display($output)
+    private static function _display(Sugar $sugar, $output)
     {
-        if ($this->sugar->cacheHandler) {
-            return $this->sugar->cacheHandler->addOutput($output);
+        if ($sugar->cacheHandler) {
+            return $sugar->cacheHandler->addOutput($output);
         } else {
             echo $output;
             return true;
@@ -159,32 +159,34 @@ final class Sugar_Runtime {
      * the stack, if any.  For complete templates, this should be nothing
      * (null).
      *
-     * @param Sugar_Scope $vars     Variable scope
-     * @param array       $code     Bytecode to execute.
-     * @param array       $sections Section bytecodes.
+     * @param Sugar_Context $context  Context to execute with
+     * @param array         $code     Bytecode to execute.
+     * @param array         $sections Section bytecodes.
      *
      * @return mixed Last value on stack.
      * @throws Sugar_Exception_Runtime when the user has provided code that
      * cannot be executed, such as attempting to call a function that does
      * not exist.
      */
-    public function execute(Sugar_Scope $vars, $code, $sections)
+    public static function execute(Sugar_Context $context, array $code, array $sections)
     {
+        $sugar = $context->getSugar();
+        $scope = $context->getScope();
         $stack = array();
 
         for ($i = 0; $i < count($code); ++$i) {
             $opcode = $code[$i];
             switch($opcode) {
             case Sugar_Runtime::OP_LPRINT:
-                $this->_display($code[++$i]);
+                self::_display($sugar, $code[++$i]);
                 break;
             case Sugar_Runtime::OP_EPRINT:
                 $v1 = array_pop($stack);
-                $this->_display($this->sugar->escape($this->_valueToString($v1)));
+                self::_display($sugar, $sugar->escape(self::_valueToString($v1)));
                 break;
             case Sugar_Runtime::OP_RPRINT:
                 $v1 = array_pop($stack);
-                $this->_display($this->_valueToString($v1));
+                self::_display($sugar, self::_valueToString($v1));
                 break;
             case Sugar_Runtime::OP_PUSH:
                 $v1 = $code[++$i];
@@ -192,17 +194,17 @@ final class Sugar_Runtime {
                 break;
             case Sugar_Runtime::OP_LOOKUP:
                 $name = strtolower($code[++$i]);
-                $stack []= $vars->get($name);
+                $stack []= $scope->get($name);
                 break;
             case Sugar_Runtime::OP_ASSIGN:
                 $name = $code[++$i];
                 $v1 = array_pop($stack);
-                $vars->set($name, $v1);
+                $scope->set($name, $v1);
                 break;
             case Sugar_Runtime::OP_INSERT:
                 $name = $code[++$i];
                 if (isset($sections[$name])) {
-                    $this->execute($vars, $sections[$name], $sections);
+                    self::execute($context, $sections[$name], $sections);
                 } else {
                     throw new Sugar_Exception_Runtime(
                         $debug_file,
@@ -322,7 +324,7 @@ final class Sugar_Runtime {
                 $debug_line = $code[++$i];
 
                 // lookup function
-                $callable = $this->sugar->getFunction($func);
+                $callable = $sugar->getFunction($func);
                 if (!$callable) {
                     throw new Sugar_Exception_Runtime(
                         $debug_file,
@@ -337,23 +339,23 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $name=>$pcode) {
-                    $params[$name] = $this->execute($vars, $pcode, $sections);
+                    $params[$name] = self::execute($context, $pcode, $sections);
                 }
 
                 // exception net
                 try {
                     // call function, using appropriate method
-                    $ret = call_user_func($callable['invoke'], $this->sugar, $params);
+                    $ret = call_user_func($callable['invoke'], $sugar, $params, $context);
                 } catch (Exception $e) {
-                    $this->sugar->handleError($e);
+                    $sugar->handleError($e);
                     $ret = null;
                 }
 
                 // process return value
                 if ($opcode == 'call_top' && $escape_flag) {
-                    $this->_display($this->sugar->escape($this->_valueToString($ret)));
+                    self::_display($sugar, $sugar->escape(self::_valueToString($ret)));
                 } elseif ($opcode == 'call_top') {
-                    $this->_display($this->_valueToString($ret));
+                    self::_display($sugar, self::_valueToString($ret));
                 } else {
                     $stack []= $ret;
                 }
@@ -385,17 +387,18 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $pcode) {
-                    $params [] = $this->execute($vars, $pcode, $sections);
+                    $params [] = self::execute($context, $pcode, $sections);
                 }
 
                 // perform ACL checking on the method call
-                if (!is_null($this->sugar->methodAcl)) {
+                if (!is_null($sugar->methodAcl)) {
                     $check = call_user_func(
-                        $this->sugar->methodAcl,
-                        $this->sugar,
+                        $sugar->methodAcl,
+                        $sugar,
                         $obj,
                         $func,
-                        $params
+                        $params,
+                        $context
                     );
 
                     if (!$check) {
@@ -413,7 +416,7 @@ final class Sugar_Runtime {
                     // invoke method
                     $stack []= @call_user_func_array(array($obj, $func), $params);
                 } catch (Exception $e) {
-                    $this->sugar->handleError($e);
+                    $sugar->handleError($e);
                     $stack []= null;
                 }
                 break;
@@ -423,7 +426,7 @@ final class Sugar_Runtime {
                 $value = array_pop($stack);
 
                 // lookup function
-                $callable = $this->sugar->getModifier($name);
+                $callable = $sugar->getModifier($name);
                 if (!$callable) {
                     throw new Sugar_Exception_Runtime(
                         'FIXME',
@@ -435,15 +438,15 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $pcode) {
-                    $params []= $this->execute($vars, $pcode, $sections);
+                    $params []= self::execute($context, $pcode, $sections);
                 }
 
                 // exception net
                 try {
                     // invoke the modifier
-                    $ret = call_user_func($callable, $value, $this->sugar, $params);
+                    $ret = call_user_func($callable, $value, $sugar, $params, $context);
                 } catch (Exception $e) {
-                    $this->sugar->handleError($e);
+                    $sugar->handleError($e);
                     $ret = null;
                 }
 
@@ -453,8 +456,8 @@ final class Sugar_Runtime {
             case Sugar_Runtime::OP_IF:
                 $clauses = $code[++$i];
                 foreach ($clauses as $clause) {
-                    if ($clause[0] === false || $this->execute($vars, $clause[0], $sections)) {
-                        $this->execute($vars, $clause[1], $sections);
+                    if ($clause[0] === false || self::execute($context, $clause[0], $sections)) {
+                        self::execute($context, $clause[1], $sections);
                         break;
                     }
                 }
@@ -476,8 +479,8 @@ final class Sugar_Runtime {
                 while (($step < 0 && $index >= $upper)
                     || ($step > 0 && $index <= $upper)
                 ) {
-                    $vars->set($name, $index);
-                    $this->execute($vars, $block, $sections);
+                    $scope->set($name, $index);
+                    self::execute($context, $block, $sections);
                     $index += $step;
                 }
                 break;
@@ -489,26 +492,26 @@ final class Sugar_Runtime {
                 if (is_array($array) || is_object($array)) {
                     foreach ($array as $k=>$v) {
                         if ($key) {
-                            $vars->set($key, $k);
+                            $scope->set($key, $k);
                         }
-                        $vars->set($name, $v);
-                        $this->execute($vars, $block, $sections);
+                        $scope->set($name, $v);
+                        self::execute($context, $block, $sections);
                     }
                 }
                 break;
             case Sugar_Runtime::OP_WHILE:
                 $test = $code[++$i];
                 $block = $code[++$i];
-                while ($this->execute($vars, $test, $sections)) {
-                    $this->execute($vars, $block, $sections);
+                while (self::execute($context, $test, $sections)) {
+                    self::execute($context, $block, $sections);
                 }
                 break;
             case Sugar_Runtime::OP_NOCACHE:
                 $block = $code[++$i];
-                if ($this->sugar->cacheHandler) {
-                    $this->sugar->cacheHandler->addBlock($block);
+                if ($sugar->cacheHandler) {
+                    $sugar->cacheHandler->addBlock($block);
                 } else {
-                    $this->execute($vars, $block, $sections);
+                    self::execute($context, $block, $sections);
                 }
                 break;
             case Sugar_Runtime::OP_DEREF:
@@ -526,7 +529,7 @@ final class Sugar_Runtime {
                 $elems = $code[++$i];
                 $array = array();
                 foreach ($elems as $elem) {
-                    $array []= $this->execute($vars, $elem, $sections);
+                    $array []= self::execute($context, $elem, $sections);
                 }
                 $stack []= $array;
                 break;

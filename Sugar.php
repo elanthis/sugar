@@ -51,9 +51,10 @@ $GLOBALS['__sugar_rootdir'] = dirname(__FILE__);
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Exception.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Scope.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Context.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
-include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
 /**#@-*/
 
 /**#@+
@@ -229,13 +230,6 @@ class Sugar
     public $cacheHandler = null;
 
     /**
-     * Runtime engine.  Used internally.
-     *
-     * @var Sugar_Runtime
-     */
-    private $_runtime = null;
-
-    /**
      * This is the cache driver to use for storing bytecode and HTML caches.
      * This is initialized to the {@link Sugar_Cache_File} driver by default.
      *
@@ -351,7 +345,6 @@ class Sugar
         $this->_storage ['file']= new Sugar_Storage_File($this);
         $this->_storage ['string']= new Sugar_Storage_String($this);
         $this->cache = new Sugar_Cache_File($this);
-        $this->_runtime = new Sugar_Runtime($this);
         $this->_globals = new Sugar_Scope(null, array());
         $this->errors = self::ERROR_PRINT;
         $this->output = self::OUTPUT_HTML;
@@ -656,19 +649,9 @@ class Sugar
     }
 
     /**
-     * Get a runtime instance.
-     *
-     * @return Sugar_Runtime
-     */
-    public function getRuntime()
-    {
-        return $this->_runtime;
-    }
-
-    /**
      * Get the global variable scope.
      *
-     * @return Sugar_Runtime
+     * @return Sugar_Scope
      */
     public function getGlobals()
     {

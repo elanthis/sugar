@@ -326,19 +326,20 @@ class Sugar_Template
     public function display($scope = null)
     {
         try {
-            $runtime = $this->sugar->getRuntime();
-
             // use a default scope if none provided
             if (is_null($scope)) {
                 $scope = new Sugar_Scope($this->getScope(), array());
             }
+
+            // create the context for executing this tempalte in, and a runtime
+            $context = new Sugar_Context($this->sugar, $this, $scope);
 
             // if we are to be cached, check for an existing cache and use that if
             // it exists and is up to date
             if (!$this->sugar->debug && !is_null($this->cacheId)) {
                 $data = $this->_loadCache();
                 if ($data !== false) {
-                    $runtime->execute($scope, $data['bytecode'], $data['sections']);
+                    Sugar_Runtime::execute($context, $data['bytecode'], $data['sections']);
                     return true;
                 }
             }
@@ -389,7 +390,7 @@ class Sugar_Template
             }
 
             // execute our compiled template
-            $runtime->execute($scope, $data['bytecode'], $data['sections']);
+            Sugar_Runtime::execute($context, $data['bytecode'], $data['sections']);
 
             // clean up the cache handler and display the uncachable data if
             // and only if we created the cache handler
@@ -401,7 +402,7 @@ class Sugar_Template
                 $this->sugar->cache->store($this, Sugar::CACHE_HTML, $cache);
 
                 // display cache
-                $runtime->execute($scope, $cache['bytecode'], $cache['sections']);
+                Sugar_Runtime::execute($context, $cache['bytecode'], $cache['sections']);
             }
 
             return true;
