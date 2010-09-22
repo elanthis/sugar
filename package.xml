@@ -41,6 +41,7 @@
      <file name="Exception.php" role="php"/>
      <file name="Grammar.php" role="php"/>
      <file name="Lexer.php" role="php"/>
+     <file name="Loader.php" role="php"/>
      <file name="Node.php" role="php"/>
      <file name="Runtime.php" role="php"/>
      <file name="Stdlib.php" role="php"/>

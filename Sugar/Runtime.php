@@ -113,20 +113,6 @@ final class Sugar_Runtime {
     private $_cache;
 
     /**
-     * Compiled code cache
-     *
-     * @var array
-     */
-    private $_compiled = array();
-
-    /**
-     * Cache output cache
-     *
-     * @var array
-     */
-    private $_cached = array();
-
-    /**
      * Constructor
      *
      * @param Sugar       $sugar Sugar Instance
@@ -591,114 +577,6 @@ final class Sugar_Runtime {
         self::_execute($context, $context->getSugar(), $context->getData(),
             $this->_cache, $code, $code->getSection('main'), $stack);
     }
-    
-    /**
-     * Attempt to load an HTML cached file.  Will return false if
-     * the cached file does not exist or if the cached file is out
-     * of date.
-     *
-     * @param Sugar_Template $template
-     * @return false|array Cache data on success, false on error.
-     */
-    private function _loadCache(Sugar_Template $template)
-    {
-        // if the cache is already loaded, just return it
-        if (isset($this->_cached[$template->name][$template->cacheId])) {
-            return $this->_cached[$template->name][$temlatd->cacheId];
-        }
-
-        // get the cache's stamp, and fail if it can't be found
-        $cstamp = $this->_sugar->cache->getLastModified($template, Sugar::CACHE_HTML);
-        if ($cstamp === false) {
-            return false;
-        }
-
-        // fail if the cache is too old
-        if ($cstamp < time() - $this->_sugar->cacheLimit) {
-            return false;
-        }
-
-        // load the cache data, fail if loading fails or the
-        // version doesn't match
-        $data = $this->_sugar->cache->load($template, Sugar::CACHE_HTML);
-        if ($data === false) {
-            return false;
-        }
-
-        // compare stamps with the included references; if any fail,
-        // unmark our _cached flag so we can report back to the user
-        // on a call to isCached()
-        foreach ($data->getReferences() as $file) {
-            // try to reference the file; ignore failures
-            $inc = $this->_sugar->getTemplate($file, $template->cacheId);
-            if ($inc === false) {
-                continue;
-            }
-
-            // get the stamp of the reference; ignore failures
-            $stamp = $inc->getLastModified();
-            if ($stamp === false) {
-                continue;
-            }
-
-            // if the stamp is newer than the cache stamp, fail
-            if ($cstamp < $stamp) {
-                return false;
-            }
-        }
-
-        // store the bytecode so we don't need to reload it
-        $this->_cached [$template->name][$template->cacheId]= $data;
-        return $data;
-    }
-
-    /**
-     * Load and compile (if necessary) the template code.
-     *
-     * @param Sugar_Template $template
-     * @return mixed
-     */
-    private function _loadCompile(Sugar_Template $template)
-    {
-        // if we already have a compiled version, don't reload
-        if (isset($this->_compiled[$template->name])) {
-            return $this->_compiled[$template->name];
-        }
-
-        // if debug is off and the stamp is good, load compiled version
-        if (!$this->_sugar->debug) {
-            $sstamp = $template->getLastModified();
-            $cstamp = $this->_sugar->cache->getLastModified($template, Sugar::CACHE_TPL);
-            if ($cstamp !== false && $cstamp > $sstamp) {
-                $data = $this->_sugar->cache->load($template, Sugar::CACHE_TPL);
-                // if version checks out, run it
-                if ($data !== false && $data) {
-                    $this->_compiled [$template->name]= $data;
-                    return $data;
-                }
-            }
-        }
-
-        /**
-         * Compiler.
-         */
-        include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
-
-        // compile
-        $source = $template->getSource();
-        if ($source === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$template->getName());
-        }
-        $parser = new Sugar_Grammar($this->_sugar);
-        $data = $parser->compile($template, $source);
-        unset($parser);
-
-        // store compiled bytecode into cache
-        $this->_sugar->cache->store($template, Sugar::CACHE_TPL, $data);
-
-        $this->_compiled [$template->name]= $data;
-        return $data;
-    }
 
     /**
      * Display a template (top-level call)
@@ -712,7 +590,7 @@ final class Sugar_Runtime {
             // if we are to be cached, check for an existing cache and use that if
             // it exists and is up to date
             if (!$this->_sugar->debug && !is_null($template->cacheId)) {
-                $code = $this->_loadCache($template);
+                $code = $this->_sugar->getLoader()->getCached($template);
                 if ($code !== false) {
                     $context = new Sugar_Context($this->_sugar, $template, $data, $code, $this->_cache);
                     Sugar_Runtime::execute($context, $code);
@@ -733,7 +611,7 @@ final class Sugar_Runtime {
             }
 
             // load compiled template
-            $code = $this->_loadCompile($template);
+            $code = $this->_sugar->getLoader()->getCompiled($template);
 
             // if we have an inherited template, load it and merge it with our data
             $inherit = $template->getInherit();
@@ -746,7 +624,7 @@ final class Sugar_Runtime {
                 if ($parent === false) {
                     throw new Sugar_Exception_Usage('inherited template not found: '.$inherit);
                 }
-                $pcode = $this->_loadCompile($parent);
+                $pcode = $this->_sugar->getLoader()->getCompiled($parent);
 
                 // merge code
                 $pcode->mergeChild($code);
@@ -767,6 +645,9 @@ final class Sugar_Runtime {
 
                 // attempt to save cache
                 $this->_sugar->cache->store($template, Sugar::CACHE_HTML, $code);
+
+                // save cache in loader
+                $this->_sugar->getLoader()->setCached($template, $code);
 
                 // display cache
                 $context = new Sugar_Context($this->_sugar, $template, $data);

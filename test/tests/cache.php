@@ -31,9 +31,15 @@ class Sugar_Test_cache implements Sugar_Test {
 
 		// load second run of each template
 		$tpl = $sugar->getTemplate('cache.tpl', 'test1');
+		if (!$tpl->isCached()) {
+			return 'isCached("cache.tpl", "test1") failed';
+		}
 		$text1b = $tpl->fetch();
 
 		$tpl = $sugar->getTemplate('cache.tpl', 'test2');
+		if (!$tpl->isCached()) {
+			return 'isCached("cache.tpl", "test2") failed';
+		}
 		$text2b = $tpl->fetch();
 
 		return $text1a.$text1b.$text2a.$text2b;

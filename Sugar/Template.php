@@ -55,7 +55,7 @@ class Sugar_Template
      *
      * @var Sugar $sugar
      */
-    public $sugar;
+    private $_sugar;
 
     /**
      * Name of the template as given by the user.
@@ -128,7 +128,7 @@ class Sugar_Template
      */
     public function __construct(Sugar $sugar, Sugar_StorageDriver $storage,
     $handle, $name, $cacheId) {
-        $this->sugar = $sugar;
+        $this->_sugar = $sugar;
         $this->_storage = $storage;
         $this->_handle = $handle;
         $this->name = $name;
@@ -207,7 +207,8 @@ class Sugar_Template
      */
     public function isCached()
     {
-        return $this->_loadCache() !== false;
+        $code = $this->_sugar->getLoader()->getCached($this);
+        return $code !== false;
     }
 
     /**
@@ -235,7 +236,7 @@ class Sugar_Template
         }
 
         // create context, execute
-        $runtime = new Sugar_Runtime($this->sugar);
+        $runtime = new Sugar_Runtime($this->_sugar);
         $runtime->display($this, $data);
     }
 

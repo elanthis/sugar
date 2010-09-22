@@ -56,6 +56,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Compiled.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Loader.php';
 /**#@-*/
 
 /**#@+
@@ -205,6 +206,14 @@ class Sugar
     private $_globals;
 
     /**
+     * Loader and object cache
+     *
+     * @var Sugar_Loader
+     */
+    private $_loader;
+
+
+    /**
      * Map of all registered functions.  The key is the function name,
      * and the value is an array containing the callback and function
      * flags.
@@ -336,6 +345,7 @@ class Sugar
      */
     public function __construct()
     {
+        $this->_loader = new Sugar_Loader($this);
         $this->_storage ['file']= new Sugar_Storage_File($this);
         $this->_storage ['string']= new Sugar_Storage_String($this);
         $this->cache = new Sugar_Cache_File($this);
@@ -451,18 +461,6 @@ class Sugar
 
         $this->_functions [strtolower($name)]= $invoke;
         return true;
-    }
-
-    /**
-     * Looks up the current value of a variable.
-     *
-     * @param string $name Name of the variable to lookup.
-     *
-     * @return mixed
-     */
-    public function getVariable($name)
-    {
-        return $this->_globals->get($name);
     }
 
     /**
@@ -583,6 +581,17 @@ class Sugar
         $this->delimStart = $start;
         $this->delimEnd = $end;
         return true;
+    }
+
+    /**
+     * Get the loader instance.
+     *
+     * @internal
+     * @return Sugar_Loader
+     */
+    public function getLoader()
+    {
+        return $this->_loader;
     }
 
     /**
@@ -784,7 +793,7 @@ class Sugar
      *
      * @deprecated
      */
-    function displayString($source, $vars = null)
+    public function displayString($source, $vars = null)
     {
         return $this->display('string:'.$source, $vars);
     }
@@ -822,7 +831,7 @@ class Sugar
      *
      * @deprecated
      */
-    function isCached($file, $cacheId, $vars = null)
+    public function isCached($file, $cacheId, $vars = null)
     {
         // debug always disabled caching
         if ($this->debug) {
@@ -844,7 +853,7 @@ class Sugar
      *
      * @deprecated
      */
-    function uncache($file, $cacheId)
+    public function uncache($file, $cacheId)
     {
         // erase the cache entry
         $template = $this->getTemplate($file, $cacheId);
