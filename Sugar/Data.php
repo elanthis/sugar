@@ -1,6 +1,6 @@
 <?php
 /**
- * Class for managing runtime contexts
+ * Class for managing variable datas
  *
  * PHP version 5
  *
@@ -36,9 +36,9 @@
  */
 
 /**
- * Runtime context.
+ * Variable data
  *
- * Tracks current variable data, current template, and cache handler.
+ * Keeps track of the hierarchal datas (datas) variables are defined in.
  *
  * @category   Template
  * @package    Sugar
@@ -50,89 +50,67 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Context
+final class Sugar_Data
 {
     /**
-     * Sugar context
+     * Parent data, if any
      *
-     * @var Sugar
+     * @var Sugar_Data $_parent
      */
-    private $_sugar;
+    private $_parent;
 
     /**
-     * Template
+     * Variables
      *
-     * @var Sugar_Template
+     * @var array $_vars
      */
-    private $_template;
-
-    /**
-     * Variable data
-     *
-     * @var Sugar_Data
-     */
-    private $_data;
-
-    /**
-     * Runtime instance
-     *
-     * @var Sugar_Runtime
-     */
-    private $_runtime;
+    private $_vars;
 
     /**
      * Create instance
      *
-     * @param Sugar          $sugar    Sugar instance
-     * @param Sugar_Template $template Template being evaluated
-     * @param Sugar_Data     $data     Variable data for execution
-     * @param Sugar_Runtime  $runtime  Runtime instance
+     * @param mixed $parent Optional parent
+     * @param array $vars   Vars for data
      */
-    public function __construct(Sugar $sugar, Sugar_Template $template, Sugar_Data $data, Sugar_Runtime $runtime) {
-        $this->_sugar = $sugar;
-        $this->_template = $template;
-        $this->_data = $data;
-        $this->_runtime = $runtime;
+    public function __construct($parent, array $vars = array())
+    {
+        $this->_parent = $parent;
+        $this->_vars = $vars;
     }
 
     /**
-     * Get the context's Sugar intance
+     * Get a variable value by name
      *
-     * @return Sugar
+     * @param string $name Name of variable to lookup
+     *
+     * @return mixed Variable value, null if not found.
      */
-    public function getSugar()
+    public function get($name)
     {
-        return $this->_sugar;
+        $name = strtolower($name);
+
+        // iterate through parent stack (avoid recursion overhead)
+        $data = $this;
+        do {
+            if (isset($data->_vars[$name])) {
+                return $data->_vars[$name];
+            } else {
+                $data = $data->_parent;
+            }
+        } while ($data);
+        return null;
     }
 
     /**
-     * Get the template being executed.
+     * (Re)assign a variable's value
      *
-     * @return Sugar_Template
+     * @param string $name  Name of variable to assign
+     * @param mixed  $value Value of variable
      */
-    public function getTemplate()
+    public function set($name, $value)
     {
-        return $this->_template;
-    }
-
-    /**
-     * Get the variable data in use.
-     *
-     * @return Sugar_Data
-     */
-    public function getData()
-    {
-        return $this->_data;
-    }
-
-    /**
-     * Get runtime instance
-     *
-     * @return Sugar_Runtime
-     */
-    public function getRuntime()
-    {
-        return $this->_runtime;
+        $name = strtolower($name);
+        $this->_vars [$name]= $value;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

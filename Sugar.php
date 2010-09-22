@@ -49,13 +49,16 @@ $GLOBALS['__sugar_rootdir'] = dirname(__FILE__);
  * Core includes.
  */
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Exception.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Context.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Data.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Context.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Compiled.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Function.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Modifier.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Loader.php';
 /**#@-*/
 
 /**#@+
@@ -198,9 +201,9 @@ class Sugar
     const CACHE_LIMIT = 5;
 
     /**
-     * Global variable context
+     * Global variable data
      *
-     * @var Sugar_Context
+     * @var Sugar_Data
      */
     private $_globals;
 
@@ -216,18 +219,11 @@ class Sugar
     );
 
     /**
-     * Cache management.  Used internally.
+     * Loader and object cache
      *
-     * @var Sugar_CacheHandler
+     * @var Sugar_Loader
      */
-    public $cacheHandler = null;
-
-    /**
-     * Runtime engine.  Used internally.
-     *
-     * @var Sugar_Runtime
-     */
-    private $_runtime = null;
+    private $_loader;
 
     /**
      * This is the cache driver to use for storing bytecode and HTML caches.
@@ -350,11 +346,11 @@ class Sugar
     public function __construct()
     {
         $this->_corePluginDir = dirname(__FILE__).'/Sugar/Plugins';
+        $this->_loader = new Sugar_Loader($this);
         $this->_plugins ['storage']['file']= new Sugar_Storage_File($this);
         $this->_plugins ['storage']['string']= new Sugar_Storage_String($this);
         $this->cache = new Sugar_Cache_File($this);
-        $this->_runtime = new Sugar_Runtime($this);
-        $this->_globals = new Sugar_Context(null, array());
+        $this->_globals = new Sugar_Data(null, array());
         $this->errors = self::ERROR_PRINT;
         $this->output = self::OUTPUT_HTML;
     }
@@ -449,7 +445,7 @@ class Sugar
         $plugin = new Sugar_ModifierWrapper($this);
         $plugin->cacheable = $cache;
         $plugin->escape = $escape;
-        $plugin->callable = $native;
+        $plugin->callable = $invoke;
 
         // register
         $this->_plugins ['function'][strtolower($name)]= $plugin;
@@ -474,7 +470,7 @@ class Sugar
 
         // create plugin wrapper
         $plugin = new Sugar_ModifierWrapper($this);
-        $plugin->callable = $native;
+        $plugin->callable = $invoke;
 
         // register
         $this->_plugins ['modifier'][strtolower($name)]= $plugin;
@@ -494,18 +490,6 @@ class Sugar
     {
         $this->_plugins ['storage'][$name]= $driver;
         return true;
-    }
-
-    /**
-     * Looks up the current value of a variable.
-     *
-     * @param string $name Name of the variable to lookup.
-     *
-     * @return mixed
-     */
-    public function getVariable($name)
-    {
-        return $this->_globals->get($name);
     }
 
     /**
@@ -638,6 +622,17 @@ class Sugar
     }
 
     /**
+     * Get the loader instance.
+     *
+     * @internal
+     * @return Sugar_Loader
+     */
+    public function getLoader()
+    {
+        return $this->_loader;
+    }
+
+    /**
      * Escape the input string according to the current value of
      * {@link Sugar::$charset}.
      *
@@ -695,21 +690,11 @@ class Sugar
     }
 
     /**
-     * Get a runtime instance.
+     * Get the global variable data.
      *
-     * @return Sugar_Runtime
+     * @return Sugar_Data
      */
-    public function getRuntime()
-    {
-        return $this->_runtime;
-    }
-
-    /**
-     * Get the global variable context.
-     *
-     * @return Sugar_Runtime
-     */
-    public function getContext()
+    public function getGlobals()
     {
         return $this->_globals;
     }
@@ -775,7 +760,7 @@ class Sugar
     {
         $template = $this->getTemplate($file, $cacheId);
         $template->setInherit($inherit);
-        return $template->display(new Sugar_Context($template->getContext(), (array)$vars));
+        return $template->display(new Sugar_Data($template->getData(), (array)$vars));
     }
 
     /**
@@ -813,7 +798,7 @@ class Sugar
     {
         $template = $this->getTemplate($file, $cacheId);
         $template->setInherit($inherit);
-        return $template->fetch(new Sugar_Context($template->getContext(), (array)$vars));
+        return $template->fetch(new Sugar_Data($template->getData(), (array)$vars));
     }
 
     /**
@@ -846,7 +831,7 @@ class Sugar
      *
      * @deprecated
      */
-    function displayString($source, $vars = null)
+    public function displayString($source, $vars = null)
     {
         return $this->display('string:'.$source, $vars);
     }
@@ -884,7 +869,7 @@ class Sugar
      *
      * @deprecated
      */
-    function isCached($file, $cacheId, $vars = null)
+    public function isCached($file, $cacheId, $vars = null)
     {
         // debug always disabled caching
         if ($this->debug) {
@@ -906,7 +891,7 @@ class Sugar
      *
      * @deprecated
      */
-    function uncache($file, $cacheId)
+    public function uncache($file, $cacheId)
     {
         // erase the cache entry
         $template = $this->getTemplate($file, $cacheId);

@@ -1,6 +1,7 @@
 <?php
 /**
- * Class for managing runtime contexts
+ * Contains the compiled version of a template, which may be a cached
+ * template.
  *
  * PHP version 5
  *
@@ -26,7 +27,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -36,13 +37,12 @@
  */
 
 /**
- * Runtime context.
- *
- * Tracks current variable data, current template, and cache handler.
+ * Contains the compiled version of a template, which may be a cached
+ * template.
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Runtime
+ * @subpackage Compiler
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2010 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -50,89 +50,95 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_Context
+final class Sugar_Compiled
 {
     /**
-     * Sugar context
+     * Template to inherit from
      *
-     * @var Sugar
+     * @var string
      */
-    private $_sugar;
+    private $_inherit;
 
     /**
-     * Template
+     * Sections
      *
-     * @var Sugar_Template
+     * @var array
      */
-    private $_template;
+    private $_sections;
 
     /**
-     * Variable data
+     * Referenced files
      *
-     * @var Sugar_Data
+     * @var array
      */
-    private $_data;
-
-    /**
-     * Runtime instance
-     *
-     * @var Sugar_Runtime
-     */
-    private $_runtime;
+    private $_references;
 
     /**
      * Create instance
      *
-     * @param Sugar          $sugar    Sugar instance
-     * @param Sugar_Template $template Template being evaluated
-     * @param Sugar_Data     $data     Variable data for execution
-     * @param Sugar_Runtime  $runtime  Runtime instance
+     * @param string $inherit    Name of template to inherit from ('' for none)
+     * @param array  $sections   Sections defined in template
+     * @param array  $references Names of referenced files
      */
-    public function __construct(Sugar $sugar, Sugar_Template $template, Sugar_Data $data, Sugar_Runtime $runtime) {
-        $this->_sugar = $sugar;
-        $this->_template = $template;
-        $this->_data = $data;
-        $this->_runtime = $runtime;
+    public function __construct($inherit, array $sections, array $references) {
+        $this->_inherit = $inherit;
+        $this->_sections = $sections;
+        $this->_references = $references;
     }
 
     /**
-     * Get the context's Sugar intance
+     * Get the inherited template
      *
-     * @return Sugar
+     * @return string
      */
-    public function getSugar()
+    public function getInherit()
     {
-        return $this->_sugar;
+        return $this->_inherit;
     }
 
     /**
-     * Get the template being executed.
+     * Get a particular section by name
      *
-     * @return Sugar_Template
+     * @param string $name Name of section to get
+     * @return mixed Code for section if it exists, false otherwise
      */
-    public function getTemplate()
+    public function getSection($name)
     {
-        return $this->_template;
+        if (isset($this->_sections[$name])) {
+            return $this->_sections[$name];
+        } else {
+            return false;
+        }
     }
 
     /**
-     * Get the variable data in use.
+     * Get file references
      *
-     * @return Sugar_Data
+     * @return array Array of referenced file names
      */
-    public function getData()
+    public function getReferences()
     {
-        return $this->_data;
+        return $this->_references;
     }
 
     /**
-     * Get runtime instance
+     * Merge a child template into an inherited template
      *
-     * @return Sugar_Runtime
+     * @param Sugar_Compiled $child Child template code to merge into this one
      */
-    public function getRuntime()
+    public function mergeChild(Sugar_Compiled $child)
     {
-        return $this->_runtime;
+        // merge all references together
+        $this->_references = array_merge($this->_references, $child->_references);
+
+        // keep a copy of parent's main section
+        $main = $this->_sections['main'];
+
+        // merge child sections over parent sections
+        $this->_sections = array_merge($this->_sections, $child->_sections);
+
+        // re-instate parent's main section
+        $this->_sections ['main']= $main;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

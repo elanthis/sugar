@@ -41,6 +41,23 @@ class Sugar_TestRunner {
 		return $tests;
 	}
 
+	public function getExpected($test) {
+		$path = dirname(__FILE__).'/tests/'.$test.'.php';
+		if (!is_file($path) || !is_readable($path)) {
+			return new Sugar_TestResult($test, false, "cannot open $path", '', '');
+		}
+
+		require_once $path;
+		$class = "Sugar_Test_$test";
+		if (!class_exists($class)) {
+			return new Sugar_TestResult($test, false, "cannot find class $class", '', '');
+		}
+		$object = new $class;
+
+		$expected = trim($object->getExpected());
+		return $expected;
+	}
+
 	public function run($test) {
 		$path = dirname(__FILE__).'/tests/'.$test.'.php';
 		if (!is_file($path) || !is_readable($path)) {

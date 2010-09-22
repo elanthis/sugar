@@ -55,7 +55,7 @@ class Sugar_Template
      *
      * @var Sugar $sugar
      */
-    public $sugar;
+    private $_sugar;
 
     /**
      * Name of the template as given by the user.
@@ -86,11 +86,11 @@ class Sugar_Template
     private $_handle;
 
     /**
-     * Local variable context
+     * Local variable data
      *
-     * @var Sugar_Context $_context
+     * @var Sugar_Data $_data
      */
-    private $_context;
+    private $_data;
 
     /**
      * HTML cache data.
@@ -128,13 +128,13 @@ class Sugar_Template
      */
     public function __construct(Sugar $sugar, Sugar_StorageDriver $storage,
     $handle, $name, $cacheId) {
-        $this->sugar = $sugar;
+        $this->_sugar = $sugar;
         $this->_storage = $storage;
         $this->_handle = $handle;
         $this->name = $name;
         $this->cacheId = $cacheId;
 
-        $this->_context = new Sugar_Context($sugar->getContext(), array());
+        $this->_data = new Sugar_Data($sugar->getGlobals(), array());
     }
 
     /**
@@ -168,13 +168,13 @@ class Sugar_Template
     }
 
     /**
-     * Get the template's local variable context
+     * Get the template's local variable data
      *
-     * @return Sugar_Context
+     * @return Sugar_Data
      */
-    public function getContext()
+    public function getData()
     {
-        return $this->_context;
+        return $this->_data;
     }
 
     /**
@@ -187,64 +187,15 @@ class Sugar_Template
     {
         $this->_inherit = $file;
     }
-    
+
     /**
-     * Attempt to load an HTML cached file.  Will return false if
-     * the cached file does not exist or if the cached file is out
-     * of date.
+     * Get the inherited template override
      *
-     * @return false|array Cache data on success, false on error.
+     * @return mixed
      */
-    private function _loadCache()
+    public function getInherit()
     {
-        // if the cache is already loaded, just return it
-        if (!is_null($this->_htmlCache)) {
-            return $this->_htmlCache;
-        }
-
-        // get the cache's stamp, and fail if it can't be found
-        $cstamp = $this->sugar->cache->getLastModified($this, Sugar::CACHE_HTML);
-        if ($cstamp === false) {
-            return false;
-        }
-
-        // fail if the cache is too old
-        if ($cstamp < time() - $this->sugar->cacheLimit) {
-            return false;
-        }
-
-        // load the cache data, fail if loading fails or the
-        // version doesn't match
-        $data = $this->sugar->cache->load($this, Sugar::CACHE_HTML);
-        if ($data === false || $data['version'] !== Sugar::VERSION) {
-            return false;
-        }
-
-        // compare stamps with the included references; if any fail,
-        // unmark our _cached flag so we can report back to the user
-        // on a call to isCached()
-        foreach ($data['refs'] as $file) {
-            // try to reference the file; ignore failures
-            $inc = $this->sugar->getTemplate($file, $this->cacheId);
-            if ($inc === false) {
-                continue;
-            }
-
-            // get the stamp of the reference; ignore failures
-            $stamp = $inc->getLastModified();
-            if ($stamp === false) {
-                continue;
-            }
-
-            // if the stamp is newer than the cache stamp, fail
-            if ($cstamp < $stamp) {
-                return false;
-            }
-        }
-
-        // store the bytecode so we don't need to reload it
-        $this->_htmlCache = $data;
-        return $data;
+        return $this->_inherit;
     }
 
     /**
@@ -256,174 +207,52 @@ class Sugar_Template
      */
     public function isCached()
     {
-        return $this->_loadCache() !== false;
+        $code = $this->_sugar->getLoader()->getCached($this);
+        return $code !== false;
     }
 
     /**
-     * Helper to set a variable in the template's local context
+     * Helper to set a variable in the template's local data
      *
      * @param string $name  Name of variable to set
      * @param mixed  $value Value of variable
      */
     public function set($name, $value)
     {
-        $this->_context->set($name, $value);
-    }
-
-    /**
-     * Load and compile (if necessary) the template code.
-     *
-     * @return mixed
-     */
-    private function _loadCompile()
-    {
-        // if we already have a compiled version, don't reload
-        if (!is_null($this->_compiled)) {
-            return $this->_compiled;
-        }
-
-        // if debug is off and the stamp is good, load compiled version
-        if (!$this->sugar->debug) {
-            $sstamp = $this->getLastModified();
-            $cstamp = $this->sugar->cache->getLastModified($this, Sugar::CACHE_TPL);
-            if ($cstamp !== false && $cstamp > $sstamp) {
-                $data = $this->sugar->cache->load($this, Sugar::CACHE_TPL);
-                // if version checks out, run it
-                if ($data !== false && $data['version'] === Sugar::VERSION) {
-                    $this->_compiled = $data;
-                    return $data;
-                }
-            }
-        }
-
-        /**
-         * Compiler.
-         */
-        include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
-
-        // compile
-        $source = $this->getSource();
-        if ($source === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$this->getName());
-        }
-        $parser = new Sugar_Grammar($this->sugar);
-        $data = $parser->compile($source, $this->getName());
-        unset($parser);
-
-        // store compiled bytecode into cache
-        $this->sugar->cache->store($this, Sugar::CACHE_TPL, $data);
-
-        $this->_compiled = $data;
-        return $data;
+        $this->_data->set($name, $value);
     }
 
     /**
      * Display the template
      *
-     * @param Sugar_Context $context Optional context to use instead
-     *                               of the default local context
+     * @param Sugar_Data $data Optional data to use instead
+     *                           of the default local data
      */
-    public function display($context = null)
+    public function display($data = null)
     {
-        try {
-            $runtime = $this->sugar->getRuntime();
-
-            // use a default context if none provided
-            if (is_null($context)) {
-                $context = new Sugar_Context($this->getContext(), array());
-            }
-
-            // if we are to be cached, check for an existing cache and use that if
-            // it exists and is up to date
-            if (!$this->sugar->debug && !is_null($this->cacheId)) {
-                $data = $this->_loadCache();
-                if ($data !== false) {
-                    $runtime->execute($context, $data['bytecode'], $data['sections']);
-                    return true;
-                }
-            }
-
-            // if we are to be cached and aren't alrady running inside an existing
-            // cache handler instance, create a new one
-            $caching = false;
-            if (!is_null($this->cacheId) && !$this->sugar->cacheHandler) {
-                /**
-                 * Cache handler.
-                 */
-                include_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheHandler.php';
-
-                // create cache
-                $this->sugar->cacheHandler = new Sugar_CacheHandler($this->sugar);
-                $caching = true;
-            }
-
-            // add file to cache handlers file reference list
-            if (!is_null($this->cacheId)) {
-                $this->sugar->cacheHandler->addRef($this);
-            }
-
-            // load compiled template
-            $data = $this->_loadCompile();
-
-            // if we have an inherited template, load it and merge it with our data
-            $inherit = $this->_inherit ? $this->_inherit : $data['inherit'];
-            if ($inherit) {
-                // load compiled parent (inherited template)
-                $parent = $this->sugar->getTemplate($inherit, $this->cacheId);
-                if ($parent === false) {
-                    throw new Sugar_Exception_Usage('inherited template not found: '.$inherit);
-                }
-                $pdata = $parent->_loadCompile();
-
-                // merge parent with page template
-                $pdata ['sections']= array_merge($pdata['sections'], $data['sections']);
-
-                // set page main bytecode as content section if and only if
-                // the page template did not define its own explicit content
-                // section.
-                if (!isset($data['sections']['content'])) {
-                    $pdata['sections']['content'] = $data['bytecode'];
-                }
-
-                $data = $pdata;
-            }
-
-            // execute our compiled template
-            $runtime->execute($context, $data['bytecode'], $data['sections']);
-
-            // clean up the cache handler and display the uncachable data if
-            // and only if we created the cache handler
-            if ($caching) {
-                $cache = $this->sugar->cacheHandler->getOutput();
-                $this->sugar->cacheHandler = null;
-
-                // attempt to save cache
-                $this->sugar->cache->store($this, Sugar::CACHE_HTML, $cache);
-
-                // display cache
-                $runtime->execute($context, $cache['bytecode'], $cache['sections']);
-            }
-
-            return true;
-        } catch (Sugar_Exception $e) {
-            $this->sugar->handleError($e);
-            return false;
+        // use a default data set if none provided
+        if (is_null($data)) {
+            $data = new Sugar_Data($this->getData(), array());
         }
+
+        // create context, execute
+        $runtime = new Sugar_Runtime($this->_sugar);
+        $runtime->execute($this, $data);
     }
 
     /**
      * Fetch template output as a string
      *
-     * @param Sugar_Context $context Optional context to use instead
-     *                               of the default local context
+     * @param Sugar_Data $data Optional data to use instead
+     *                           of the default local data
      *
      * @return string
      */
-    public function fetch($context = null)
+    public function fetch($data = null)
     {
         ob_start();
         try {
-            $this->display($context);
+            $this->display($data);
             $output = ob_get_contents();
         } catch (Exception $e) {
             ob_end_clean();
