@@ -68,21 +68,21 @@ final class Sugar_CacheHandler
      *
      * @var string
      */
-    private $_output;
+    private $_output = '';
 
     /**
      * Bytecode result.
      *
      * @var array
      */
-    private $_bc;
+    private $_bc = array();
 
     /**
      * List of file references used, stored as strings.
      *
      * @var array
      */
-    private $_refs;
+    private $_refs = array();
 
     /**
      * Compresses the text output gathered so far onto the bytecode stack.
@@ -92,7 +92,7 @@ final class Sugar_CacheHandler
     private function _compact()
     {
         if ($this->_output) {
-            $this->_bc []= 'echo';
+            $this->_bc []= Sugar_Runtime::OP_LPRINT;
             $this->_bc []= $this->_output;
             $this->_output = '';
         }
@@ -158,13 +158,7 @@ final class Sugar_CacheHandler
     public function getOutput()
     {
         $this->_compact();
-        return array(
-            'type' => 'chtml',
-            'version' => Sugar::VERSION,
-            'refs' => $this->_refs,
-            'bytecode' => $this->_bc,
-            'sections' => array()
-        );
+        return new Sugar_Compiled('', array('main' => $this->_bc), $this->_refs);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

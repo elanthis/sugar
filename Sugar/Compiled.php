@@ -67,23 +67,23 @@ final class Sugar_Compiled
     private $_sections;
 
     /**
-     * "Bytecode" data
+     * Referenced files
      *
      * @var array
      */
-    private $_code;
+    private $_references;
 
     /**
      * Create instance
      *
-     * @param string $inherit  Name of template to inherit from ('' for none)
-     * @param array  $code     Main code
-     * @param array  $sections Sections defined in template
+     * @param string $inherit    Name of template to inherit from ('' for none)
+     * @param array  $sections   Sections defined in template
+     * @param array  $references Names of referenced files
      */
-    public function __construct($inherit, array $code, array $sections) {
+    public function __construct($inherit, array $sections, array $references) {
         $this->_inherit = $inherit;
-        $this->_code = $code;
         $this->_sections = $sections;
+        $this->_references = $references;
     }
 
     /**
@@ -94,16 +94,6 @@ final class Sugar_Compiled
     public function getInherit()
     {
         return $this->_inherit;
-    }
-
-    /**
-     * Get the main code
-     *
-     * @return array
-     */
-    public function getCode()
-    {
-        return $this->_code;
     }
 
     /**
@@ -119,6 +109,36 @@ final class Sugar_Compiled
         } else {
             return false;
         }
+    }
+
+    /**
+     * Get file references
+     *
+     * @return array Array of referenced file names
+     */
+    public function getReferences()
+    {
+        return $this->_references;
+    }
+
+    /**
+     * Merge a child template into an inherited template
+     *
+     * @param Sugar_Compiled $child Child template code to merge into this one
+     */
+    public function mergeChild(Sugar_Compiled $child)
+    {
+        // merge all references together
+        $this->_references = array_merge($this->_references, $child->_references);
+
+        // keep a copy of parent's main section
+        $main = $this->_sections['main'];
+
+        // merge child sections over parent sections
+        $this->_sections = array_merge($this->_sections, $child->_sections);
+
+        // re-instate parent's main section
+        $this->_sections ['main']= $main;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

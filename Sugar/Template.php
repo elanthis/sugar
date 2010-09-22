@@ -216,14 +216,14 @@ class Sugar_Template
         // load the cache data, fail if loading fails or the
         // version doesn't match
         $data = $this->sugar->cache->load($this, Sugar::CACHE_HTML);
-        if ($data === false || $data['version'] !== Sugar::VERSION) {
+        if ($data === false) {
             return false;
         }
 
         // compare stamps with the included references; if any fail,
         // unmark our _cached flag so we can report back to the user
         // on a call to isCached()
-        foreach ($data['refs'] as $file) {
+        foreach ($data->getReferences() as $file) {
             // try to reference the file; ignore failures
             $inc = $this->sugar->getTemplate($file, $this->cacheId);
             if ($inc === false) {
@@ -289,7 +289,7 @@ class Sugar_Template
             if ($cstamp !== false && $cstamp > $sstamp) {
                 $data = $this->sugar->cache->load($this, Sugar::CACHE_TPL);
                 // if version checks out, run it
-                if ($data !== false && $data['version'] === Sugar::VERSION) {
+                if ($data !== false && $data) {
                     $this->_compiled = $data;
                     return $data;
                 }
@@ -351,14 +351,9 @@ class Sugar_Template
                 include_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheHandler.php';
 
                 // create cache
-                $cacheHandler = new Sugar_CacheHandler($this->sugar);
+                $cache = new Sugar_CacheHandler($this->sugar);
             } else {
-                $cacheHandler = null;
-            }
-
-            // add file to cache handlers file reference list
-            if (!is_null($this->cacheId)) {
-                $this->sugar->cacheHandler->addRef($this);
+                $cache = null;
             }
 
             // load compiled template
@@ -374,39 +369,29 @@ class Sugar_Template
                 }
                 $pcode = $parent->_loadCompile();
 
-                die('fix this');
-
-                // merge parent with page template
-                $pcode ['sections']= array_merge($pcode['sections'], $code['sections']);
-
-                // set page main bytecode as content section if and only if
-                // the page template did not define its own explicit content
-                // section.
-                if (!isset($code['sections']['content'])) {
-                    $pcode['sections']['content'] = $code['bytecode'];
-                }
-
+                // merge code
+                $pcode->mergeChild($code);
                 $code = $pcode;
+                unset($pcode);
             }
 
             // execute our compiled template
-            $context = new Sugar_Context($this->sugar, $this, $data, $code, $cacheHandler);
+            $context = new Sugar_Context($this->sugar, $this, $data, $code, $cache);
             Sugar_Runtime::execute($context);
             unset($context);
 
             // clean up the cache handler and display the uncachable data if
             // and only if we created the cache handler
-            if ($cacheHandler) {
-                $cache = $cacheHandler->getOutput();
-                unset($cacheHandler);
+            if ($cache) {
+                $code = $cache->getOutput();
+                unset($cache);
 
                 // attempt to save cache
-                $this->sugar->cache->store($this, Sugar::CACHE_HTML, $cache);
+                $this->sugar->cache->store($this, Sugar::CACHE_HTML, $code);
 
                 // display cache
-                $context = new Sugar_Context($this->sugar, $this, $data, $cache, $cacheHandler);
+                $context = new Sugar_Context($this->sugar, $this, $data, $code, null);
                 Sugar_Runtime::execute($context);
-                unset($context);
             }
 
             return true;
