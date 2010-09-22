@@ -237,7 +237,7 @@ class Sugar_Template
 
         // create context, execute
         $runtime = new Sugar_Runtime($this->_sugar);
-        $runtime->display($this, $data);
+        $runtime->execute($this, $data);
     }
 
     /**

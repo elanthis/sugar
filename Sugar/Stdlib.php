@@ -79,7 +79,7 @@ function sugar_function_include($sugar, $params, $context)
     $data = new Sugar_Data($context->getData(), $params);
 
     // display new template
-    $template->display($data);
+    $context->getRuntime()->execute($template, $data);
 }
 
 /*++

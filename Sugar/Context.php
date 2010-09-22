@@ -74,16 +74,25 @@ final class Sugar_Context
     private $_data;
 
     /**
+     * Runtime instance
+     *
+     * @var Sugar_Runtime
+     */
+    private $_runtime;
+
+    /**
      * Create instance
      *
      * @param Sugar          $sugar    Sugar instance
      * @param Sugar_Template $template Template being evaluated
-     * @param Sugar_Data     $data     Variable data for executiong
+     * @param Sugar_Data     $data     Variable data for execution
+     * @param Sugar_Runtime  $runtime  Runtime instance
      */
-    public function __construct(Sugar $sugar, Sugar_Template $template, Sugar_Data $data) {
+    public function __construct(Sugar $sugar, Sugar_Template $template, Sugar_Data $data, Sugar_Runtime $runtime) {
         $this->_sugar = $sugar;
         $this->_template = $template;
         $this->_data = $data;
+        $this->_runtime = $runtime;
     }
 
     /**
@@ -114,6 +123,16 @@ final class Sugar_Context
     public function getData()
     {
         return $this->_data;
+    }
+
+    /**
+     * Get runtime instance
+     *
+     * @return Sugar_Runtime
+     */
+    public function getRuntime()
+    {
+        return $this->_runtime;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

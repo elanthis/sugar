@@ -555,45 +555,32 @@ final class Sugar_Runtime {
     }
 
     /**
-     * Executes the given bytecode.  The return value is the last item on
-     * the stack, if any.  For complete templates, this should be nothing
-     * (null).
-     *
-     * @param Sugar_Context  $context Context to execute with
-     *
-     * @return mixed Last value on stack.
-     * @throws Sugar_Exception_Runtime when the user has provided code that
-     * cannot be executed, such as attempting to call a function that does
-     * not exist.
-     */
-    public function execute(Sugar_Context $context, Sugar_Compiled $code)
-    {
-        // add template to cache handler, if we have one
-        if ($this->_cache) {
-            $this->_cache->addRef($context->getTemplate());
-        }
-
-        $stack = array();
-        self::_execute($context, $context->getSugar(), $context->getData(),
-            $this->_cache, $code, $code->getSection('main'), $stack);
-    }
-
-    /**
      * Display a template (top-level call)
      *
      * @param Sugar_Template $template Template to display
      * @param Sugar_Data     $data     Top-level variable scope
      */
-    public function display(Sugar_Template $template, Sugar_Data $data)
+    public function execute(Sugar_Template $template, Sugar_Data $data)
     {
+        // stack used for execution
+        $stack = array();
+
+        // context used for execution
+        $context = new Sugar_Context($this->_sugar, $template, $data, $this);
+
         try {
             // if we are to be cached, check for an existing cache and use that if
             // it exists and is up to date
             if (!$this->_sugar->debug && !is_null($template->cacheId)) {
                 $code = $this->_sugar->getLoader()->getCached($template);
                 if ($code !== false) {
-                    $context = new Sugar_Context($this->_sugar, $template, $data, $code, $this->_cache);
-                    Sugar_Runtime::execute($context, $code);
+                    // add to existing cache, if any
+                    if ($this->_cache) {
+                        $this->_cache->addRef($template);
+                    }
+
+                    // execute cached code
+                    self::_execute($context, $this->_sugar, $data, $this->_cache, $code, $code->getSection('main'), $stack);
                     return true;
                 }
             }
@@ -608,6 +595,14 @@ final class Sugar_Runtime {
 
                 // create cache
                 $this->_cache = new Sugar_Cache($this->_sugar);
+                $startCache = true;
+            } else {
+                $startCache = false;
+            }
+
+            // add template code to cache's reference
+            if ($this->_cache) {
+                $this->_cache->addRef($template);
             }
 
             // load compiled template
@@ -633,13 +628,11 @@ final class Sugar_Runtime {
             }
 
             // execute our compiled template
-            $context = new Sugar_Context($this->_sugar, $template, $data);
-            Sugar_Runtime::execute($context, $code);
-            unset($context);
+            self::_execute($context, $this->_sugar, $data, $this->_cache, $code, $code->getSection('main'), $stack);
 
             // clean up the cache handler and display the uncachable data if
             // and only if we created the cache handler
-            if ($this->_cache) {
+            if ($startCache) {
                 $code = $this->_cache->getOutput();
                 $this->_cache = null;
 
@@ -650,8 +643,7 @@ final class Sugar_Runtime {
                 $this->_sugar->getLoader()->setCached($template, $code);
 
                 // display cache
-                $context = new Sugar_Context($this->_sugar, $template, $data);
-                Sugar_Runtime::execute($context, $code);
+                self::_execute($context, $this->_sugar, $data, $this->_cache, $code, $code->getSection('main'), $stack);
             }
 
             return true;
