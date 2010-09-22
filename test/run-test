@@ -4,7 +4,7 @@ require_once dirname(__FILE__).'/Test.php';
 
 $runner = new Sugar_TestRunner;
 
-$opts = getopt('lat:');
+$opts = getopt('lao:t:');
 if (isset($opts['l'])) {
 	foreach ($runner->getList() as $test) {
 		echo "$test\n";
@@ -23,6 +23,10 @@ if (isset($opts['l'])) {
 		}
 	}
 	exit($ok ? 0 : 1);
+} elseif (isset($opts['o'])) {
+	$test = $opts['o'];
+	$rs = $runner->run($test);
+	echo $rs->output, "\n";
 } elseif (isset($opts['t'])) {
 	$test = $opts['t'];
 	$rs = $runner->run($test);

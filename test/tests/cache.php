@@ -19,12 +19,23 @@ class Sugar_Test_cache implements Sugar_Test {
 	{
 		$sugar->addFunction('test', 'sugar_function_test', false);
 
+		// load first run of each template
 		$tpl = $sugar->getTemplate('cache.tpl', 'test1');
-		$text1 = $tpl->fetch();
+		$text1a = $tpl->fetch();
 
 		$tpl = $sugar->getTemplate('cache.tpl', 'test2');
-		$text2 = $tpl->fetch();
+		$text2a = $tpl->fetch();
 
-		return $text1.$text1.$text2.$text2;
+		// disable debug for second run
+		$sugar->debug = false;
+
+		// load second run of each template
+		$tpl = $sugar->getTemplate('cache.tpl', 'test1');
+		$text1b = $tpl->fetch();
+
+		$tpl = $sugar->getTemplate('cache.tpl', 'test2');
+		$text2b = $tpl->fetch();
+
+		return $text1a.$text1b.$text2a.$text2b;
 	}
 }
