@@ -29,7 +29,7 @@
  * @subpackage Stdlib
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
- * @license    http://opensource.org/licenses/mit-license.php MIT
+ * @license    http://opensource.org/licenses/mit-license.ph, Sugar_Context $ctxp MIT
  * @version    SVN: $Id$
  * @link       http://php-sugar.net
  */
@@ -48,7 +48,7 @@
  */
 class Sugar_Function_Ldelim extends Sugar_Function
 {
-    public function invoke(array $params)
+    public function invoke(array $params, Sugar_Context $ctx)
     {
         return $this->sugar->delimStart;
     }

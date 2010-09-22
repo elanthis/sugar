@@ -442,7 +442,7 @@ class Sugar
         }
 
         // create plugin wrapper
-        $plugin = new Sugar_ModifierWrapper($this);
+        $plugin = new Sugar_FunctionWrapper($this);
         $plugin->cacheable = $cache;
         $plugin->escape = $escape;
         $plugin->callable = $invoke;
@@ -529,7 +529,7 @@ class Sugar
      * @param string $name Name of the plugin to load
      * @return mixed The plugin object, or null if not found
      */
-    private function _getPlugin($type, $name)
+    public function getPlugin($type, $name)
     {
         $name = strtolower($name);
 
@@ -562,36 +562,6 @@ class Sugar
 
         // nothing found
         return false;
-    }
-
-    /**
-     * Returns an array containing the data for template function.  This
-     * will first look for registered functions, then it will attempt to
-     * auto-register a function using the smarty_function_foo naming
-     * scheme.  Finally, it will attempt to load a function plugin.
-     *
-     * @param string $name Function name to lookup.
-     *
-     * @return array
-     */
-    public function getFunction($name)
-    {
-        return $this->_getPlugin('function', $name);
-    }
-
-    /**
-     * Returns the callback for a template modifier, if it exists.  This
-     * will first look for registered modifiers, then it will attempt to
-     * auto-register a modifier using the smarty_modifier_foo naming
-     * scheme.  Finally, it will attempt to load a modifier plugin.
-     *
-     * @param string $name Modifier name to lookup.
-     *
-     * @return array
-     */
-    public function getModifier($name)
-    {
-        return $this->_getPlugin('modifier', $name);
     }
 
     /**

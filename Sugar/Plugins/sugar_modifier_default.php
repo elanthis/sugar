@@ -48,7 +48,7 @@
  */
 class Sugar_Modifier_Default extends Sugar_Modifier
 {
-    public function invoke($value, array $params)
+    public function invoke($value, array $params, Sugar_Context $ctx)
     {
         if (is_null($value) && isset($params[0])) {
             return $params[0];

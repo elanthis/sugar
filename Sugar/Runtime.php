@@ -86,16 +86,15 @@ final class Sugar_Runtime {
     const OP_IN = 24;
     const OP_NOT_IN = 25;
     const OP_CALL = 26;
-    const OP_CALL_TOP = 27;
-    const OP_METHOD = 28;
-    const OP_MODIFY = 29;
-    const OP_IF = 30;
-    const OP_RANGE = 31;
-    const OP_FOREACH = 32;
-    const OP_WHILE = 33;
-    const OP_NOCACHE = 34;
-    const OP_DEREF = 35;
-    const OP_MAKE_ARRAY = 36;
+    const OP_METHOD = 27;
+    const OP_MODIFY = 28;
+    const OP_IF = 29;
+    const OP_RANGE = 30;
+    const OP_FOREACH = 31;
+    const OP_WHILE = 32;
+    const OP_NOCACHE = 33;
+    const OP_DEREF = 34;
+    const OP_MAKE_ARRAY = 35;
     /**@#-*/
 
     /**
@@ -333,7 +332,7 @@ final class Sugar_Runtime {
                 $debug_line = $opcodes[++$i];
 
                 // lookup function
-                $plugin = $sugar->getFunction($func);
+                $plugin = $sugar->getPlugin('function', $func);
                 if (!$plugin) {
                     throw new Sugar_Exception_Runtime(
                         $debug_file,
@@ -351,7 +350,7 @@ final class Sugar_Runtime {
                 // exception net
                 try {
                     // call function, using appropriate method
-                    $ret = $plugin->invoke($params);
+                    $ret = $plugin->invoke($params, $context);
                 } catch (Exception $e) {
                     $sugar->handleError($e);
                     $ret = null;
@@ -432,7 +431,7 @@ final class Sugar_Runtime {
                 $value = array_pop($stack);
 
                 // lookup function
-                $plugin = $sugar->getModifier($name);
+                $plugin = $sugar->getPlugin('modifier', $name);
                 if (!$plugin) {
                     throw new Sugar_Exception_Runtime(
                         'FIXME',
@@ -450,7 +449,7 @@ final class Sugar_Runtime {
                 // exception net
                 try {
                     // invoke the modifier
-                    $ret = $plugin->invoke($value, $params);
+                    $ret = $plugin->invoke($value, $params, $context);
                 } catch (Exception $e) {
                     $sugar->handleError($e);
                     $ret = null;

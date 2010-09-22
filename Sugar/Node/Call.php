@@ -100,7 +100,7 @@ class Sugar_Node_Call extends Sugar_Node
     public function isEscaped()
     {
         // load the requested function
-        $plugin = $this->_sugar->getFunction($this->name);
+        $plugin = $this->_sugar->getPlugin('function', $this->name);
         if (!$plugin) {
             return false;
         }

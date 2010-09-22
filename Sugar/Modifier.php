@@ -51,13 +51,6 @@
 abstract class Sugar_Modifier
 {
     /**
-     * Sugar object
-     *
-     * @var Sugar
-     */
-    public $sugar;
-
-    /**
      * Whether or not the output should be escaped
      *
      * @var boolean
@@ -77,11 +70,12 @@ abstract class Sugar_Modifier
     /**
      * Execute the modifier
      *
-     * @param mixed $value  Value to modify.
-     * @param array $params Parameters
+     * @param mixed         $value   Value to modify.
+     * @param array         $params  Parameters
+     * @param Sugar_Context $context Execution context
      * @return mixed Modifier result
      */
-    abstract function invoke($value, array $params);
+    abstract function invoke($value, array $params, Sugar_Context $context);
 }
 
 /**
@@ -109,13 +103,14 @@ final class Sugar_ModifierWrapper extends Sugar_Modifier
     /**
      * Execute the modifier
      *
-     * @param mixed $value  Value to modify.
-     * @param array $params Parameters
+     * @param mixed         $value   Value to modify.
+     * @param array         $params  Parameters
+     * @param Sugar_Context $context Execution context
      * @return mixed Modifier result
      */
-    public function invoke($value, array $params)
+    public function invoke($value, array $params, Sugar_Context $context)
     {
-        return call_user_func($this->callable, $value, $this->sugar, $params);
+        return call_user_func($this->callable, $value, $this->sugar, $params, $context);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

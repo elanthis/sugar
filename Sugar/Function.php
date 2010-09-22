@@ -84,10 +84,11 @@ abstract class Sugar_Function
     /**
      * Execute the function
      *
-     * @param array $params Parameters
+     * @param array         $params  Parameters
+     * @param Sugar_Context $context Execution context
      * @return mixed Function result
      */
-    abstract function invoke(array $params);
+    abstract function invoke(array $params, Sugar_Context $context);
 }
 
 /**
@@ -115,12 +116,13 @@ final class Sugar_FunctionWrapper extends Sugar_Function
     /**
      * Execute the function
      *
-     * @param array $params Parameters
+     * @param array         $params  Parameters
+     * @param Sugar_Context $context Execution context
      * @return mixed Function result
      */
-    public function invoke(array $params)
+    public function invoke(array $params, Sugar_Context $context)
     {
-        return call_user_func($this->callable, $this->sugar, $params);
+        return call_user_func($this->callable, $this->sugar, $params, $context);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
