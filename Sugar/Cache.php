@@ -54,7 +54,7 @@
  * @link       http://php-sugar.net
  * @access     private
  */
-final class Sugar_CacheHandler
+final class Sugar_Cache
 {
     /**
      * Sugar reference.

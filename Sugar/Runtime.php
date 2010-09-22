@@ -139,7 +139,7 @@ final class Sugar_Runtime {
      * Display output, either to the cache handler or to the PHP
      * output stream.
      *
-     * @param Sugar_CacheHandler $cache Cache handler (or null for no caching).
+     * @param Sugar_Cache $cache Cache handler (or null for no caching).
      * @param string             $output       Output.
      *
      * @return bool True on success.
@@ -160,7 +160,7 @@ final class Sugar_Runtime {
      * @param Sugar_Context      $context Context to execute with
      * @param Sugar              $sugar   Sugar instance
      * @param Sugar_Data         $date    Variable data
-     * @param Sugar_CacheHandler $cache   Caching handler
+     * @param Sugar_Cache $cache   Caching handler
      * @param array              $code    Bytecode to execute.
      * @param array              $stack   Stack
      *
@@ -571,7 +571,7 @@ final class Sugar_Runtime {
     public static function execute(Sugar_Context $context)
     {
         // add template to cache handler, if we have one
-        $cache = $context->getCacheHandler();
+        $cache = $context->getCache();
         if ($cache) {
             $cache->addRef($context->getTemplate());
         }

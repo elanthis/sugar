@@ -348,10 +348,10 @@ class Sugar_Template
                 /**
                  * Cache handler.
                  */
-                include_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheHandler.php';
+                include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache.php';
 
                 // create cache
-                $cache = new Sugar_CacheHandler($this->sugar);
+                $cache = new Sugar_Cache($this->sugar);
             } else {
                 $cache = null;
             }

@@ -34,8 +34,8 @@
     <file name="NEWS" role="doc" />
     <file name="Sugar.php" role="php" />
 	  <dir name="Sugar">
+     <file name="Cache.php" role="php"/>
      <file name="CacheDriver.php" role="php"/>
-     <file name="CacheHandler.php" role="php"/>
      <file name="Context.php" role="php"/>
      <file name="Data.php" role="php"/>
      <file name="Exception.php" role="php"/>
