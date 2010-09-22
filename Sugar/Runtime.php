@@ -99,20 +99,41 @@ final class Sugar_Runtime {
     /**@#-*/
 
     /**
-     * Execution context
+     * Sugar instance
      *
-     * @var Sugar_Context
+     * @var Sugar
      */
-    private $_context;
+    private $_sugar;
+
+    /**
+     * Cache handler.
+     *
+     * @var Sugar_Cache
+     */
+    private $_cache;
+
+    /**
+     * Compiled code cache
+     *
+     * @var array
+     */
+    private $_compiled = array();
+
+    /**
+     * Cache output cache
+     *
+     * @var array
+     */
+    private $_cached = array();
 
     /**
      * Constructor
      *
-     * @param Sugar_Context $context Context being executed
+     * @param Sugar       $sugar Sugar Instance
      */
-    public function __construct(Sugar_Context $context)
+    public function __construct(Sugar $sugar)
     {
-        $context = $context;
+        $this->_sugar = $sugar;
     }
 
     /**
@@ -157,12 +178,14 @@ final class Sugar_Runtime {
     /**
      * Executes the given bytecode.
      *
-     * @param Sugar_Context      $context Context to execute with
-     * @param Sugar              $sugar   Sugar instance
-     * @param Sugar_Data         $date    Variable data
-     * @param Sugar_Cache $cache   Caching handler
-     * @param array              $code    Bytecode to execute.
-     * @param array              $stack   Stack
+     * @param Sugar_Context  $context Context to execute with
+     * @param Sugar          $sugar   Sugar instance
+     * @param Sugar_Data     $date    Variable data
+     * @param Sugar_Cache    $cache   Caching handler
+     * @param Sugar_Compiled $code    Compiled template being executed
+     * @param array          $opcodes Opcodes being executed
+     * @param array          $code    Bytecode to execute.
+     * @param array          $stack   Stack
      *
      * @return mixed Last value on stack.
      * @throws Sugar_Exception_Runtime when the user has provided code that
@@ -170,13 +193,16 @@ final class Sugar_Runtime {
      * not exist.
      */
     private static function _execute(Sugar_Context $context, Sugar $sugar,
-        Sugar_Data $data, $cache, array $code, array &$stack
+        Sugar_Data $data, $cache, Sugar_Compiled $code, array $opcodes,
+        array &$stack
     ) {
-        for ($i = 0; $i < count($code); ++$i) {
-            $opcode = $code[$i];
+        // execute opcodes
+        for ($i = 0; $i < count($opcodes); ++$i) {
+            // get current opcode
+            $opcode = $opcodes[$i];
             switch($opcode) {
             case Sugar_Runtime::OP_LPRINT:
-                self::_display($cache, $code[++$i]);
+                self::_display($cache, $opcodes[++$i]);
                 break;
             case Sugar_Runtime::OP_EPRINT:
                 $v1 = array_pop($stack);
@@ -187,24 +213,23 @@ final class Sugar_Runtime {
                 self::_display($cache, self::_valueToString($v1));
                 break;
             case Sugar_Runtime::OP_PUSH:
-                $v1 = $code[++$i];
+                $v1 = $opcodes[++$i];
                 $stack []= $v1;
                 break;
             case Sugar_Runtime::OP_LOOKUP:
-                $name = strtolower($code[++$i]);
+                $name = strtolower($opcodes[++$i]);
                 $stack []= $data->get($name);
                 break;
             case Sugar_Runtime::OP_ASSIGN:
-                $name = $code[++$i];
+                $name = $opcodes[++$i];
                 $v1 = array_pop($stack);
                 $data->set($name, $v1);
                 break;
             case Sugar_Runtime::OP_INSERT:
-                $name = $code[++$i];
-                $section = $context->getCode()->getSection($name);
+                $name = $opcodes[++$i];
+                $section = $code->getSection($name);
                 if ($section !== false) {
-                    self::_execute($context, $sugar, $data, $cache,
-                            $section, $stack);
+                    self::_execute($context, $sugar, $data, $cache, $code, $section, $stack);
                 } else {
                     throw new Sugar_Exception_Runtime(
                         $debug_file,
@@ -317,11 +342,11 @@ final class Sugar_Runtime {
                 break;
             case Sugar_Runtime::OP_CALL:
             case Sugar_Runtime::OP_CALL_TOP:
-                $func = $code[++$i];
-                $args = $code[++$i];
-                $escape_flag = $opcode == 'call_top' ? $code[++$i] : false;
-                $debug_file = $code[++$i];
-                $debug_line = $code[++$i];
+                $func = $opcodes[++$i];
+                $args = $opcodes[++$i];
+                $escape_flag = $opcode == 'call_top' ? $opcodes[++$i] : false;
+                $debug_file = $opcodes[++$i];
+                $debug_line = $opcodes[++$i];
 
                 // lookup function
                 $callable = $sugar->getFunction($func);
@@ -339,8 +364,7 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $name=>$pcode) {
-                    $params[$name] = self::_execute($context, $sugar, $data,
-                            $cache, $pcode, $stack);
+                    $params[$name] = self::_execute($context, $sugar, $data, $cache, $code, $pcode, $stack);
                 }
 
                 // exception net
@@ -363,10 +387,10 @@ final class Sugar_Runtime {
                 break;
             case Sugar_Runtime::OP_METHOD:
                 $obj = array_pop($stack);
-                $func = $code[++$i];
-                $args = $code[++$i];
-                $debug_file = $code[++$i];
-                $debug_line = $code[++$i];
+                $func = $opcodes[++$i];
+                $args = $opcodes[++$i];
+                $debug_file = $opcodes[++$i];
+                $debug_line = $opcodes[++$i];
 
                 // ensure the object is an object and that the method is a method
                 if (!is_object($obj)) {
@@ -388,8 +412,7 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $pcode) {
-                    $params [] = self::_execute($context, $sugar, $data,
-                            $cache, $pcode, $stack);
+                    $params [] = self::_execute($context, $sugar, $data, $cache, $code, $pcode, $stack);
                 }
 
                 // perform ACL checking on the method call
@@ -423,8 +446,8 @@ final class Sugar_Runtime {
                 }
                 break;
             case Sugar_Runtime::OP_MODIFY:
-                $name = $code[++$i];
-                $args = $code[++$i];
+                $name = $opcodes[++$i];
+                $args = $opcodes[++$i];
                 $value = array_pop($stack);
 
                 // lookup function
@@ -440,8 +463,7 @@ final class Sugar_Runtime {
                 // compile args
                 $params = array();
                 foreach ($args as $pcode) {
-                    $params []= self::_execute($context, $sugar, $data,
-                        $cache, $pcode, $stack);
+                    $params []= self::_execute($context, $sugar, $data, $cache, $code, $pcode, $stack);
                 }
 
                 // exception net
@@ -457,13 +479,10 @@ final class Sugar_Runtime {
                 $stack []= $ret;
                 break;
             case Sugar_Runtime::OP_IF:
-                $clauses = $code[++$i];
+                $clauses = $opcodes[++$i];
                 foreach ($clauses as $clause) {
-                    if ($clause[0] === false || self::_execute($context, $sugar, $data,
-                        $cache, $clause[0], $stack
-                    )) {
-                        self::_execute($context, $sugar, $data,
-                            $cache, $clause[1], $stack);
+                    if ($clause[0] === false || self::_execute($context, $sugar, $data, $cache, $code, $clause[0], $stack)) {
+                        self::_execute($context, $sugar, $data, $cache, $code, $clause[1], $stack);
                         break;
                     }
                 }
@@ -472,8 +491,8 @@ final class Sugar_Runtime {
                 $step = array_pop($stack);
                 $upper = array_pop($stack);
                 $lower = array_pop($stack);
-                $name = $code[++$i];
-                $block = $code[++$i];
+                $name = $opcodes[++$i];
+                $block = $opcodes[++$i];
 
                 // if step is 0, fail
                 if ($step === 0) {
@@ -486,44 +505,38 @@ final class Sugar_Runtime {
                     || ($step > 0 && $index <= $upper)
                 ) {
                     $data->set($name, $index);
-                    self::_execute($context, $sugar, $data, $cache,
-                            $block, $stack);
+                    self::_execute($context, $sugar, $data, $cache, $code, $block, $stack);
                     $index += $step;
                 }
                 break;
             case Sugar_Runtime::OP_FOREACH:
                 $array = array_pop($stack);
-                $key = $code[++$i];
-                $name = $code[++$i];
-                $block = $code[++$i];
+                $key = $opcodes[++$i];
+                $name = $opcodes[++$i];
+                $block = $opcodes[++$i];
                 if (is_array($array) || is_object($array)) {
                     foreach ($array as $k=>$v) {
                         if ($key) {
                             $data->set($key, $k);
                         }
                         $data->set($name, $v);
-                        self::_execute($context, $sugar, $data,
-                                $cache, $block, $stack);
+                        self::_execute($context, $sugar, $data, $cache, $code, $block, $stack);
                     }
                 }
                 break;
             case Sugar_Runtime::OP_WHILE:
-                $test = $code[++$i];
-                $block = $code[++$i];
-                while (self::_execute($context, $sugar, $data,
-                    $cache, $test, $stack
-                )) {
-                    self::_execute($context, $sugar, $data,
-                        $cache, $block, $stack);
+                $test = $opcodes[++$i];
+                $block = $opcodes[++$i];
+                while (self::_execute($context, $sugar, $data, $cache, $code, $test, $stack)) {
+                    self::_execute($context, $sugar, $data, $cache, $code, $block, $stack);
                 }
                 break;
             case Sugar_Runtime::OP_NOCACHE:
-                $block = $code[++$i];
+                $block = $opcodes[++$i];
                 if ($sugar->cacheHandler) {
                     $sugar->cacheHandler->addBlock($block);
                 } else {
-                    self::_execute($context, $sugar, $data,
-                        $cache, $block, $stack);
+                    self::_execute($context, $sugar, $data, $cache, $code, $block, $stack);
                 }
                 break;
             case Sugar_Runtime::OP_DEREF:
@@ -538,11 +551,10 @@ final class Sugar_Runtime {
                 }
                 break;
             case Sugar_Runtime::OP_MAKE_ARRAY:
-                $elems = $code[++$i];
+                $elems = $opcodes[++$i];
                 $array = array();
                 foreach ($elems as $elem) {
-                    $array []= self::_execute($context, $sugar, $data,
-                        $cache, $elem, $stack);
+                    $array []= self::_execute($context, $sugar, $data, $cache, $code, $elem, $stack);
                 }
                 $stack []= $array;
                 break;
@@ -568,17 +580,204 @@ final class Sugar_Runtime {
      * cannot be executed, such as attempting to call a function that does
      * not exist.
      */
-    public static function execute(Sugar_Context $context)
+    public function execute(Sugar_Context $context, Sugar_Compiled $code)
     {
         // add template to cache handler, if we have one
-        $cache = $context->getCache();
-        if ($cache) {
-            $cache->addRef($context->getTemplate());
+        if ($this->_cache) {
+            $this->_cache->addRef($context->getTemplate());
         }
 
         $stack = array();
         self::_execute($context, $context->getSugar(), $context->getData(),
-            $cache, $context->getCode()->getSection('main'), $stack);
+            $this->_cache, $code, $code->getSection('main'), $stack);
+    }
+    
+    /**
+     * Attempt to load an HTML cached file.  Will return false if
+     * the cached file does not exist or if the cached file is out
+     * of date.
+     *
+     * @param Sugar_Template $template
+     * @return false|array Cache data on success, false on error.
+     */
+    private function _loadCache(Sugar_Template $template)
+    {
+        // if the cache is already loaded, just return it
+        if (isset($this->_cached[$template->name][$template->cacheId])) {
+            return $this->_cached[$template->name][$temlatd->cacheId];
+        }
+
+        // get the cache's stamp, and fail if it can't be found
+        $cstamp = $this->_sugar->cache->getLastModified($template, Sugar::CACHE_HTML);
+        if ($cstamp === false) {
+            return false;
+        }
+
+        // fail if the cache is too old
+        if ($cstamp < time() - $this->_sugar->cacheLimit) {
+            return false;
+        }
+
+        // load the cache data, fail if loading fails or the
+        // version doesn't match
+        $data = $this->_sugar->cache->load($template, Sugar::CACHE_HTML);
+        if ($data === false) {
+            return false;
+        }
+
+        // compare stamps with the included references; if any fail,
+        // unmark our _cached flag so we can report back to the user
+        // on a call to isCached()
+        foreach ($data->getReferences() as $file) {
+            // try to reference the file; ignore failures
+            $inc = $this->_sugar->getTemplate($file, $template->cacheId);
+            if ($inc === false) {
+                continue;
+            }
+
+            // get the stamp of the reference; ignore failures
+            $stamp = $inc->getLastModified();
+            if ($stamp === false) {
+                continue;
+            }
+
+            // if the stamp is newer than the cache stamp, fail
+            if ($cstamp < $stamp) {
+                return false;
+            }
+        }
+
+        // store the bytecode so we don't need to reload it
+        $this->_cached [$template->name][$template->cacheId]= $data;
+        return $data;
+    }
+
+    /**
+     * Load and compile (if necessary) the template code.
+     *
+     * @param Sugar_Template $template
+     * @return mixed
+     */
+    private function _loadCompile(Sugar_Template $template)
+    {
+        // if we already have a compiled version, don't reload
+        if (isset($this->_compiled[$template->name])) {
+            return $this->_compiled[$template->name];
+        }
+
+        // if debug is off and the stamp is good, load compiled version
+        if (!$this->_sugar->debug) {
+            $sstamp = $template->getLastModified();
+            $cstamp = $this->_sugar->cache->getLastModified($template, Sugar::CACHE_TPL);
+            if ($cstamp !== false && $cstamp > $sstamp) {
+                $data = $this->_sugar->cache->load($template, Sugar::CACHE_TPL);
+                // if version checks out, run it
+                if ($data !== false && $data) {
+                    $this->_compiled [$template->name]= $data;
+                    return $data;
+                }
+            }
+        }
+
+        /**
+         * Compiler.
+         */
+        include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Grammar.php';
+
+        // compile
+        $source = $template->getSource();
+        if ($source === false) {
+            throw new Sugar_Exception_Usage('template not found: '.$template->getName());
+        }
+        $parser = new Sugar_Grammar($this->_sugar);
+        $data = $parser->compile($template, $source);
+        unset($parser);
+
+        // store compiled bytecode into cache
+        $this->_sugar->cache->store($template, Sugar::CACHE_TPL, $data);
+
+        $this->_compiled [$template->name]= $data;
+        return $data;
+    }
+
+    /**
+     * Display a template (top-level call)
+     *
+     * @param Sugar_Template $template Template to display
+     * @param Sugar_Data     $data     Top-level variable scope
+     */
+    public function display(Sugar_Template $template, Sugar_Data $data)
+    {
+        try {
+            // if we are to be cached, check for an existing cache and use that if
+            // it exists and is up to date
+            if (!$this->_sugar->debug && !is_null($template->cacheId)) {
+                $code = $this->_loadCache($template);
+                if ($code !== false) {
+                    $context = new Sugar_Context($this->_sugar, $template, $data, $code, $this->_cache);
+                    Sugar_Runtime::execute($context, $code);
+                    return true;
+                }
+            }
+
+            // if we are to be cached and aren't alrady running inside an existing
+            // cache handler instance, create a new one
+            if (!$this->_cache && !is_null($template->cacheId)) {
+                /**
+                 * Cache handler.
+                 */
+                include_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache.php';
+
+                // create cache
+                $this->_cache = new Sugar_Cache($this->_sugar);
+            }
+
+            // load compiled template
+            $code = $this->_loadCompile($template);
+
+            // if we have an inherited template, load it and merge it with our data
+            $inherit = $template->getInherit();
+            if (!$inherit) {
+                $inherit = $code->getInherit();
+            }
+            if ($inherit) {
+                // load compiled parent (inherited template)
+                $parent = $this->_sugar->getTemplate($inherit, $template->cacheId);
+                if ($parent === false) {
+                    throw new Sugar_Exception_Usage('inherited template not found: '.$inherit);
+                }
+                $pcode = $this->_loadCompile($parent);
+
+                // merge code
+                $pcode->mergeChild($code);
+                $code = $pcode;
+                unset($pcode);
+            }
+
+            // execute our compiled template
+            $context = new Sugar_Context($this->_sugar, $template, $data);
+            Sugar_Runtime::execute($context, $code);
+            unset($context);
+
+            // clean up the cache handler and display the uncachable data if
+            // and only if we created the cache handler
+            if ($this->_cache) {
+                $code = $this->_cache->getOutput();
+                $this->_cache = null;
+
+                // attempt to save cache
+                $this->_sugar->cache->store($template, Sugar::CACHE_HTML, $code);
+
+                // display cache
+                $context = new Sugar_Context($this->_sugar, $template, $data);
+                Sugar_Runtime::execute($context, $code);
+            }
+
+            return true;
+        } catch (Sugar_Exception $e) {
+            $template->_sugar->handleError($e);
+            return false;
+        }
     }
 }
 

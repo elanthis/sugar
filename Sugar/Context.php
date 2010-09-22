@@ -53,11 +53,18 @@
 final class Sugar_Context
 {
     /**
+     * Sugar context
+     *
+     * @var Sugar
+     */
+    private $_sugar;
+
+    /**
      * Template
      *
      * @var Sugar_Template
      */
-    public $_template;
+    private $_template;
 
     /**
      * Variable data
@@ -67,36 +74,16 @@ final class Sugar_Context
     private $_data;
 
     /**
-     * Compiled code being executed
-     *
-     * @var Sugar_Compiled
-     */
-    private $_code;
-
-    /**
-     * Cache handler.
-     *
-     * @var Sugar_Cache
-     */
-    private $_cache;
-
-    /**
      * Create instance
      *
      * @param Sugar          $sugar    Sugar instance
      * @param Sugar_Template $template Template being evaluated
      * @param Sugar_Data     $data     Variable data for executiong
-     * @param Sugar_Compiled $code     Compiled code being executed
-     * @param Sugar_Cache    $cache    Optional caching handler
      */
-    public function __construct(Sugar $sugar, Sugar_Template $template,
-        Sugar_Data $data, Sugar_Compiled $code, $cache
-    ) {
+    public function __construct(Sugar $sugar, Sugar_Template $template, Sugar_Data $data) {
         $this->_sugar = $sugar;
         $this->_template = $template;
         $this->_data = $data;
-        $this->_code = $code;
-        $this->_cache = $cache;
     }
 
     /**
@@ -127,26 +114,6 @@ final class Sugar_Context
     public function getData()
     {
         return $this->_data;
-    }
-
-    /**
-     * Get compiled code
-     *
-     * @return Sugar_Compiled
-     */
-    public function getCode()
-    {
-        return $this->_code;
-    }
-
-    /**
-     * Get our cache handler.
-     *
-     * @return Sugar_Cache
-     */
-    public function getCache()
-    {
-        return $this->_cache;
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
