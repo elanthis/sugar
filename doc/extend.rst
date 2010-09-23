@@ -4,6 +4,12 @@ Extending Sugar
 Custom Functions
 ----------------
 
+Sugar template functions are created by defining a class derived from
+:class:`Sugar_Function`.  The name of the class must be a specific form,
+namely: `Sugar_Function_foo` where `foo` is the name of the function.
+
+.. warning:: This section out of date.
+
 Registering new function requires the :func:`Sugar::addFunction` method.
 The first parameter is the name of the function as used within
 templates.  The second optional parameter is the callback to use when
@@ -49,15 +55,10 @@ expression.  As with all expressions, the result of a function call
 that is to be displayed will be escaped by default.  To negate this
 behavior, use the raw modifier on the function call.
 
-Exposing objects to Sugar can introduce a potential security hazard
-if Sugar templates come from untrusted sources.  By default, any
-method on an object can be invoked by the Sugar template.  This
-behavior can be overriden by setting `$sugar->methodAcl` to a
-callback that controls method access.  The callback is passed
-the Sugar object, the target object, the target method name, and
-the method parameters.  If the callback returns true, the method
-call is allowed; otherwise, the method call is blocked and an error
-is raised.
+Custom Modifiers
+----------------
+
+.. warning:: this section out of date
 
 Storage Drivers
 ---------------
@@ -128,7 +129,7 @@ with Sugar.  This can be changed.
     $sugar->defaultStorage = 'db';
 
 Cache Drivers
-~~~~~~~~~~~~~
+-------------
 
 .. warning:: this section out of date
 
@@ -165,3 +166,16 @@ object to an instance of the new driver.
 ::
 
     $sugar->cache = new SugarCustomCache($sugar);
+
+Object Security ACL
+-------------------
+
+Exposing objects to Sugar can introduce a potential security hazard
+if Sugar templates come from untrusted sources.  By default, any
+method on an object can be invoked by the Sugar template.  This
+behavior can be overriden by setting `$sugar->methodAcl` to a
+callback that controls method access.  The callback is passed
+the Sugar object, the target object, the target method name, and
+the method parameters.  If the callback returns true, the method
+call is allowed; otherwise, the method call is blocked and an error
+is raised.
