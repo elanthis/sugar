@@ -366,11 +366,13 @@ final class Sugar_Runtime {
                 $stack []= $ret;
                 break;
             case Sugar_Runtime::OP_METHOD:
-                $obj = array_pop($stack);
-                $func = $opcodes[++$i];
-                $args = $opcodes[++$i];
+                $name = $opcodes[++$i];
+                $count = $opcodes[++$i];
                 $debug_file = $opcodes[++$i];
                 $debug_line = $opcodes[++$i];
+
+                // get object
+                $obj = $stack[count($stack) - $count - 1];
 
                 // ensure the object is an object and that the method is a method
                 if (!is_object($obj)) {
@@ -381,18 +383,21 @@ final class Sugar_Runtime {
                     );
                 }
 
-                if (!method_exists($obj, $func)) {
+                if (!method_exists($obj, $name)) {
                     throw new Sugar_Exception_Runtime(
                         $debug_file,
                         $debug_line,
-                        'unknown method `'.$func.'` on type `'.gettype($obj).'`'
+                        'unknown method `'.$name.'` on type `'.gettype($obj).'`'
                     );
                 }
 
-                // compile args
-                $params = array();
-                foreach ($args as $pcode) {
-                    $params [] = self::_execute($context, $sugar, $data, $cache, $code, $pcode, $stack);
+                // pull params out of stack
+                $start = count($stack) - $count;
+                $params = array_slice($stack, $start, $count);
+
+                // remove elements from stack (FIXME: yuck, this is silly)
+                while (count($stack) != $start - 1) {
+                    array_pop($stack);
                 }
 
                 // perform ACL checking on the method call
@@ -401,7 +406,7 @@ final class Sugar_Runtime {
                         $sugar->methodAcl,
                         $sugar,
                         $obj,
-                        $func,
+                        $name,
                         $params,
                         $context
                     );
@@ -410,7 +415,7 @@ final class Sugar_Runtime {
                         throw new Sugar_Exception_Runtime(
                             $debug_file,
                             $debug_line,
-                            'method call to `'.$func.'` on type `'.
+                            'method call to `'.$name.'` on type `'.
                                 gettype($obj).'` blocked by ACL'
                         );
                     }
@@ -419,7 +424,7 @@ final class Sugar_Runtime {
                 // exception net
                 try {
                     // invoke method
-                    $stack []= @call_user_func_array(array($obj, $func), $params);
+                    $stack []= @call_user_func_array(array($obj, $name), $params);
                 } catch (Exception $e) {
                     $sugar->handleError($e);
                     $stack []= null;

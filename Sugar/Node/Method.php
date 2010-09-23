@@ -116,21 +116,23 @@ class Sugar_Node_Method extends Sugar_Node
      */
     public function compile()
     {
-        // compile parameters
-        $cparams = array();
-        foreach ($this->params as $name=>$node) {
-            $cparams [$name]= $node->compile();
-        }
+        $opcodes = array();
 
         // compile base node expression
-        $opcodes = $this->node->compile();
+        $opcodes []= $this->node->compile();
+
+        // compile parameters
+        $cparams = array();
+        foreach ($this->params as $node) {
+            $opcodes []= $node->compile();
+        }
 
         // add method call
-        array_push($opcodes, Sugar_Runtime::OP_METHOD, $this->name, $cparams,
-            $this->file, $this->line);
+        $opcodes []= array(Sugar_Runtime::OP_METHOD, $this->name,
+            count($this->params), $this->file, $this->line);
 
         // return compiled bytecode
-        return $opcodes;
+        return call_user_func_array('array_merge', $opcodes);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
