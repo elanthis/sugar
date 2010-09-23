@@ -525,11 +525,21 @@ final class Sugar_Runtime {
                 }
                 break;
             case Sugar_Runtime::OP_MAKE_ARRAY:
-                $elems = $opcodes[++$i];
+                $count = $opcodes[++$i];
+
+                // build array
                 $array = array();
-                foreach ($elems as $elem) {
-                    $array []= self::_execute($context, $sugar, $data, $cache, $code, $elem, $stack);
+                $start = count($stack) - $count * 2;
+                for ($index = $start; $index != count($stack); $index += 2) {
+                    $array [$stack[$index]]= $stack[$index + 1];
                 }
+
+                // remove elements from stack (FIXME: yuck, this is silly)
+                while (count($stack) != $start) {
+                    array_pop($stack);
+                }
+
+                // push resulting array to stack
                 $stack []= $array;
                 break;
             default:
@@ -636,7 +646,7 @@ final class Sugar_Runtime {
 
             return true;
         } catch (Sugar_Exception $e) {
-            $template->_sugar->handleError($e);
+            $this->_sugar->handleError($e);
             return false;
         }
     }

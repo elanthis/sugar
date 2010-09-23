@@ -86,13 +86,19 @@ class Sugar_Node_Array extends Sugar_Node
      */
     public function compile()
     {
+        $opcodes = array();
+
         // compile elements
         $celements = array();
         foreach ($this->elements as $key=>$node) {
-            $celements [$key]= $node->compile();
+            $opcodes []= array(Sugar_Runtime::OP_PUSH, $key);
+            $opcodes []= $node->compile();
         }
 
-        return array(Sugar_Runtime::OP_MAKE_ARRAY, $celements);
+        // add make array call
+        $opcodes []= array(Sugar_Runtime::OP_MAKE_ARRAY, count($this->elements));
+
+        return call_user_func_array('array_merge', $opcodes);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
