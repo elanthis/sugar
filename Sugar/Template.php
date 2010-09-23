@@ -74,7 +74,7 @@ class Sugar_Template
     /**
      * Storage driver for this reference.
      *
-     * @var Sugar_StorageDriver $storage
+     * @var Sugar_Storage $storage
      */
     private $_storage;
 
@@ -120,13 +120,13 @@ class Sugar_Template
     /**
      * Constructor.
      *
-     * @param Sugar               $sugar       Sugar object.
-     * @param Sugar_StorageDriver $storage     Storage driver.
-     * @param mixed               $handle      Storage driver handle.
-     * @param string              $name        Name of template requested by user.
-     * @param string              $cacheId     The cache ID for the reference.
+     * @param Sugar         $sugar       Sugar object.
+     * @param Sugar_Storage $storage     Storage driver.
+     * @param mixed         $handle      Storage driver handle.
+     * @param string        $name        Name of template requested by user.
+     * @param string        $cacheId     The cache ID for the reference.
      */
-    public function __construct(Sugar $sugar, Sugar_StorageDriver $storage,
+    public function __construct(Sugar $sugar, Sugar_Storage $storage,
     $handle, $name, $cacheId) {
         $this->_sugar = $sugar;
         $this->_storage = $storage;
@@ -162,9 +162,9 @@ class Sugar_Template
      *
      * @return string User-friendly template name.
      */
-    public function getName()
+    public function getFriendlyName()
     {
-        return $this->_storage->getName($this->_handle, $this->name);
+        return $this->_storage->getFriendlyName($this->_handle, $this->name);
     }
 
     /**

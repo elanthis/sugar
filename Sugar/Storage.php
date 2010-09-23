@@ -30,7 +30,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Drivers
+ * @subpackage Plugins
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -46,14 +46,14 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Drivers
+ * @subpackage Plugins
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    Release: 0.84
  * @link       http://php-sugar.net
  */
-interface Sugar_StorageDriver
+abstract class Sugar_Storage
 {
     /**
      * Search for the template and return a driver-specific handle.
@@ -80,7 +80,7 @@ interface Sugar_StorageDriver
      * @return mixed Driver-specific handle, or FALSE if the template
      *               cannot be found.
      */
-    public function getHandle($name);
+    abstract public function getHandle($name);
 
     /**
      * Returns the timestamp of the handle.
@@ -89,7 +89,7 @@ interface Sugar_StorageDriver
      *
      * @return int Timestamp if it exists, or zero if it cannot be found.
      */
-    public function getLastModified($handle);
+   abstract  public function getLastModified($handle);
 
     /**
      * Returns the source for the handle.
@@ -98,7 +98,7 @@ interface Sugar_StorageDriver
      *
      * @return string Source of handle.
      */
-    public function getSource($handle);
+    abstract public function getSource($handle);
 
     /**
      * Returns a user-friendly name for the handle.
@@ -124,7 +124,7 @@ interface Sugar_StorageDriver
      *
      * @return string User-friendly name for the handle.
      */
-    public function getName($handle, $name);
+    abstract public function getFriendlyName($handle, $name);
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>

@@ -1,8 +1,12 @@
 <?php
-function sugar_function_test($sugar, $params)
+class Sugar_Function_Test extends Sugar_Function
 {
-	static $id = 0;
-	return ++$id;
+	public $id = 0;
+
+	public function invoke(array $params, Sugar_Context $ctx)
+	{
+		return ++$this->id;
+	}
 }
 
 class Sugar_Test_cache implements Sugar_Test {
@@ -17,8 +21,6 @@ class Sugar_Test_cache implements Sugar_Test {
 	
 	public function getResult(Sugar $sugar)
 	{
-		$sugar->addFunction('test', 'sugar_function_test', false);
-
 		// load first run of each template
 		$tpl = $sugar->getTemplate('cache.tpl', 'test1');
 		$text1a = $tpl->fetch();

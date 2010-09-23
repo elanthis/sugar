@@ -53,7 +53,7 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Data.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Context.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Compiled.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/StorageDriver.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Function.php';
@@ -64,8 +64,6 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Loader.php';
 /**#@+
  * Drivers.
  */
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage/File.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage/String.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache/File.php';
 /**#@-*/
 
@@ -347,8 +345,6 @@ class Sugar
     {
         $this->_corePluginDir = dirname(__FILE__).'/Sugar/Plugins';
         $this->_loader = new Sugar_Loader($this);
-        $this->_plugins ['storage']['file']= new Sugar_Storage_File($this);
-        $this->_plugins ['storage']['string']= new Sugar_Storage_String($this);
         $this->cache = new Sugar_Cache_File($this);
         $this->_globals = new Sugar_Data(null, array());
         $this->errors = self::ERROR_PRINT;
@@ -424,75 +420,6 @@ class Sugar
     }
 
     /**
-     * Registers a new function to be available within templates.
-     *
-     * @param string   $name   The name to register the function under.
-     * @param callback $invoke Optional PHP callback; if null, the $name
-     *                         parameter is used as the callback.
-     * @param bool     $cache  Whether the function is cacheable.
-     * @param bool     $escape Whether the function output should be escaped.
-     *
-     * @return bool true on success
-     */
-    public function addFunction($name, $invoke = null, $cache = true, $escape = true)
-    {
-        // look up default function name
-        if (!$invoke) {
-            $invoke = 'sugar_function_'.strtolower($name);
-        }
-
-        // create plugin wrapper
-        $plugin = new Sugar_FunctionWrapper($this);
-        $plugin->cacheable = $cache;
-        $plugin->escape = $escape;
-        $plugin->callable = $invoke;
-
-        // register
-        $this->_plugins ['function'][strtolower($name)]= $plugin;
-        return true;
-    }
-
-    /**
-     * Registers a new modifier to be available within templates.
-     *
-     * @param string   $name   The name to register the modifier under.
-     * @param callback $invoke Optional PHP callback; if null, the $name
-     *                         parameter is used as the callback.
-     *
-     * @return bool  true on success
-     */
-    public function addModifier($name, $invoke = null)
-    {
-        // look up default function name
-        if (!$invoke) {
-            $invoke = 'sugar_modifier_'.strtolower($name);
-        }
-
-        // create plugin wrapper
-        $plugin = new Sugar_ModifierWrapper($this);
-        $plugin->callable = $invoke;
-
-        // register
-        $this->_plugins ['modifier'][strtolower($name)]= $plugin;
-        return true;
-    }
-
-    /**
-     * Register a new storage driver.
-     *
-     * @param string        $name   Name to register driver under, used in
-     *                              template references.
-     * @param Sugar_StorageDriver $driver Driver object to register.
-     *
-     * @return bool true on success
-     */
-    public function addStorage($name, Sugar_StorageDriver $driver)
-    {
-        $this->_plugins ['storage'][$name]= $driver;
-        return true;
-    }
-
-    /**
      * Check if a plugin is already loaded (or auto-loadable) and return
      * the object.
      *
@@ -562,18 +489,6 @@ class Sugar
 
         // nothing found
         return false;
-    }
-
-    /**
-     * Get a storage driver.
-     *
-     * @param string $name Name of driver to look up.
-     *
-     * @return mixed Sugar_StorageDriver if found, null otherwise.
-     */
-    public function getStorage($name)
-    {
-        return isset($this->_plugins['storage'][$name]) ? $this->_plugins['storage'][$name] : null;
     }
 
     /**
@@ -690,7 +605,7 @@ class Sugar
         }
 
         // check for invalid storage type
-        $storage = $this->getStorage($storageName);
+        $storage = $this->getPlugin('storage', $storageName);
         if (!$storage) {
             throw new Sugar_Exception_Usage('storage driver not found: '.$storageName);
         }

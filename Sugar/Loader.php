@@ -213,7 +213,7 @@ final class Sugar_Loader {
         // compile
         $source = $template->getSource();
         if ($source === false) {
-            throw new Sugar_Exception_Usage('template not found: '.$template->getName());
+            throw new Sugar_Exception_Usage('template not found: '.$template->getFriendlyName());
         }
         $parser = new Sugar_Grammar($this->_sugar);
         $data = $parser->compile($template, $source);

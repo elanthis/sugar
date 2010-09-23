@@ -28,7 +28,7 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Drivers
+ * @subpackage Plugins
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
@@ -41,14 +41,14 @@
  *
  * @category   Template
  * @package    Sugar
- * @subpackage Drivers
+ * @subpackage Plugins
  * @author     Sean Middleditch <sean@mojodo.com>
  * @copyright  2008-2009 Mojodo, Inc. and contributors
  * @license    http://opensource.org/licenses/mit-license.php MIT
  * @version    Release: 0.84
  * @link       http://php-sugar.net
  */
-class Sugar_Storage_String implements Sugar_StorageDriver
+class Sugar_Storage_String extends Sugar_Storage
 {
     /**
      * Sugar instances.
@@ -111,7 +111,7 @@ class Sugar_Storage_String implements Sugar_StorageDriver
      *
      * @return string 'source template'.
      */
-    public function getName($handle, $name)
+    public function getFriendlyName($handle, $name)
     {
         return 'source template'; 
     }

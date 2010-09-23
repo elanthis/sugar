@@ -909,7 +909,7 @@ final class Sugar_Grammar
     public function compile($template, $source)
     {
         // create tokenizer
-        $file = $template->getName();
+        $file = $template->getFriendlyName();
         $this->_tokens = new Sugar_Lexer(
             $source, $file, $this->_sugar->delimStart, $this->_sugar->delimEnd
         );
