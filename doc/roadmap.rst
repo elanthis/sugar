@@ -4,22 +4,13 @@ Sugar Roadmap
 Version 1.0
 -----------
 
-Version 0.85
-~~~~~~~~~~~~
-
-+ NO MORE SYNTAX CHANGES!!!
-+ Object-oriented API for plugin functions, modifiers
-
 Version 0.90
 ~~~~~~~~~~~~
 
++ NO MORE SYNTAX CHANGES!!!
 + NO MORE API CHANGES!!!
-+ Calling display() on a template should not be part of the same cache
-  output as a currently running display; that is black magic; add a way
-  to execute a template inside the cache output of another, via Runtime
 
-Version 0.91
-~~~~~~~~~~~~
++ Storage drivers use OOP plugin architecture
 
 + Thoroughly document syntax
 + Thoroughly document built-ins
