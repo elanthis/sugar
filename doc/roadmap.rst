@@ -7,16 +7,15 @@ Version 1.0
 Version 0.90
 ~~~~~~~~~~~~
 
-+ NO MORE SYNTAX CHANGES!!!
-+ NO MORE API CHANGES!!!
++ NO MORE SYNTAX CHANGES AFTER THIS RELEASE!!!
++ NO MORE API CHANGES AFTER THIS RELEASE!!!
 
-+ Storage drivers use OOP plugin architecture
++ Have cache drivers use OOP plugin architecture
++ Clean up how options are set/queried
++ Decide on keeping/removing back-compat API
 
-+ Thoroughly document syntax
 + Thoroughly document built-ins
-+ Thoroughly document standard functions
-+ Thoroughly document client API
-+ Thoroughly document extension API
++ Thoroughly document extension/plugin API
 
 Final 1.0
 ~~~~~~~~~
