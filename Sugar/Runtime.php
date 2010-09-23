@@ -327,7 +327,7 @@ final class Sugar_Runtime {
                 break;
             case Sugar_Runtime::OP_CALL:
                 $func = $opcodes[++$i];
-                $args = $opcodes[++$i];
+                $count = $opcodes[++$i];
                 $debug_file = $opcodes[++$i];
                 $debug_line = $opcodes[++$i];
 
@@ -341,10 +341,16 @@ final class Sugar_Runtime {
                     );
                 }
 
-                // compile args
+                // build array
                 $params = array();
-                foreach ($args as $name=>$pcode) {
-                    $params[$name] = self::_execute($context, $sugar, $data, $cache, $code, $pcode, $stack);
+                $start = count($stack) - $count * 2;
+                for ($index = $start; $index != count($stack); $index += 2) {
+                    $params [$stack[$index]]= $stack[$index + 1];
+                }
+
+                // remove elements from stack (FIXME: yuck, this is silly)
+                while (count($stack) != $start) {
+                    array_pop($stack);
                 }
 
                 // exception net

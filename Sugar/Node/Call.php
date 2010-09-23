@@ -117,15 +117,20 @@ class Sugar_Node_Call extends Sugar_Node
      */
     public function compile()
     {
+        $opcodes = array();
+
         // compile parameters
-        $cparams = array();
         foreach ($this->params as $name=>$node) {
-            $cparams [$name]= $node->compile();
+            $opcodes []= array(Sugar_Runtime::OP_PUSH, $name);
+            $opcodes []= $node->compile();
         }
 
-        // return full expression
-        return array(Sugar_Runtime::OP_CALL, $this->name, $cparams,
-            $this->file, $this->line);
+        // append function call opcode
+        $opcodes []= array(Sugar_Runtime::OP_CALL, $this->name,
+            count($this->params), $this->file, $this->line);
+
+        // return opcodes
+        return call_user_func_array('array_merge', $opcodes);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
