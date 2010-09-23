@@ -77,11 +77,11 @@ abstract class Sugar_Node
     abstract public function isLiteral();
 
     /**
-     * Test if expression node represents a pre-escaped value
+     * Check whether the node's result should be auto-escaped
      *
-     * @return boolean True if not is already escaped, false otherwise
+     * @return boolean True if it should be escaped when printed
      */
-    abstract public function isEscaped();
+    abstract public function getEscape();
 
     /**
      * Returns compiled bytecode array for expression

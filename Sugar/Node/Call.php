@@ -93,21 +93,21 @@ class Sugar_Node_Call extends Sugar_Node
     }
 
     /**
-     * Checks if the function is escaped by default.
+     * Check if the function's result should be auto-escaped
      *
-     * @return boolean True if an escaped function, false otherwise
+     * @return boolean
      */
-    public function isEscaped()
+    public function getEscape()
     {
         // load the requested function
         $plugin = $this->_sugar->getPlugin('function', $this->name);
         if (!$plugin) {
-            return false;
+            return true;
         }
 
         // if the plugintion has escaping disabled, then treat the
         // plugintion return value as if it is escaped
-        return !$plugin->getEscape();
+        return $plugin->getEscape();
     }
 
     /**

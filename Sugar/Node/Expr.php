@@ -79,13 +79,13 @@ class Sugar_Node_Expr extends Sugar_Node
     }
 
     /**
-     * Returns false, not escaped by default
+     * Expressions are always escaped by default
      *
-     * @return boolean false
+     * @return boolean true
      */
-    public function isEscaped()
+    public function getEscape()
     {
-        return false;
+        return true;
     }
 
     /**

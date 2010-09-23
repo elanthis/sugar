@@ -100,13 +100,13 @@ class Sugar_Node_Method extends Sugar_Node
     }
 
     /**
-     * Methods are never escaped by default
+     * Methods are always escaped by default
      *
-     * @return boolean false
+     * @return boolean true
      */
-    public function isEscaped()
+    public function getEscape()
     {
-        return false;
+        return true;
     }
 
     /**

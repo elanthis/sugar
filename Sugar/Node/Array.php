@@ -70,13 +70,13 @@ class Sugar_Node_Array extends Sugar_Node
     }
 
     /**
-     * Returns false, not escaped by default
+     * Always escape arrays result by default
      *
-     * @return boolean false
+     * @return boolean true
      */
-    public function isEscaped()
+    public function getEscape()
     {
-        return false;
+        return true;
     }
 
     /**

@@ -79,11 +79,11 @@ class Sugar_Node_Pipe extends Sugar_Node
     }
 
     /**
-     * Checks if the last modifier is an escape modifier
+     * Check if the last applied modifier's value should be escaped
      *
-     * @return boolean true if last modifier is an esape modifier
+     * @return boolean true if last modifier has the auto-escape flag
      */
-    public function isEscaped()
+    public function getEscape()
     {
         // get last modifier's name
         $name = $this->modifiers[count($this->modifiers) - 1]['name'];
@@ -91,10 +91,10 @@ class Sugar_Node_Pipe extends Sugar_Node
         // load the modifier and check whether it should be escaped
         $plugin = $this->_sugar->getPlugin('modifier', $name);
         if (!$plugin) {
-            return false;
+            return true;
         }
 
-        return !$plugin->getEscape();
+        return $plugin->getEscape();
     }
 
     /**

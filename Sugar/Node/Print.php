@@ -70,11 +70,11 @@ class Sugar_Node_Print extends Sugar_Node
     }
 
     /**
-     * Returns false, not escaped by default
+     * Print has no return value, so nothing to escape
      *
      * @return boolean false
      */
-    public function isEscaped()
+    public function getEscape()
     {
         return false;
     }
@@ -87,11 +87,11 @@ class Sugar_Node_Print extends Sugar_Node
     public function compile()
     {
         // check to see if our node is escaped with a modifier
-        $escaped = $this->node->isEscaped();
+        $escape = $this->node->getEscape();
 
         // generate output
         $opcodes = $this->node->compile();
-        $opcodes []= $escaped ? Sugar_Runtime::OP_RPRINT : Sugar_Runtime::OP_EPRINT;
+        $opcodes []= $escape ? Sugar_Runtime::OP_EPRINT : Sugar_Runtime::OP_RPRINT;
         return $opcodes;
     }
 }
