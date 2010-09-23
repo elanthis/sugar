@@ -64,13 +64,6 @@ final class Sugar_Loader {
     private $_sugar;
 
     /**
-     * Cache handler.
-     *
-     * @var Sugar_Cache
-     */
-    private $_cache;
-
-    /**
      * Compiled code cache
      *
      * @var array
