@@ -4,61 +4,148 @@ Extending Sugar
 Custom Functions
 ----------------
 
+Creating Custom Functions
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
 Sugar template functions are created by defining a class derived from
 :class:`Sugar_Function`.  The name of the class must be a specific form,
-namely: `Sugar_Function_foo` where `foo` is the name of the function.
+namely: :class:`Sugar_Function_foo` where `foo` is the name of the function.
 
-.. warning:: This section out of date.
+If a function is called that does not yet exist, Sugar will look in the
+configured plugin directories for a file named :file:`sugar_function_foo.php`.
+If the application has a class autoloader defined, it may also load classes
+on demand on the behalf of Sugar.
 
-Registering new function requires the :func:`Sugar::addFunction` method.
-The first parameter is the name of the function as used within
-templates.  The second optional parameter is the callback to use when
-invoking the function; if ommitted, the PHP function of the same name
-as the first argument will be invoked.  A third optional parameter
-controls whether the function can be cached or not.  The fourth optional
-parameter controls whether the function output is escaped by default or
-not.
+Defining Function Behavior
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-::
+The :func:`Sugar_Function::invoke()` method must be overridden to implement
+the function behavior.
 
-	$sugar->addFunction('myFunc');
-	$sugar->addFunction('foo', 'some_function');
-	$sugar->addFunction('getCost', array($cart, 'get_cost'));
-	$sugar->addFunction('dynamic', 'my_dynamic', false);
-	$sugar->addFunction('writeHtml', 'html_func', true, false);
+Simple example::
 
-Functions receive two arguments: the Sugar object and a keyed array
-with the parameters.  Method calls will be called using the native
-PHP approach.
-
-::
-
-	function sugar_function_printargs ($sugar, $params) {
-	  $arg1 = Sugar_Util_GetArg($params, 'arg1', 0);
-	  $arg2 = Sugar_Util_GetArg($params, 'arg2', 1);
-
-	  return "arg1=$arg1, arg2=$arg2";
+	final class Sugar_Function_foo extends Sugar_Function {
+		public function invoke(array $params, Sugar_Context $ctx) {
+			return 'foo result';
+		}
 	}
-	$sugar->addFunction('printArgs', 'sugar_function_printargs');
- 
-It is not always necessary to use :func:`Sugar::addFunction` to expose a
-function to Sugar.  Sugar will automatically look for functions
-named sugar_function_foo, where foo is the name of the function
-being called, if there is no registered function named foo.
 
-Sugar will also search in the directory `$sugar->pluginDir` for
-files named sugar_function_foo.php to attempt to load up unknown
-function names.
+The :func:`Sugar_Function::invoke()` method receives two arguments.  The first
+is the array of parameters the function was called with.  The second is a
+context object which provides access to the currently executing Template,
+variables, and the runtime object.
 
-Function return values will be passed back into the calling
-expression.  As with all expressions, the result of a function call
-that is to be displayed will be escaped by default.  To negate this
-behavior, use the raw modifier on the function call.
+The :func:`Sugar_Function::invoke()` return value is the return value of the
+function itself.
+
+Result Escaping
+~~~~~~~~~~~~~~~
+
+When a function is called directly in a template statement, such as::
+
+	{{ foo }}
+
+The result is printed out as a string and HTML-escaped by default.  To
+suppress the HTML escaping, the function's escape flag must be disabled.
+This can be done by calling the :func:`Sugar_Function::setEscape()`,
+usually inside the function class's constructor.
+
+::
+
+	class Sugar_Function_foo extends Sugar_Function {
+		public function __construct() {
+			$this->setEscape(false);
+		}
+	}
+
+Function Cacheability
+~~~~~~~~~~~~~~~~~~~~~
+
+Functions are normally run and their output cached as with any other
+variable or expression.  To avoid caching the result of a function, the
+function call must normally be wrapped with `nocache` tags::
+
+	{{ nocache }}
+		{{ foo }}
+	{{ /nocache }}
+
+It is also possible to make a function uncacheable by default.  This
+feature only works for functions call as a statement, not inside a
+more complicated expression.
+
+To set the cacheability, use the :func:`Sugar_Function::setCacheable()`
+method.
+
+::
+
+	class Sugar_Function_foo extends Sugar_Function {
+		public function __construct() {
+			$this->setCacheable(false);
+		}
+	}
 
 Custom Modifiers
 ----------------
 
-.. warning:: this section out of date
+Creating Custom Modifiers
+~~~~~~~~~~~~~~~~~~~~~~~~~
+
+Sugar template modifiers are created by defining a class derived from
+:class:`Sugar_Modifier`.  The name of the class must be a specific form,
+namely: :class:`Sugar_Modifier_foo` where `foo` is the name of the modifier.
+
+If a modifier is called that does not yet exist, Sugar will look in the
+configured plugin directories for a file named :file:`sugar_modifier_foo.php`.
+If the application has a class autoloader defined, it may also load classes
+on demand on the behalf of Sugar.
+
+Defining Function Behavior
+~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+The :func:`Sugar_Modifier::invoke()` method must be overridden to implement
+the modifier behavior.
+
+Simple example::
+
+	final class Sugar_Modifier_foo extends Sugar_Modifier {
+		public modifier invoke($value, array $params, Sugar_Context $ctx) {
+			return $value;
+		}
+	}
+
+The :func:`Sugar_Modifier::invoke()` method receives three arguments.  The
+first is the value that the modifier is being applied to.  The second is an
+array of zero or more additional parameters to the modifier.  The third is a
+context object which provides access to the currently executing Template,
+variables, and the runtime object.
+
+The :func:`Sugar_Modifier::invoke()` return value is the return value of the
+modifier itself.
+
+Result Escaping
+~~~~~~~~~~~~~~~
+
+When a modifier is the last one used in an expression, the result will be
+printed and HTML-escaped by default.
+
+	{{ $some_value|foo }}
+
+To suppress the HTML escaping, the modifier's escape flag must be disabled.
+This can be done by calling the :func:`Sugar_Modifier::setEscape()`, usually
+inside the modifier class's constructor.
+
+::
+
+	class Sugar_Modifier_foo extends Sugar_Modifier {
+		public modifier __construct() {
+			$this->setEscape(false);
+		}
+	}
+
+Sugar Context Object
+--------------------
+
+.. note:: FIXME describe Sugar_Context
 
 Storage Drivers
 ---------------
@@ -69,52 +156,6 @@ Sugar offers two core means of extending its functionality.  First,
 users may register new functions to be used by templates.  Second,
 users may over-ride the storage and cache drivers used by the Sugar
 engine.
-
-Storage drivers are classes derived from `Sugar_StorageDriver`.  The following
-methods must be implemented.  All methods return true on success or
-false on error, unless stated otherwise.
-
-+ `Sugar_StorageDriver::stamp(Sugar_Ref $name)`
-
-  Returns the template's timestamp, or false if the specified template
-  does not exist.
-
-+ `Sugar_StorageDriver::load(Sugar_Ref $name)`
-
-  Returns the template source.
-
-+ `Sugar_StorageDriver::path(Sugar_Ref $name)`
-
-  Returns a user-friendly name for the template.
-
-The `Sugar_Ref` class describes the requested template name.  It has the
-following member variables which are used to distinguish templates:
-
-+ `Sugar_Ref::$full`
-
-  The full path name.
-
-+ `Sugar_Ref::$storageName`
-
-  The name of the storage driver.
-
-+ `Sugar_Ref::$storage`
-
-  The Sugar_StorageDriver object associated with the driver name.
-
-+ `Sugar_Ref::$name`
-
-  The base name of the template.
-
-+ `Sugar_Ref::$cacheId`
-
-  An optional cache identifier (only used for caching).
-
-To register a new storage driver, use the `Sugar::addStorage()` method
-of the Sugar object, passing in the desired name and an instance of
-the new driver.
-
-    $sugar->addStorage('db', new SugarDatabaseStorage($sugar));
 
 When loading a template, the template name may be prefixed by a
 storage driver name.

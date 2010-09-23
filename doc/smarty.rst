@@ -38,14 +38,15 @@ HTML/JavaScript injection from user-supplied data, which is why Sugar has the
 behavior it does.
 
 When porting an application that expects functions to output raw HTML, the
-developer must remember to register the function with output escaping disabled.
-The fourth parameter to :func:`Sugar::addFunction` is the escape flag, which is
-true if the output should be escaped by Sugar or false if it should not be
-escaped.
+developer must remember to disable result escaping for the function
 
 ::
 
-	$sugar->addFunction('foo', 'my_foo', true, false);
+	class Sugar_Function_foo extends Sugar_Function {
+		public function __construct() {
+			$this->setEscape(false);
+		}
+	}
 
 The raw modifier can also be applied to any function to override the default
 escaping at the template level.
@@ -111,11 +112,7 @@ Smarty 2.x API.
 Setting Variables
 ~~~~~~~~~~~~~~~~~
 
-Sugar variables can be assigned globally, like how Smarty variables are
-assigned.  The :func:`Sugar::set` method works identically to the
-:func:`Sugar_Template::set` method, except that variables set with the former
-method will be global to all templates.
-
+Sugar variables are assigned to a template, not to the global Sugar object.
 This is identical to how Smarty works, except that Sugar's method is called set
 instead of assign.
 
@@ -125,10 +122,19 @@ instead of assign.
 	$smarty->assign('foo', 'bar');
 
 	// Sugar code
-	$sugar->set('foo', 'bar');
+	$template = $sugar->getTemplate('my.tpl');
+	$template->set('foo', 'bar');
 
 Displaying & Fetching Templates
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-Sugar supports the :func:`Sugar::display` and :func:`Sugar::fetch` methods
-which behave nearly identically to the Smarty equivalents.
+Sugar uses template objects instead of simple methods on the main object.
+
+::
+
+	// Smarty code
+	$smarty->display('my.tpl');
+
+	// Sugar code
+	$template = $sugar->getTemplate('my.tpl');
+	$template->display();

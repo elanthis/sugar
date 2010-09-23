@@ -31,7 +31,7 @@ Display a Template
 Loading Templates
 ~~~~~~~~~~~~~~~~~
 
-To load a template, use the :func:`Sugar::getTemplate` method.
+To load a template, use the :func:`Sugar::getTemplate()` method.
 
 ::
 
@@ -45,7 +45,7 @@ Setting Template Variables
 
 Any PHP value may be used as a Sugar variable inside of a template.
 
-To set a variable, use the :func:`Sugar_Template::set` method.
+To set a variable, use the :func:`Sugar_Template::set()` method.
 
 ::
 
@@ -61,7 +61,7 @@ Displaying
 ~~~~~~~~~~
 
 To display a template's output directly to the browser, use the
-:func:`Sugar_Template::display` method.
+:func:`Sugar_Template::display()` method.
 
 ::
 
@@ -71,7 +71,7 @@ Fetching
 ~~~~~~~~
 
 To get the output of a template into a string, use the
-:func:`Sugar_Template::fetch` method.
+:func:`Sugar_Template::fetch()` method.
 
 ::
 
@@ -84,7 +84,7 @@ Code Delimiters
 ~~~~~~~~~~~~~~~
 
 The code delimiters ({{ and }}) can be changed by using the
-:func:`Sugar::setDelimiters` method.
+:func:`Sugar::setDelimiters()` method.
 
 ::
 
@@ -151,7 +151,7 @@ Enabling Caching
 ~~~~~~~~~~~~~~~~
 
 Caching is enabled by passing a cache identifier to the
-:func:`Sugar::getTemplate` method.  This cache identifier will uniquely mark
+:func:`Sugar::getTemplate()` method.  This cache identifier will uniquely mark
 the generated output.  For instance, if a template represents a product page in
 an online store's catalog, the cache identifier should be the unique product
 identifier.  Then the cached output generated will be different for each

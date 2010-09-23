@@ -248,10 +248,10 @@ can be executed using the eval function.
 
 ::
 
-	{{ include "header" }}
-	{{ include 'some/other/template' }}
-	{{ eval 'var is {{ $var+1 }}' }}
-	{{ eval getCode }}
+	{{ include file="header.tpl" }}
+	{{ include file='some/other/file.tpl' }}
+	{{ eval source='var is {{ $var+1 }}' }}
+	{{ eval source=getCode }}
 
 Disabling Caching
 -----------------
@@ -297,3 +297,24 @@ layout template.  This functionality is the primary use of sections.
 The layout template can define one or more sections which are overriden
 by content in the main template.  Layouts can use the default 'content'
 section to insert the body of the main template.
+
+Example page::
+
+	{{ inherit file='layout.tpl' }}
+
+	{{ section name='title' }}Page Title{{ /section }}
+
+	{{ section name='content' }}
+		<p>Page content here</p>
+	{{ /section }}
+
+Example inherited layout::
+
+	<html>
+		<head>
+			<title>{{ insert name='title' }}</title>
+		</head>
+		<body>
+			{{ insert name='content' }}
+		</body>
+	</html>
