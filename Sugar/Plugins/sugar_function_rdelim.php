@@ -50,7 +50,7 @@ class Sugar_Function_Rdelim extends Sugar_Function
 {
     public function invoke(array $params, Sugar_Context $ctx)
     {
-        return $this->sugar->delimEnd;
+        return $ctx->getSugar()->delimEnd;
     }
 }
 

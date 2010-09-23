@@ -339,58 +339,6 @@ function sugar_function_truncate($sugar, $params)
 }
 
 /*++
- *+ @name escape
- *+ @modifier
- *+ @param mixed $value String (or any other type) to escape.
- *+ @param string $mode Escape format to use.  (default 'html')
- *+
- *+ Mode must be one of 'html', 'xml', 'json', or 'url'.
- *+
- *+ The input value is escaped according to the rules of $mode, resulting
- *+ in a raw string which can be safely printed out.
- *+
- *+ For the mode 'json', this is equivalent to:
- *+   {% json value=$value %}
- *+
- *+ For the mode 'url', this is equivalent to:
- *+   {% urlencode string=$value %}
- *+
- *+ For the modes 'html' and 'xml', this is equivalent to the default
- *+ output encoding rules for both languages.
- */
-function sugar_modifier_escape($value, $sugar, $params)
-{
-    $mode = isset($params[0]) ? (string)$params[0] : 'html';
-
-    switch ($mode) {
-    case 'html':
-        return htmlentities($value, ENT_QUOTES, $sugar->charset);
-    case 'xhtml':
-    case 'xml':
-        return htmlspecialchars($value, ENT_QUOTES, $sugar->charset);
-    case 'javascript':
-    case 'js':
-    case 'json':
-        return Sugar_Util_EscapeJavascript($value);
-    case 'url':
-        return urlencode($value);
-    default:
-        return null;
-    }
-}
-
-/*++
- *+ @name raw
- *+ @modifier
- *+
- *+ Suppresses escaping of output.
- */
-function sugar_modifier_raw($value, $sugar, $params)
-{
-    return $value;
-}
-
-/*++
  *+ @name var
  *+ @param string $name The variable to lookup.
  *+ @return mixed The value of the requested variable.

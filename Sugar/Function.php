@@ -51,34 +51,57 @@
 abstract class Sugar_Function
 {
     /**
-     * Sugar object
-     *
-     * @var Sugar
-     */
-    public $sugar;
-
-    /**
-     * Whether or not the output should be escaped
+     * Whether or not the output should be escaped automatically
      *
      * @var boolean
      */
-    public $escape = true;
+    private $_escape = true;
 
     /**
      * Whether or not the function is cacheable
      *
      * @var boolean
      */
-    public $cache = true;
+    private $_cacheable = true;
 
     /**
-     * Constructor
+     * Set flag controlling whether function result should be auto-escaped
      *
-     * @param Sugar $sugar
+     * @param $cacheable boolean
      */
-    final public function __construct(Sugar $sugar)
+    final public function setEscape($escape)
     {
-        $this->sugar = $sugar;
+        $this->_escape = $escape;
+    }
+
+    /**
+     * Check if the function result should be auto-escaped
+     *
+     * @return boolean
+     */
+    final public function getEscape()
+    {
+        return $this->_escape;
+    }
+
+    /**
+     * Set flag controlling whether function is cacheable
+     *
+     * @param $cacheable boolean
+     */
+    final public function setCacheable($cacheable)
+    {
+        $this->_cacheable = $cacheable;
+    }
+
+    /**
+     * Check if the function is cacheable
+     *
+     * @return boolean
+     */
+    final public function getCacheable()
+    {
+        return $this->_cacheable;
     }
 
     /**
@@ -122,7 +145,7 @@ final class Sugar_FunctionWrapper extends Sugar_Function
      */
     public function invoke(array $params, Sugar_Context $context)
     {
-        return call_user_func($this->callable, $this->sugar, $params, $context);
+        return call_user_func($this->callable, $context->getSugar(), $params, $context);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

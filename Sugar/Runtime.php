@@ -357,13 +357,7 @@ final class Sugar_Runtime {
                 }
 
                 // process return value
-                if ($opcode == 'call_top' && $escape_flag) {
-                    self::_display($cache, $sugar->escape(self::_valueToString($ret)));
-                } elseif ($opcode == 'call_top') {
-                    self::_display($cache, self::_valueToString($ret));
-                } else {
-                    $stack []= $ret;
-                }
+                $stack []= $ret;
                 break;
             case Sugar_Runtime::OP_METHOD:
                 $obj = array_pop($stack);
@@ -513,8 +507,8 @@ final class Sugar_Runtime {
                 break;
             case Sugar_Runtime::OP_NOCACHE:
                 $block = $opcodes[++$i];
-                if ($sugar->cacheHandler) {
-                    $sugar->cacheHandler->addBlock($block);
+                if ($cache) {
+                    $cache->addBlock($block);
                 } else {
                     self::_execute($context, $sugar, $data, $cache, $code, $block, $stack);
                 }

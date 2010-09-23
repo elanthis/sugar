@@ -51,20 +51,30 @@
 abstract class Sugar_Modifier
 {
     /**
-     * Whether or not the output should be escaped
+     * Whether or not the result should be auto-escaped
      *
      * @var boolean
      */
-    public $escape = true;
+    private $_escape = true;
 
     /**
-     * Constructor
+     * Set flag controlling whether modifier result should be auto-escaped
      *
-     * @param Sugar $sugar
+     * @param $cacheable boolean
      */
-    final public function __construct(Sugar $sugar)
+    final public function setEscape($escape)
     {
-        $this->sugar = $sugar;
+        $this->_escape = $escape;
+    }
+
+    /**
+     * Check if the modifier result should be auto-escaped
+     *
+     * @return boolean
+     */
+    final public function getEscape()
+    {
+        return $this->_escape;
     }
 
     /**
@@ -110,7 +120,7 @@ final class Sugar_ModifierWrapper extends Sugar_Modifier
      */
     public function invoke($value, array $params, Sugar_Context $context)
     {
-        return call_user_func($this->callable, $value, $this->sugar, $params, $context);
+        return call_user_func($this->callable, $value, $context->getSugar(), $params, $context);
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

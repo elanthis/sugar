@@ -107,7 +107,7 @@ class Sugar_Node_Call extends Sugar_Node
 
         // if the plugintion has escaping disabled, then treat the
         // plugintion return value as if it is escaped
-        return !$plugin->escape;
+        return !$plugin->getEscape();
     }
 
     /**

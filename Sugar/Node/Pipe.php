@@ -88,13 +88,13 @@ class Sugar_Node_Pipe extends Sugar_Node
         // get last modifier's name
         $name = $this->modifiers[count($this->modifiers) - 1]['name'];
 
-        // if the built-in escape or raw modifier is used, we are escaped
-        if ($name == 'escape' || $name == 'raw') {
-            return true;
+        // load the modifier and check whether it should be escaped
+        $plugin = $this->_sugar->getPlugin('modifier', $name);
+        if (!$plugin) {
+            return false;
         }
 
-        // no other modifer is escaped by default
-        return false;
+        return !$plugin->getEscape();
     }
 
     /**
