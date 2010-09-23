@@ -51,7 +51,7 @@
  * @version    Release: 0.84
  * @link       http://php-sugar.net
  */
-class Sugar_Cache_Memcache implements Sugar_CacheDriver
+class Sugar_Cache_Memcached extends Sugar_Cache
 {
     /**
      * Sugar instance.

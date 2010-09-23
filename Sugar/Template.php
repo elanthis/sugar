@@ -212,6 +212,14 @@ class Sugar_Template
     }
 
     /**
+     * Uncache this template
+     */
+    public function uncache()
+    {
+        $this->_sugar->cache->erase($this, self::CACHE_HTML);
+    }
+
+    /**
      * Helper to set a variable in the template's local data
      *
      * @param string $name  Name of variable to set

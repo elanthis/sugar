@@ -704,11 +704,8 @@ final class Sugar_Runtime {
             if ($startCache) {
                 $code = $this->_endCache();
 
-                // attempt to save cache
-                $this->_sugar->cache->store($template, Sugar::CACHE_HTML, $code);
-
                 // save cache in loader
-                $this->_sugar->getLoader()->setCached($template, $code);
+                $this->_sugar->getLoader()->putCached($template, $code);
 
                 // display cache
                 self::_execute($context, $this->_sugar, $data, $this, $code, $code->getSection('main'), $stack);

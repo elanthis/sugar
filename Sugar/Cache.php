@@ -52,7 +52,7 @@
  * @version    Release: 0.84
  * @link       http://php-sugar.net
  */
-interface Sugar_CacheDriver
+abstract class Sugar_Cache
 {
     /**
      * Returns the timestamp for the given reference, or zero if the file
@@ -64,7 +64,7 @@ interface Sugar_CacheDriver
      * @return int Timestamp, or 0 if the file does not exist.
      * @abstract
      */
-    function getLastModified($key, $type);
+    public abstract function getLastModified($key, $type);
 
     /**
      * Returns the bytecode for the requested reference.
@@ -75,7 +75,7 @@ interface Sugar_CacheDriver
      * @return array Bytecode, or false if not in the cache.
      * @abstract
      */
-    function load($key, $type);
+    public abstract function load($key, $type);
 
     /**
      * Adds the bytecode to the cache.
@@ -88,7 +88,7 @@ interface Sugar_CacheDriver
      *
      * @abstract
      */
-    function store($key, $type, $data);
+    public abstract function store($key, $type, $data);
 
     /**
      * Erases the bytecode for the requested reference.
@@ -100,7 +100,7 @@ interface Sugar_CacheDriver
      *
      * @abstract
      */
-    function erase($key, $type);
+    public abstract function erase($key, $type);
 
     /**
      * Clears all caches the driver is responsible for.
@@ -109,7 +109,7 @@ interface Sugar_CacheDriver
      *
      * @abstract
      */
-    function clear();
+    public abstract function clear();
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :
 ?>

@@ -53,18 +53,17 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Data.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Template.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Context.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Compiled.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/CacheDriver.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Runtime.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Function.php';
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Modifier.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Loader.php';
 /**#@-*/
 
 /**#@+
- * Drivers.
+ * Plugin base classes.
  */
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache/File.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Storage.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Cache.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Function.php';
+require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Modifier.php';
 /**#@-*/
 
 /**
@@ -225,11 +224,10 @@ class Sugar
 
     /**
      * This is the cache driver to use for storing bytecode and HTML caches.
-     * This is initialized to the {@link Sugar_Cache_File} driver by default.
      *
-     * @var Sugar_CacheDriver
+     * @var Sugar_Cache
      */
-    public $cache = null;
+    public $cache = 'file';
 
     /**
      * Setting this to true will disable all caching, forcing every template
@@ -345,7 +343,6 @@ class Sugar
     {
         $this->_corePluginDir = dirname(__FILE__).'/Sugar/Plugins';
         $this->_loader = new Sugar_Loader($this);
-        $this->cache = new Sugar_Cache_File($this);
         $this->_globals = new Sugar_Data(null, array());
         $this->errors = self::ERROR_PRINT;
         $this->output = self::OUTPUT_HTML;
@@ -780,7 +777,7 @@ class Sugar
     {
         // erase the cache entry
         $template = $this->getTemplate($file, $cacheId);
-        $this->cache->erase($template, self::CACHE_HTML);
+        $template->uncache();
     }
 }
 // vim: set expandtab shiftwidth=4 tabstop=4 :

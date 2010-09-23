@@ -35,7 +35,6 @@
     <file name="Sugar.php" role="php" />
 	  <dir name="Sugar">
      <file name="Cache.php" role="php"/>
-     <file name="CacheDriver.php" role="php"/>
      <file name="Context.php" role="php"/>
      <file name="Data.php" role="php"/>
      <file name="Exception.php" role="php"/>
@@ -51,10 +50,6 @@
      <file name="Template.php" role="php"/>
      <file name="Token.php" role="php"/>
      <file name="Util.php" role="php"/>
-		 <dir name="Cache">
-      <file name="File.php" role="php"/>
-      <file name="Memcache.php" role="php"/>
-		 </dir>
 		 <dir name="Node">
 		  <file name="Array.php" role="php"/>
 		  <file name="Call.php" role="php"/>
@@ -65,9 +60,16 @@
 		  <file name="Pipe.php" role="php"/>
 		  <file name="Print.php" role="php"/>
 		 </dir>
-		 <dir name="Storage">
-		  <file name="File.php" role="php"/>
-		  <file name="String.php" role="php"/>
+		 <dir name="Plugins">
+			<file name="sugar_cache_file.php" role="php"/>
+			<file name="sugar_cache_memcached.php" role="php"/>
+			<file name="sugar_function_ldelim.php" role="php"/>
+			<file name="sugar_function_rdelim.php" role="php"/>
+			<file name="sugar_modifier_default.php" role="php"/>
+			<file name="sugar_modifier_escape.php" role="php"/>
+			<file name="sugar_modifier_raw.php" role="php"/>
+			<file name="sugar_storage_file.php" role="php"/>
+			<file name="sugar_storage_string.php" role="php"/>
 		 </dir>
 		</dir>
    </dir>

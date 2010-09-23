@@ -78,6 +78,13 @@ final class Sugar_Loader {
     private $_cached = array();
 
     /**
+     * Active cache plugin
+     *
+     * @var Sugar_Cache
+     */
+    private $_cache;
+
+    /**
      * Constructor
      *
      * @param Sugar       $sugar Sugar Instance
@@ -88,13 +95,26 @@ final class Sugar_Loader {
     }
 
     /**
+     * Get the cache driver
+     *
+     * @return Sugar_Cache
+     */
+    private function _getCache()
+    {
+        if (!$this->_cache) {
+            $this->_cache = $this->_sugar->getPlugin('cache', $this->_sugar->cache);
+        }
+        return $this->_cache;
+    }
+
+    /**
      * Set the HTML cache data for a particular template
      *
      * @param Sugar_Template $template
      * @param mixed          $data
      * @returns mixed Copy of $data
      */
-    public function setCached(Sugar_Template $template, $data)
+    private function _setCached(Sugar_Template $template, $data)
     {
         $this->_cached[$template->name][$template->cacheId] = $data;
         return $data;
@@ -115,22 +135,24 @@ final class Sugar_Loader {
             return $this->_cached[$template->name][$template->cacheId];
         }
 
+        $cache = $this->_getCache();
+
         // get the cache's stamp, and fail if it can't be found
-        $cstamp = $this->_sugar->cache->getLastModified($template, Sugar::CACHE_HTML);
+        $cstamp = $cache->getLastModified($template, Sugar::CACHE_HTML);
         if ($cstamp === false) {
-            return $this->setCached($template, false);
+            return $this->_setCached($template, false);
         }
 
         // fail if the cache is too old
         if ($cstamp < time() - $this->_sugar->cacheLimit) {
-            return $this->setCached($template, false);
+            return $this->_setCached($template, false);
         }
 
         // load the cache data, fail if loading fails or the
         // version doesn't match
-        $data = $this->_sugar->cache->load($template, Sugar::CACHE_HTML);
+        $data = $cache->load($template, Sugar::CACHE_HTML);
         if ($data === false) {
-            return $this->setCached($template, false);
+            return $this->_setCached($template, false);
         }
 
         // compare stamps with the included references; if any fail,
@@ -151,12 +173,24 @@ final class Sugar_Loader {
 
             // if the stamp is newer than the cache stamp, fail
             if ($cstamp < $stamp) {
-                return $this->setCached($template, false);
+                return $this->_setCached($template, false);
             }
         }
 
         // store the bytecode so we don't need to reload it
-        return $this->setCached($template, $data);
+        return $this->_setCached($template, $data);
+    }
+
+    /**
+     * Store an item in the HTML cache
+     *
+     * @param Sugar_Template $template Template to store
+     * @param Sugar_Compiled $code     Compiled cache code
+     */
+    public function putCached(Sugar_Template $template, Sugar_Compiled $code)
+    {
+        $cache = $this->_getCache();
+        $cache->store($template, Sugar::CACHE_HTML, $code);
     }
 
     /**
@@ -166,7 +200,7 @@ final class Sugar_Loader {
      * @param mixed          $data
      * @returns mixed Copy of $data
      */
-    public function setCompiled(Sugar_Template $template, $data)
+    private function _setCompiled(Sugar_Template $template, $data)
     {
         $this->_compiled[$template->name] = $data;
         return $data;
@@ -184,16 +218,18 @@ final class Sugar_Loader {
         if (isset($this->_compiled[$template->name])) {
             return $this->_compiled[$template->name];
         }
+   
+        $cache = $this->_getCache();
 
         // if debug is off and the stamp is good, load compiled version
         if (!$this->_sugar->debug) {
             $sstamp = $template->getLastModified();
-            $cstamp = $this->_sugar->cache->getLastModified($template, Sugar::CACHE_TPL);
+            $cstamp = $cache->getLastModified($template, Sugar::CACHE_TPL);
             if ($cstamp !== false && $cstamp > $sstamp) {
-                $data = $this->_sugar->cache->load($template, Sugar::CACHE_TPL);
+                $data = $cache->load($template, Sugar::CACHE_TPL);
                 // if version checks out, run it
                 if ($data !== false && $data) {
-                    return $this->setCompiled($template, $data);
+                    return $this->_setCompiled($template, $data);
                 }
             }
         }
@@ -213,9 +249,9 @@ final class Sugar_Loader {
         unset($parser);
 
         // store compiled bytecode into cache
-        $this->_sugar->cache->store($template, Sugar::CACHE_TPL, $data);
+        $cache->store($template, Sugar::CACHE_TPL, $data);
 
-        return $this->setCompiled($template, $data);
+        return $this->_setCompiled($template, $data);
     }
 }
 

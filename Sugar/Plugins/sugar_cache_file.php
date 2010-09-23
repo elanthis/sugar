@@ -52,7 +52,7 @@
  * @version    Release: 0.84
  * @link       http://php-sugar.net
  */
-final class Sugar_Cache_File implements Sugar_CacheDriver
+final class Sugar_Cache_File extends Sugar_Cache
 {
     /**
      * Sugar instance.
