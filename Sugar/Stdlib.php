@@ -69,50 +69,6 @@ function Sugar_Util_GetArg($params, $name, $default = null)
 }
 
 /*++
- *+ @name include
- *+ @param string $file The template path to include.
- *+
- *+ This function loads up a template file and displays it.
- */
-function sugar_function_include($sugar, $params, $context)
-{
-    // get the template name from the parameter list.
-    // the name is unset, and the rest of the parameter list is
-    // passed to the included template.
-    if (isset($params['tpl'])) { // back-compat
-        $name = $params['tpl'];
-        unset($params['tpl']);
-    } else {
-        $name = isset($params['file']) ? $params['file'] : null;
-        unset($params['file']);
-    }
-
-    // load the new template
-    $template = $sugar->getTemplate($name);
-
-    // create date set
-    $data = new Sugar_Data($context->getData(), $params);
-
-    // display new template
-    $context->getRuntime()->execute($template, $data);
-}
-
-/*++
- *+ @name eval
- *+ @param string $source The template code to evaluate.
- *+ @return string The output of the source after evaluation.
- *+
- *+ Evaluate template code given as a string and reeturn the result.
- */
-function sugar_function_eval($sugar, $params)
-{
-    $source = isset($params['source']) ? $params['source'] : null;
-    unset($params['source']);
-
-    $sugar->displayString($source, $params);
-}
-
-/*++
  *+ @name urlencode
  *+ @param string? $string A string to encode.
  *+ @param array? $array An array of key/value pairs.
