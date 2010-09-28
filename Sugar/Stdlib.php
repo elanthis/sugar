@@ -171,39 +171,6 @@ function sugar_function_printf($sugar, $params)
     else
         return $format;
 }
-function sugar_function_sprintf($s, $p)
-{
-    return sugar_function_printf($s, $p);
-}
-
-/*++
- *+ @name default
- *+ @param mixed $value The value to test and return if true.
- *+ @param mixed $default The value to return if $value is false.
- *+ @return mixed $value if it is true, otherwise $false.
- *+
- *+ Tests the first value given and, if it is a true value, returns
- *+ that value.  If the value is false, the second value is returned
- *+ instead.
- *+
- *+ The code
- *+   {% default value=$value default=$default %}
- *+ is equivalent to
- *+   {% if $value ; $value ; else ; $default ; end %}
- *+
- *+ This is particularly useful for the value attribute for form
- *+ input tags when used in conjunction with a user-input value
- *+ and the form's default value.
- */
-function sugar_function_default($sugar, $params)
-{
-    $value = isset($params['value']) ? $params['value'] : null;
-    if ($value) {
-        return $value;
-    } elseif (isset($params['default'])) {
-        return $params['default'];
-    }
-}
 
 /*++
  *+ @name count 
@@ -563,20 +530,6 @@ function sugar_function_psplit($sugar, $params)
     $string = (string)Sugar_Util_GetArg($params, 'string');
     $count = (int)Sugar_Util_GetArg($params, 'count');
     return preg_split($expr, $string, $count);
-}
-
-/*++
- *+ @name int 
- *+ @modifier
- *+ @param mixed $value Value to convert.
- *+
- *+ Converts the input value into an integer.
- *+
- *+ Equivalent to PHP's intval().
- */
-function sugar_modifier_int($value)
-{
-    return intval($value);
 }
 
 /**#@-*/
