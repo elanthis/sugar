@@ -374,34 +374,6 @@ function sugar_function_array($sugar, $params)
 }
 
 /*++
- *+ @name strtolower
- *+ @param string $string The string to process.
- *+ @return string $string with all characters lower-cased.
- *+
- *+ Equivalent to PHP's strtolower().
- */
-function sugar_function_strtolower($sugar, $params)
-{
-    if (isset($params['string'])) {
-        return strtolower($params['string']);
-    }
-}
-
-/*++
- *+ @name strtoupper
- *+ @param string $string The string to process.
- *+ @return string $string with all characters upper-cased.
- *+
- *+ Equivalent to PHP's strtoupper().
- */
-function sugar_function_strtoupper($sugar, $params)
-{
-    if (isset($params['string'])) {
-        return strtoupper($params['string']);
-    }
-}
-
-/*++
  *+ @name substr
  *+ @param string $string The string to cut.
  *+ @param int $start The position to cut at.
@@ -605,34 +577,6 @@ function sugar_function_psplit($sugar, $params)
 function sugar_modifier_int($value)
 {
     return intval($value);
-}
-
-/*++
- *+ @name upper 
- *+ @modifier
- *+ @param string $value String to convert.
- *+
- *+ Converts a string to all upper case letters.
- *+
- *+ Equivalent to PHP's strtoupper().
- */
-function sugar_modifier_upper($value)
-{
-    return strtoupper($value);
-}
-
-/*++
- *+ @name lower 
- *+ @modifier
- *+ @param string $value String to convert.
- *+
- *+ Converts a string to all lower case letters.
- *+
- *+ Equivalent to PHP's strtolower().
- */
-function sugar_modifier_lower($value)
-{
-    return strtolower($value);
 }
 
 /**#@-*/
