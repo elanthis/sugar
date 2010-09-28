@@ -229,7 +229,7 @@ final class Sugar_Runtime {
         if (is_bool($value)) {
             return $value?'true':'false';
         } elseif (is_array($value)) {
-            return Sugar_Util_Json($value);
+            return json_encode($value);
         } else {
             return (string)$value;
         }

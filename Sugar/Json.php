@@ -1,8 +1,6 @@
 <?php
 /**
- * Miscellaneous utility functions used by Sugar.
- *
- * Provides several utility functions used by the Sugar codebase.
+ * Implementation of json_encode for PHP prior to 5.2.
  *
  * PHP version 5
  *
@@ -36,22 +34,13 @@
  */
 
 /**
- * Formats a PHP value in JavaScript format.
- *
- * We can probably juse use json_encode() instead of this, except
- * json_encode() is PHP 5.2 only.
+ * Implementation of json_encode for PHP prior to 5.2.
  *
  * @param mixed $value Value to format.
- *
  * @return string Formatted result.
  */
-function Sugar_Util_Json($value)
+function json_encode($value)
 {
-    // use json_encode, if defined
-    if (function_exists('json_encode')) {
-        return json_encode($value);
-    }
-
     switch (gettype($value)) {
     case 'integer':
     case 'float':
@@ -71,7 +60,7 @@ function Sugar_Util_Json($value)
 
             // if we have a vector, use an array encoding
             if ($isVector) {
-                $escaped = array_map('Sugar_Util_Json', $value);
+                $escaped = array_map('json_encode', $value);
                 return '['.implode(',', $escaped).']';
             }
         }
@@ -85,14 +74,14 @@ function Sugar_Util_Json($value)
             } else {
                 $first = false;
             }
-            $result .= Sugar_Util_Json($k).':'.Sugar_Util_Json($v);
+            $result .= json_encode($k).':'.json_encode($v);
         }
         $result .= '}';
         return $result;
     case 'object':
-        $result = '{\'phpType\':'.Sugar_Util_Json(get_class($value));
+        $result = '{\'phpType\':'.json_encode(get_class($value));
         foreach (get_object_vars($value) as $k=>$v) {
-            $result .= ',' . Sugar_Util_Json($k).':'.Sugar_Util_Json($v);
+            $result .= ',' . json_encode($k).':'.json_encode($v);
         }
         $result .= '}';
         return $result;

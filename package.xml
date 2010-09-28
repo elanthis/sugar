@@ -40,6 +40,7 @@
      <file name="Exception.php" role="php"/>
 		 <file name="Function.php" role="php"/>
      <file name="Grammar.php" role="php"/>
+     <file name="Json.php" role="php"/>
      <file name="Lexer.php" role="php"/>
      <file name="Loader.php" role="php"/>
 		 <file name="Modifier.php" role="php"/>
@@ -49,7 +50,6 @@
      <file name="StorageDriver.php" role="php"/>
      <file name="Template.php" role="php"/>
      <file name="Token.php" role="php"/>
-     <file name="Util.php" role="php"/>
 		 <dir name="Node">
 		  <file name="Array.php" role="php"/>
 		  <file name="Call.php" role="php"/>

@@ -149,7 +149,7 @@ function sugar_function_urlencode($sugar, $params)
  */
 function sugar_modifier_json($value, $sugar, $params)
 {
-    return Sugar_Util_Json($value);
+    return json_encode($value);
 }
 
 /*++
@@ -164,7 +164,7 @@ function sugar_modifier_json($value, $sugar, $params)
 function sugar_function_json($sugar, $params)
 {
     if (isset($params['value'])) {
-        return Sugar_Util_Json($params['value']);
+        return json_encode($params['value']);
     }
 }
 

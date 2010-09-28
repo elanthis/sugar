@@ -66,10 +66,12 @@ require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Function.php';
 require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Modifier.php';
 /**#@-*/
 
-/**
- * Utility routines.
- */
-require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Util.php';
+if (!function_exists('json_encode')) {
+    /**
+     * Json support for older PHP versions.
+     */
+    require_once $GLOBALS['__sugar_rootdir'].'/Sugar/Json.php';
+}
 
 /**
  * Sugar Standard Library.
