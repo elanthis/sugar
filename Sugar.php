@@ -447,6 +447,31 @@ class Sugar
     }
 
     /**
+     * Search for a plugin file
+     *
+     * @param string $base Base name of the plugin file
+     * @return mixed Path to the requested file, false if not found
+     */
+    private function _findPluginFile($base)
+    {
+        // search for file in plugin path
+        foreach ((array)$this->pluginDir as $dir) {
+            $path = $dir.'/'.$base;
+            if (is_file($path) && is_readable($path)) {
+                return $path;
+            }
+        }
+
+        // try core plugin dir
+        $path = $this->_corePluginDir.'/'.$base;
+        if (is_file($path) && is_readable($path)) {
+            return $path;
+        }
+
+        return false;
+    }
+
+    /**
      * Load a plugin
      *
      * @param string $type The type of plugin ('function', 'modifier', etc.)
@@ -469,9 +494,8 @@ class Sugar
             return $plugin;
         }
 
-        // search for a plugin path
-        $path = Sugar_Util_SearchForFile($this->pluginDir,
-                "sugar_{$type}_{$name}.php", $this->_corePluginDir);
+        // search for file in plugin path
+        $path = $this->_findPluginFile("sugar_{$type}_{$name}.php");
         if ($path !== false) {
             // file found, include it
             require_once $path;

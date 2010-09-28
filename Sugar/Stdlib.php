@@ -53,6 +53,21 @@
  * @return mixed
  */
 
+/**
+ * Returns an argument from a function parameter list, supporting both
+ * position and named parameters and default values.
+ *
+ * @param array  $params  Function parameter list.
+ * @param string $name    Parameter name.
+ * @param mixed  $default Default value if parameter is not specified.
+ *
+ * @return mixed Value of parameter if given, or the default value otherwise.
+ */
+function Sugar_Util_GetArg($params, $name, $default = null)
+{
+    return isset($params[$name]) ? $params[$name] : $default;
+}
+
 /*++
  *+ @name include
  *+ @param string $file The template path to include.
@@ -68,7 +83,7 @@ function sugar_function_include($sugar, $params, $context)
         $name = $params['tpl'];
         unset($params['tpl']);
     } else {
-        $name = Sugar_Util_GetArg($params, 'file');
+        $name = isset($params['file']) ? $params['file'] : null;
         unset($params['file']);
     }
 
@@ -91,7 +106,7 @@ function sugar_function_include($sugar, $params, $context)
  */
 function sugar_function_eval($sugar, $params)
 {
-    $source = Sugar_Util_GetArg($params, 'source');
+    $source = isset($params['source']) ? $params['source'] : null;
     unset($params['source']);
 
     $sugar->displayString($source, $params);
@@ -109,8 +124,9 @@ function sugar_function_eval($sugar, $params)
  */
 function sugar_function_urlencode($sugar, $params)
 {
-    $string = (string)Sugar_Util_GetArg($params, 'string');
-    $array = Sugar_Util_GetArg($params, 'array');
+    $string = isset($params['string']) ? $params['string'] : null;
+    $array = isset($params['array']) ? $params['array'] : null;
+
     if (is_array($array)) {
         $result = array();
         foreach($array as $k=>$v)
@@ -147,7 +163,9 @@ function sugar_modifier_json($value, $sugar, $params)
  */
 function sugar_function_json($sugar, $params)
 {
-    return Sugar_Util_Json(Sugar_Util_GetArg($params, 'value'));
+    if (isset($params['value'])) {
+        return Sugar_Util_Json($params['value']);
+    }
 }
 
 /*++
@@ -160,9 +178,22 @@ function sugar_function_json($sugar, $params)
  */
 function sugar_function_date($sugar, $params)
 {
-    $format = Sugar_Util_GetArg($params, 'format', 'r');
-    $date = Sugar_Util_GetArg($params, 'date');
+    $format = isset($params['format']) ? $params['format'] : 'r';
+    $date = isset($params['date']) ? $params['date'] : null;
     $stamp = Sugar_Util_ValueToTime($date);
+
+    if (is_numeric($stamp)) {
+        // stamp is numeric, so interpret it as a number
+        $stamp = intval($stamp);
+    } elseif (is_string($stamp)) {
+        // otherwise, convert it with strtotime
+        $stamp = strtotime($stamp);
+    } else {
+        // stamp is some other kind of data, which is invalid
+        $stamp = 0;
+    }
+
+    // format the date
     return date($format, $stamp);
 }
 
@@ -177,8 +208,8 @@ function sugar_function_date($sugar, $params)
  */
 function sugar_function_printf($sugar, $params)
 {
-    $format = (string)Sugar_Util_GetArg($params, 'format');
-    $args = Sugar_Util_GetArg($params, 'params');
+    $format = isset($params['format']) ? $params['format'] : null;
+    $args = isset($params['params']) ? $params['params'] : null;
     if (is_array($args))
         return vsprintf($format, $args);
     else
@@ -210,11 +241,12 @@ function sugar_function_sprintf($s, $p)
  */
 function sugar_function_default($sugar, $params)
 {
-    $value = Sugar_Util_GetArg($params, 'value');
-    if ($value)
+    $value = isset($params['value']) ? $params['value'] : null;
+    if ($value) {
         return $value;
-    else
-        return Sugar_Util_GetArg($params, 'default');
+    } elseif (isset($params['default'])) {
+        return $params['default'];
+    }
 }
 
 /*++
@@ -227,7 +259,11 @@ function sugar_function_default($sugar, $params)
  */
 function sugar_function_count($sugar, $params)
 {
-    return count(Sugar_Util_GetArg($params, 'array'));
+    if (isset($params['array']) && is_array($params['array'])) {
+        return count($params['array']);
+    } else {
+        return 0;
+    }
 }
 
 /*++
@@ -246,8 +282,9 @@ function sugar_function_count($sugar, $params)
  */
 function sugar_function_selected($sugar, $params)
 {
-    if (Sugar_Util_GetArg($params, 'test'))
+    if (isset($params['test']) && $params['test']) {
         return ' selected="selected" ';
+    }
 }
 
 /*++
@@ -265,8 +302,9 @@ function sugar_function_selected($sugar, $params)
  */
 function sugar_function_checked($sugar, $params)
 {
-    if (Sugar_Util_GetArg($params, 'test'))
+    if (isset($params['test']) && $params['test']) {
         return ' checked="checked" ';
+    }
 }
 
 /*++
@@ -283,8 +321,9 @@ function sugar_function_checked($sugar, $params)
  */
 function sugar_function_disabled($sugar, $params)
 {
-    if (Sugar_Util_GetArg($params, 'test'))
+    if (isset($params['test']) && $params['test']) {
         return ' disabled="disabled" ';
+    }
 }
 
 /*++
@@ -304,8 +343,8 @@ function sugar_function_disabled($sugar, $params)
  */
 function sugar_function_select($sugar, $params)
 {
-    $value = Sugar_Util_GetArg($params, 'value');
-    $default = Sugar_Util_GetArg($params, 'default', $value);
+    $value = isset($params['value']) ? $params['value'] : null;
+    $default = isset($params['default']) ? $params['default'] : $value;
 
     if (isset($params[$value]))
         return $params[$value];
@@ -329,9 +368,14 @@ function sugar_function_select($sugar, $params)
  */
 function sugar_function_truncate($sugar, $params)
 {
-    $text = (string)Sugar_Util_GetArg($params, 'string');
-    $length = (int)Sugar_Util_GetArg($params, 'length', 72);
-    $end = (string)Sugar_Util_GetArg($params, 'end', '...');
+    if (!isset($params['string'])) {
+        return '';
+    }
+
+    $text = $params['string'];
+    $length = isset($params['length']) ? intval($params['length']) : 72;
+    $end = isset($params['end']) ? $params['end'] : '...';
+
     if (strlen($text) <= $length)
         return $text;
     else
@@ -352,10 +396,11 @@ function sugar_function_truncate($sugar, $params)
  *+   {% var name='foo' %}
  *+   {% $name = 'foo' ; var name=$name %}
  */
-function sugar_function_var($sugar, $params)
+function sugar_function_var($sugar, $params, $ctx)
 {
-    $name = (string)Sugar_Util_GetArg($params, 'name');
-    return $sugar->getVariable($name);
+    if (isset($params['name'])) {
+        return $ctx->getData()->get($name);
+    }
 }
 
 /*++
@@ -381,7 +426,9 @@ function sugar_function_array($sugar, $params)
  */
 function sugar_function_strtolower($sugar, $params)
 {
-    return strtolower((string)Sugar_Util_GetArg($params, 'string'));
+    if (isset($params['string'])) {
+        return strtolower($params['string']);
+    }
 }
 
 /*++
@@ -393,7 +440,9 @@ function sugar_function_strtolower($sugar, $params)
  */
 function sugar_function_strtoupper($sugar, $params)
 {
-    return strtoupper((string)Sugar_Util_GetArg($params, 'string'));
+    if (isset($params['string'])) {
+        return strtoupper($params['string']);
+    }
 }
 
 /*++
@@ -429,7 +478,7 @@ function sugar_function_substr($sugar, $params)
  */
 function sugar_function_nl2br($sugar, $params)
 {
-    $string = Sugar_Util_GetArg($params, 'string');
+    $string = isset($params['string']) ? $params['string'] : null;
     return nl2br($sugar->escape($string));
 }
 
@@ -462,8 +511,8 @@ function sugar_function_cycle($sugar, $params)
  */
 function sugar_function_isset($sugar, $params)
 {
-    $obj = Sugar_Util_GetArg($params, 'object');
-    $index = Sugar_Util_GetArg($params, 'index');
+    $obj = isset($params['object']) ? $params['object'] : null;
+    $index = isset($params['index']) ? $params['index'] : null;
     if (is_array($obj) && isset($obj[$index]))
         return true;
     elseif (is_object($obj) && isset($obj->$index))

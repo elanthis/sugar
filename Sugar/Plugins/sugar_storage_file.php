@@ -78,8 +78,17 @@ final class Sugar_Storage_File extends Sugar_Storage
      */
     public function getHandle($name)
     {
-        $path = Sugar_Util_SearchForFile($this->_sugar->templateDir, $name);
-        return $path;
+        // search multiple directories if templateDir is an array,
+        // otherwise only search the given dir
+        foreach ((array)$this->_sugar->templateDir as $dir) {
+            $path = $dir.'/'.$name;
+            if (is_file($path) && is_readable($path)) {
+                return $path;
+            }
+        }
+
+        // not found
+        return false;
     }
 
     /**

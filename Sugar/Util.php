@@ -36,64 +36,6 @@
  */
 
 /**
- * Returns an argument from a function parameter list, supporting both
- * position and named parameters and default values.
- *
- * @param array  $params  Function parameter list.
- * @param string $name    Parameter name.
- * @param mixed  $default Default value if parameter is not specified.
- *
- * @return mixed Value of parameter if given, or the default value otherwise.
- */
-function Sugar_Util_GetArg($params, $name, $default = null)
-{
-    return isset($params[$name]) ? $params[$name] : $default;
-}
-
-/**
- * Checks if an array is a "vector," or an array with only integral
- * indexes starting at zero and incrementally increasing.  Used only
- * for nice exporting to JavaScript.
- *
- * Only really used for {@link Sugar_Util_Json}.
- *
- * @param array $array Array to check.
- *
- * @return bool True if array is a vector.
- */
-function Sugar_Util_IsVector($array)
-{
-    if (!is_array($array)) {
-        return false;
-    }
-
-    $next = 0;
-    foreach ($array as $k=>$v) {
-        if ($k !== $next) {
-            return false;
-        }
-        ++$next;
-    }
-    return true;
-}
-
-/**
- * Performs string-escaping for JavaScript values.
- *
- * This is the equivalent of running addslashes() and then replacing
- * control characters with their escaped equivalents.
- *
- * @param mixed $string String to escape.
- *
- * @return string Formatted result.
- */
-function Sugar_Util_EscapeJavascript($string) {
-    $escaped = addslashes($string);
-    $escaped = str_replace(array("\n", "\r", "\r\n"), '\\n', $escaped);
-    return $escaped;
-}
-
-/**
  * Formats a PHP value in JavaScript format.
  *
  * We can probably juse use json_encode() instead of this, except
@@ -115,11 +57,26 @@ function Sugar_Util_Json($value)
     case 'float':
         return $value;
     case 'array':
-        if (Sugar_Util_IsVector($value)) {
-            $escaped = array_map('Sugar_Util_Json', $value);
-            return '['.implode(',', $escaped).']';
+        // check if our value is a vector (array with increasing numerical indices)
+        if (is_array($array)) {
+            $next = 0;
+            $isVector = true;
+            foreach ($array as $k=>$v) {
+                if ($k !== $next) {
+                    $isVector = false;
+                    break;
+                }
+                ++$next;
+            }
+
+            // if we have a vector, use an array encoding
+            if ($isVector) {
+                $escaped = array_map('Sugar_Util_Json', $value);
+                return '['.implode(',', $escaped).']';
+            }
         }
 
+        // we do not have a vector, so process as an object
         $result = '{';
         $first = true;
         foreach ($value as $k=>$v) {
@@ -142,72 +99,9 @@ function Sugar_Util_Json($value)
     case 'null':
         return 'null';
     default:
-        $escaped = Sugar_Util_EscapeJavascript($value);
+        $escaped = str_replace(array("\n", "\r", "\r\n"), '\\n', addslashes($value));
         return '"'.$escaped.'"';
     }
-}
-
-/**
- * Convert a value into a timestamp.  This is essentially strtotime(),
- * except that if an integer timestamp is passed in it is returned
- * verbatim, and if the value cannot be parsed, it returns the current
- * timestamp.
- *
- * @param mixed $value Time value to parse.
- *
- * @return int Timestamp.
- */
-function Sugar_Util_ValueToTime($value)
-{
-    if (is_int($value)) {
-        // raw int?  it's a timestamp
-        return $value;
-    } elseif (is_string($value)) {
-        // otherwise, convert it with strtotime
-        return strtotime($value);
-    } else {
-        // something... use current time
-        return time();
-    }
-}
-
-/**
- * Attempt to locate a file in one or more source directories.
- *
- * @param mixed  $haystack The directory/directories to search in.
- * @param string $needle   The file being searched for.
- * @param string $backup   Second haystack (optional).
- *
- * @return mixed The full path to the file if found, false otherwise.
- */
-function Sugar_Util_SearchForFile($haystack, $needle, $backup = null)
-{
-    // search multiple directories if templateDir is an array,
-    // otherwise only search the given dir
-    if (is_array($haystack)) {
-        foreach ($haystack as $dir) {
-            $path = $dir.'/'.$needle;
-            if (is_file($path) && is_readable($path)) {
-                return $path;
-            }
-        }
-    } else {
-        $path = $haystack.'/'.$needle;
-        if (is_file($path) && is_readable($path)) {
-            return $path;
-        }
-    }
-
-    // try the backup directory
-    if (!is_null($backup)) {
-        $path = $backup.'/'.$needle;
-        if (is_file($path) && is_readable($path)) {
-            return $path;
-        }
-    }
-    
-    // no matches found
-    return false;
 }
 
 // vim: set expandtab shiftwidth=4 tabstop=4 :

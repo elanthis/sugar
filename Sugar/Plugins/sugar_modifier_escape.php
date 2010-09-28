@@ -100,7 +100,7 @@ class Sugar_Modifier_Escape extends Sugar_Modifier
     case 'javascript':
     case 'js':
     case 'json':
-        return Sugar_Util_EscapeJavascript($value);
+        return str_replace(array("\n", "\r", "\r\n"), '\\n', addslashes($value));
     case 'url':
         return urlencode($value);
     default:
