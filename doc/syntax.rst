@@ -248,8 +248,8 @@ can be executed using the eval function.
 
 ::
 
-	{{ include "header" }}
-	{{ include 'some/other/template' }}
+	{{ include file="header" }}
+	{{ include file='some/other/template' }}
 	{{ eval 'var is {{ $var+1 }}' }}
 	{{ eval getCode }}
 
