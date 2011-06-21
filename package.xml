@@ -7,7 +7,7 @@
  <channel>pear.php-sugar.net</channel>
  <summary>Sugar is a powerful and secure template engine.</summary>
  <description>
-	Sugar is a powerful and secure template engine.
+  Sugar is a powerful and secure template engine.
  </description>
  <lead>
   <name>Sean Middleditch</name>
@@ -15,8 +15,8 @@
   <email>sean@php-sugar.net</email>
   <active>yes</active>
  </lead>
- <date>2010-09-16</date>
- <time>14:41:00</time>
+ <date>2011-06-21</date>
+ <time>14:32:00</time>
  <version>
   <release>0.84.0</release>
   <api>0.84.0</api>
@@ -31,19 +31,16 @@
    <dir name="/">
     <file name="LICENSE" role="doc" />
     <file name="README" role="doc" />
-    <file name="NEWS" role="doc" />
     <file name="Sugar.php" role="php" />
-	  <dir name="Sugar">
+    <dir name="Sugar">
      <file name="Cache.php" role="php"/>
      <file name="CacheDriver.php" role="php"/>
      <file name="Context.php" role="php"/>
      <file name="Data.php" role="php"/>
      <file name="Exception.php" role="php"/>
-		 <file name="Function.php" role="php"/>
      <file name="Grammar.php" role="php"/>
      <file name="Lexer.php" role="php"/>
      <file name="Loader.php" role="php"/>
-		 <file name="Modifier.php" role="php"/>
      <file name="Node.php" role="php"/>
      <file name="Runtime.php" role="php"/>
      <file name="Stdlib.php" role="php"/>
@@ -51,25 +48,32 @@
      <file name="Template.php" role="php"/>
      <file name="Token.php" role="php"/>
      <file name="Util.php" role="php"/>
-		 <dir name="Cache">
+     <dir name="Cache">
       <file name="File.php" role="php"/>
       <file name="Memcache.php" role="php"/>
-		 </dir>
-		 <dir name="Node">
-		  <file name="Array.php" role="php"/>
-		  <file name="Call.php" role="php"/>
-		  <file name="Expr.php" role="php"/>
-		  <file name="Literal.php" role="php"/>
-		  <file name="Lookup.php" role="php"/>
-		  <file name="Method.php" role="php"/>
-		  <file name="Pipe.php" role="php"/>
-		  <file name="Print.php" role="php"/>
-		 </dir>
-		 <dir name="Storage">
-		  <file name="File.php" role="php"/>
-		  <file name="String.php" role="php"/>
-		 </dir>
-		</dir>
+     </dir>
+     <dir name="Node">
+      <file name="Array.php" role="php"/>
+      <file name="Call.php" role="php"/>
+      <file name="Expr.php" role="php"/>
+      <file name="Literal.php" role="php"/>
+      <file name="Lookup.php" role="php"/>
+      <file name="Method.php" role="php"/>
+      <file name="Pipe.php" role="php"/>
+      <file name="Print.php" role="php"/>
+     </dir>
+     <dir name="Storage">
+      <file name="File.php" role="php"/>
+      <file name="String.php" role="php"/>
+     </dir>
+     <dir name="Plugins">
+      <file name="sugar_function_ldelim.php" role="php"/>
+      <file name="sugar_function_rdelim.php" role="php"/>
+      <file name="sugar_modifier_default.php" role="php"/>
+      <file name="sugar_modifier_escape.php" role="php"/>
+      <file name="sugar_modifier_raw.php" role="php"/>
+     </dir>
+    </dir>
    </dir>
  </contents>
  <dependencies>
